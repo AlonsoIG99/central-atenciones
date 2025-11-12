@@ -1,6 +1,16 @@
 const formUsuario = document.getElementById('usuario-form');
 const usuariosList = document.getElementById('usuarios-list');
 
+// Verificar si es administrador al cargar la sección
+document.addEventListener('DOMContentLoaded', () => {
+  const rolActual = localStorage.getItem('rol');
+  const formContainer = document.getElementById('usuario-form-container');
+  
+  if (rolActual !== 'administrador' && formContainer) {
+    formContainer.innerHTML = '<p class="text-red-600 font-semibold p-4 bg-red-100 rounded-lg border border-red-300">Solo los administradores pueden crear usuarios</p>';
+  }
+});
+
 // Cargar usuarios
 async function cargarUsuarios() {
   const usuarios = await obtenerUsuarios();
@@ -34,6 +44,12 @@ async function cargarUsuarios() {
 // Crear usuario
 formUsuario.addEventListener('submit', async (e) => {
   e.preventDefault();
+  
+  const rolActual = localStorage.getItem('rol');
+  if (rolActual !== 'administrador') {
+    mostrarError('Solo los administradores pueden crear usuarios');
+    return;
+  }
   
   const usuario = {
     nombre: document.getElementById('usuario-nombre').value,

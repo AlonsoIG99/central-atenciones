@@ -1,20 +1,88 @@
 const reportContainer = document.getElementById('reportContainer');
+const buscarDniInput = document.getElementById('buscar-dni');
+const fechaDesdeInput = document.getElementById('fecha-desde');
+const fechaHastaInput = document.getElementById('fecha-hasta');
+const btnLimpiarBusqueda = document.getElementById('btn-limpiar-busqueda');
+
+// Validar que búsqueda de DNI solo acepte números
+if (buscarDniInput) {
+  buscarDniInput.addEventListener('input', (e) => {
+    e.target.value = e.target.value.replace(/[^0-9]/g, '');
+    cargarReportes();
+  });
+}
+
+// Eventos para filtros de fecha
+if (fechaDesdeInput) {
+  fechaDesdeInput.addEventListener('change', () => {
+    cargarReportes();
+  });
+}
+
+if (fechaHastaInput) {
+  fechaHastaInput.addEventListener('change', () => {
+    cargarReportes();
+  });
+}
+
+// Evento para limpiar búsqueda
+if (btnLimpiarBusqueda) {
+  btnLimpiarBusqueda.addEventListener('click', () => {
+    if (buscarDniInput) buscarDniInput.value = '';
+    if (fechaDesdeInput) fechaDesdeInput.value = '';
+    if (fechaHastaInput) fechaHastaInput.value = '';
+    cargarReportes();
+  });
+}
 
 // Cargar reportes
 async function cargarReportes() {
   const incidencias = await obtenerIncidencias();
   const userId = localStorage.getItem('user_id');
   const rol = localStorage.getItem('rol');
+  const dniSearch = buscarDniInput ? buscarDniInput.value.toLowerCase().trim() : '';
+  const fechaDesde = fechaDesdeInput ? fechaDesdeInput.value : '';
+  const fechaHasta = fechaHastaInput ? fechaHastaInput.value : '';
   
   // Filtrar: gestores ven solo sus incidencias, admins ven todas
-  const incidenciasFiltered = rol === 'administrador' 
+  let incidenciasFiltered = rol === 'administrador' 
     ? incidencias 
     : incidencias.filter(inc => inc.usuario_id == userId);
+  
+  // Filtrar por DNI si hay búsqueda
+  if (dniSearch) {
+    incidenciasFiltered = incidenciasFiltered.filter(inc => 
+      inc.dni.toLowerCase().includes(dniSearch)
+    );
+  }
+  
+  // Filtrar por rango de fechas si se especifican
+  if (fechaDesde || fechaHasta) {
+    incidenciasFiltered = incidenciasFiltered.filter(inc => {
+      const fechaInc = new Date(inc.fecha_creacion).toISOString().split('T')[0];
+      
+      if (fechaDesde && fechaHasta) {
+        return fechaInc >= fechaDesde && fechaInc <= fechaHasta;
+      } else if (fechaDesde) {
+        return fechaInc >= fechaDesde;
+      } else if (fechaHasta) {
+        return fechaInc <= fechaHasta;
+      }
+      return true;
+    });
+  }
   
   reportContainer.innerHTML = '';
   
   if (incidenciasFiltered.length === 0) {
-    reportContainer.innerHTML = '<p class="text-gray-500 text-center py-8">No hay incidencias registradas</p>';
+    let mensaje = 'No hay incidencias registradas';
+    if (dniSearch) {
+      mensaje = `No hay incidencias con DNI: ${dniSearch}`;
+    }
+    if (fechaDesde || fechaHasta) {
+      mensaje += ' en el rango de fechas seleccionado';
+    }
+    reportContainer.innerHTML = `<p class="text-gray-500 text-center py-8">${mensaje}</p>`;
     return;
   }
   

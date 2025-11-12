@@ -45,31 +45,3 @@ def login(credenciales: LoginRequest, db: Session = Depends(get_db)):
         "rol": usuario.rol,
         "area": usuario.area
     }
-
-@router.post("/registro")
-def registro(credenciales: LoginRequest, db: Session = Depends(get_db)):
-    """
-    Registro de nuevo usuario (solo para demostración)
-    """
-    # Verificar si el usuario ya existe
-    usuario_existente = db.query(Usuario).filter(Usuario.email == credenciales.email).first()
-    if usuario_existente:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="El usuario ya existe"
-        )
-    
-    # Crear nuevo usuario
-    nuevo_usuario = Usuario(
-        nombre=credenciales.email.split('@')[0],
-        email=credenciales.email,
-        contraseña=obtener_hash_contraseña(credenciales.contraseña),
-        rol="gestor",
-        area="General"
-    )
-    
-    db.add(nuevo_usuario)
-    db.commit()
-    db.refresh(nuevo_usuario)
-    
-    return {"mensaje": "Usuario creado exitosamente", "usuario_id": nuevo_usuario.id}

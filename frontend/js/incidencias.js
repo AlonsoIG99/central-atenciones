@@ -1,5 +1,13 @@
 const formIncidencia = document.getElementById('incidencia-form');
 const incidenciasList = document.getElementById('incidencias-list');
+const dniInput = document.getElementById('incidencia-dni');
+
+// Validar que DNI solo acepte números
+if (dniInput) {
+  dniInput.addEventListener('input', (e) => {
+    e.target.value = e.target.value.replace(/[^0-9]/g, '');
+  });
+}
 
 const incidenciaSchema = {
   "Pago correcto": {},

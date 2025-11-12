@@ -3,12 +3,22 @@ document.addEventListener('DOMContentLoaded', () => {
   if (!verificarAutenticacion()) return;
   
   const userId = localStorage.getItem('user_id');
+  const rolActual = localStorage.getItem('rol');
   const userIdField = document.getElementById('incidencia-usuario_id');
   if (userIdField) {
     userIdField.value = userId;
   }
   
-  cargarUsuarios();
+  // Si es gestor, ocultar el botón y sección de usuarios
+  if (rolActual === 'gestor') {
+    const btnUsuarios = document.getElementById('btn-usuarios');
+    const usuariosSection = document.getElementById('usuarios-section');
+    if (btnUsuarios) btnUsuarios.style.display = 'none';
+    if (usuariosSection) usuariosSection.style.display = 'none';
+  }
+  
+  // Mostrar la sección de incidencias por defecto
+  mostrarSeccion('incidencias');
   agregarBotonLogout();
 });
 
