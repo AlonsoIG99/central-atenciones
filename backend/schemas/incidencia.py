@@ -3,6 +3,7 @@ from typing import Optional
 from datetime import datetime
 
 class IncidenciaBase(BaseModel):
+    dni: str  # DNI del trabajador
     titulo: str
     descripcion: str
     estado: str = "abierta"
@@ -12,6 +13,7 @@ class IncidenciaCreate(IncidenciaBase):
     pass
 
 class IncidenciaUpdate(BaseModel):
+    dni: Optional[str] = None
     titulo: Optional[str] = None
     descripcion: Optional[str] = None
     estado: Optional[str] = None

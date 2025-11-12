@@ -7,6 +7,7 @@ class Incidencia(Base):
     __tablename__ = "incidencias"
     
     id = Column(Integer, primary_key=True, index=True)
+    dni = Column(String, index=True)  # DNI del trabajador
     titulo = Column(String, index=True)
     descripcion = Column(String)
     estado = Column(String, default="abierta")

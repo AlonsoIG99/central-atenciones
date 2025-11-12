@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from database import engine, Base
-from routes import usuarios, incidencias
+from routes import usuarios, incidencias, auth
 from models.usuario import Usuario
 from models.incidencia import Incidencia
 
@@ -20,6 +20,7 @@ app.add_middleware(
 )
 
 # Incluir rutas
+app.include_router(auth.router)
 app.include_router(usuarios.router)
 app.include_router(incidencias.router)
 

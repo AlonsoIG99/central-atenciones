@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 from database import get_db
 from models.usuario import Usuario
 from schemas.usuario import UsuarioCreate, UsuarioUpdate, UsuarioResponse
+from auth import obtener_hash_contraseña
 
 router = APIRouter(prefix="/usuarios", tags=["usuarios"])
 
@@ -20,7 +21,11 @@ def obtener_usuario(usuario_id: int, db: Session = Depends(get_db)):
 
 @router.post("/", response_model=UsuarioResponse)
 def crear_usuario(usuario: UsuarioCreate, db: Session = Depends(get_db)):
-    db_usuario = Usuario(**usuario.dict())
+    # Hashear contraseña
+    usuario_dict = usuario.dict()
+    usuario_dict['contraseña'] = obtener_hash_contraseña(usuario_dict['contraseña'])
+    
+    db_usuario = Usuario(**usuario_dict)
     db.add(db_usuario)
     db.commit()
     db.refresh(db_usuario)
@@ -33,6 +38,8 @@ def actualizar_usuario(usuario_id: int, usuario: UsuarioUpdate, db: Session = De
         raise HTTPException(status_code=404, detail="Usuario no encontrado")
     
     for key, value in usuario.dict(exclude_unset=True).items():
+        if key == 'contraseña' and value:
+            value = obtener_hash_contraseña(value)
         setattr(db_usuario, key, value)
     
     db.commit()

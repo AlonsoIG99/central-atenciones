@@ -4,64 +4,90 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Central de Atención</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="style.css">
+    <style>
+        .nested { margin-left: 1.5rem; }
+    </style>
 </head>
-<body>
-    <div class="container">
-        <header>
-            <h1>Central de Atención</h1>
-            <nav>
-                <button id="btn-usuarios" class="nav-btn active">Usuarios</button>
-                <button id="btn-incidencias" class="nav-btn">Incidencias</button>
-            </nav>
-        </header>
+<body class="bg-gray-100">
+    <div class="min-h-screen flex items-center justify-center p-6">
+        <div class="w-full max-w-3xl">
+            <header class="bg-white rounded-t-xl shadow-md p-6">
+                <h1 class="text-3xl font-bold text-gray-800 mb-4 text-center">CENTRAL DE ATENCIONES</h1>
+                <nav class="flex justify-center gap-4 flex-wrap">
+                    <button id="btn-usuarios" class="nav-btn active px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">Usuarios</button>
+                    <button id="btn-incidencias" class="nav-btn px-6 py-2 bg-gray-400 text-white rounded-lg hover:bg-gray-500 transition">Incidencias</button>
+                </nav>
+            </header>
 
-        <main>
-            <!-- Sección de Usuarios -->
-            <section id="usuarios-section" class="section active">
-                <h2>Gestión de Usuarios</h2>
-                
-                <div class="form-container">
-                    <h3>Crear Usuario</h3>
-                    <form id="usuario-form">
-                        <input type="text" id="usuario-nombre" placeholder="Nombre" required>
-                        <input type="email" id="usuario-email" placeholder="Email" required>
-                        <input type="password" id="usuario-contraseña" placeholder="Contraseña" required>
-                        <button type="submit">Crear</button>
+            <main class="bg-white shadow-md rounded-b-xl p-6">
+                <!-- Sección de Usuarios -->
+                <section id="usuarios-section" class="section active">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-6 pb-3 border-b-4 border-blue-600">Gestión de Usuarios</h2>
+                    
+                    <div class="bg-gray-50 p-6 rounded-lg mb-8">
+                        <h3 class="text-xl font-semibold text-gray-700 mb-4">Crear Usuario</h3>
+                        <form id="usuario-form" class="space-y-4">
+                            <input type="text" id="usuario-nombre" placeholder="Nombre" required class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600">
+                            <input type="email" id="usuario-email" placeholder="Email" required class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600">
+                            <input type="password" id="usuario-contraseña" placeholder="Contraseña" required class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600">
+                            <select id="usuario-rol" required class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600">
+                                <option value="">Selecciona un rol</option>
+                                <option value="administrador">Administrador</option>
+                                <option value="gestor">Gestor</option>
+                            </select>
+                            <input type="text" id="usuario-area" placeholder="Área" required class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600">
+                            <button type="submit" class="w-full px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-semibold">Crear Usuario</button>
+                        </form>
+                    </div>
+
+                    <div>
+                        <h3 class="text-xl font-semibold text-gray-700 mb-4">Lista de Usuarios</h3>
+                        <div id="usuarios-list"></div>
+                    </div>
+                </section>
+
+                <!-- Sección de Incidencias -->
+                <section id="incidencias-section" class="section">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-6 pb-3 border-b-4 border-blue-600">Crear Incidencia</h2>
+                    
+                    <form id="incidencia-form" class="bg-white shadow-md rounded-xl p-6 space-y-4">
+                        <div class="grid grid-cols-3 gap-4 mb-4">
+                            <div>
+                                <label class="block text-gray-700 font-medium mb-2">DNI Trabajador</label>
+                                <input type="text" id="incidencia-dni" placeholder="DNI (8 dígitos)" maxlength="8" required class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600">
+                            </div>
+                            <div>
+                                <label class="block text-gray-700 font-medium mb-2">ID Usuario</label>
+                                <input type="number" id="incidencia-usuario_id" readonly class="w-full p-3 border border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed text-gray-700 font-semibold">
+                            </div>
+                            <div>
+                                <label class="block text-gray-700 font-medium mb-2">Estado</label>
+                                <select id="incidencia-estado" class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600">
+                                    <option value="abierta">Abierta</option>
+                                    <option value="en-progreso">En Progreso</option>
+                                    <option value="cerrada">Cerrada</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Esquema de incidencias dinámico aquí -->
+                        <div id="incidencias-schema-container" class="space-y-2 mb-6 p-4 bg-gray-50 rounded-lg max-h-96 overflow-y-auto border border-gray-200"></div>
+
+                        <div class="flex justify-end gap-4">
+                            <button type="reset" class="px-6 py-2 bg-gray-400 text-white rounded-lg hover:bg-gray-500 transition">Limpiar</button>
+                            <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-semibold">Enviar Incidencia</button>
+                        </div>
                     </form>
-                </div>
 
-                <div class="list-container">
-                    <h3>Lista de Usuarios</h3>
-                    <div id="usuarios-list"></div>
-                </div>
-            </section>
-
-            <!-- Sección de Incidencias -->
-            <section id="incidencias-section" class="section">
-                <h2>Gestión de Incidencias</h2>
-                
-                <div class="form-container">
-                    <h3>Crear Incidencia</h3>
-                    <form id="incidencia-form">
-                        <input type="text" id="incidencia-titulo" placeholder="Título" required>
-                        <textarea id="incidencia-descripcion" placeholder="Descripción" required></textarea>
-                        <input type="number" id="incidencia-usuario_id" placeholder="ID Usuario" required>
-                        <select id="incidencia-estado">
-                            <option value="abierta">Abierta</option>
-                            <option value="en-progreso">En Progreso</option>
-                            <option value="cerrada">Cerrada</option>
-                        </select>
-                        <button type="submit">Crear</button>
-                    </form>
-                </div>
-
-                <div class="list-container">
-                    <h3>Lista de Incidencias</h3>
-                    <div id="incidencias-list"></div>
-                </div>
-            </section>
-        </main>
+                    <div class="mt-8">
+                        <h3 class="text-xl font-semibold text-gray-700 mb-4">Incidencias Registradas</h3>
+                        <div id="incidencias-list"></div>
+                    </div>
+                </section>
+            </main>
+        </div>
     </div>
 
     <script src="js/api.js"></script>
