@@ -11,7 +11,7 @@ class Incidencia(Base):
     titulo = Column(String, index=True)
     descripcion = Column(String)
     estado = Column(String, default="abierta")
-    usuario_id = Column(Integer, ForeignKey("usuarios.id"))
+    usuario_id = Column(Integer, ForeignKey("usuarios.id"), nullable=True)
     fecha_creacion = Column(DateTime, default=datetime.utcnow)
     fecha_actualizacion = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     

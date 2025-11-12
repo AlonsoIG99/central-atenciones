@@ -18,6 +18,7 @@
                 <nav class="flex justify-center gap-4 flex-wrap">
                     <button id="btn-usuarios" class="nav-btn active px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">Usuarios</button>
                     <button id="btn-incidencias" class="nav-btn px-6 py-2 bg-gray-400 text-white rounded-lg hover:bg-gray-500 transition">Incidencias</button>
+                    <button id="btn-reportes" class="nav-btn px-6 py-2 bg-gray-400 text-white rounded-lg hover:bg-gray-500 transition">Reportes</button>
                 </nav>
             </header>
 
@@ -86,6 +87,13 @@
                         <div id="incidencias-list"></div>
                     </div>
                 </section>
+
+                <!-- Sección de Reportes -->
+                <section id="reportes-section" class="section">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-6 pb-3 border-b-4 border-blue-600">Reportes de Incidencias</h2>
+                    
+                    <div id="reportContainer" class="space-y-4"></div>
+                </section>
             </main>
         </div>
     </div>
@@ -93,6 +101,7 @@
     <script src="js/api.js"></script>
     <script src="js/usuarios.js"></script>
     <script src="js/incidencias.js"></script>
+    <script src="js/reportes.js"></script>
     <script src="script.js"></script>
 </body>
 </html>

@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Reporte de Incidencias</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .dot::before {
+      content: "• ";
+      color: #2563eb;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body class="bg-gray-100 min-h-screen p-8">
+
+  <h1 class="text-3xl font-semibold text-center text-gray-800 mb-8">
+    Reporte de Incidencias
+  </h1>
+
+  <div id="reportContainer" class="max-w-4xl mx-auto space-y-4"></div>
+<script>
+  const data = [
+    {
+      fecha: "2025-11-12",
+      dni: "123123",
+      "Pago incorrecto": {
+        "Planillas/Configuración de Pago": {
+          "Gratificación incompleta": {},
+          "CTS": { valor: "asd" }
+        },
+        "Tareo/Vacaciones/Regularización": {
+          "DM's / Licencias - No tareado": { "Sin goce": {} }
+        }
+      },
+      "Apoyo económico/Préstamo": {
+        "Aprobado": { valor: "200" }
+      },
+      "Otros/Soporte": {
+        "Soporte tareo": {}
+      }
+    },
+    {
+      fecha: "2025-11-13",
+      dni: "456456",
+      "Pago correcto": {},
+      "Otros/Soporte": {
+        "Soporte planillas": { "Cambio cuenta sueldo": {} }
+      }
+    }
+  ];
+
+  const container = document.getElementById('reportContainer');
+
+  data.forEach((incidencia) => {
+    const card = document.createElement('div');
+    card.className = "bg-white shadow-md rounded-xl p-5 cursor-pointer hover:shadow-lg transition";
+
+    const header = document.createElement('div');
+    header.className = "flex justify-between items-center";
+    header.innerHTML = `
+      <div>
+        <p class="text-lg font-semibold text-gray-800">DNI: ${incidencia.dni}</p>
+        <p class="text-sm text-gray-500">Fecha: ${incidencia.fecha}</p>
+      </div>
+      <span class="text-blue-600 font-semibold text-sm">Ver detalle ▼</span>
+    `;
+    card.appendChild(header);
+
+    const detail = document.createElement('div');
+    detail.className = "mt-4 pl-4 border-l-2 border-gray-200 hidden";
+
+    // Render recursivo con bordes y sangrías visuales
+    function renderNested(obj, level = 0) {
+      const ul = document.createElement('ul');
+      ul.className = `ml-${level > 0 ? 3 : 0} space-y-1 border-l border-gray-200 pl-3`;
+
+      Object.entries(obj).forEach(([key, value]) => {
+        if (key === "valor") return;
+        const li = document.createElement('li');
+        li.className = "dot text-gray-700";
+        li.textContent = key;
+
+        if (typeof value === "object" && Object.keys(value).length > 0) {
+          if (value.valor) {
+            const val = document.createElement('div');
+            val.className = "ml-5 text-sm text-gray-500";
+            val.textContent = `→ Valor: ${value.valor}`;
+            li.appendChild(val);
+          }
+          const childList = renderNested(value, level + 1);
+          li.appendChild(childList);
+        }
+
+        ul.appendChild(li);
+      });
+      return ul;
+    }
+
+    Object.entries(incidencia).forEach(([key, value]) => {
+      if (["dni", "fecha"].includes(key)) return;
+      const section = document.createElement('div');
+      section.className = "mt-3";
+      section.innerHTML = `<p class="font-semibold text-gray-800 mb-1">${key}</p>`;
+      section.appendChild(renderNested(value));
+      detail.appendChild(section);
+    });
+
+    card.appendChild(detail);
+
+    card.addEventListener('click', () => {
+      detail.classList.toggle('hidden');
+    });
+
+    container.appendChild(card);
+  });
+</script>
+
+
+</body>
+</html>

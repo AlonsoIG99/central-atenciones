@@ -251,6 +251,25 @@ formIncidencia.addEventListener('submit', async (e) => {
   if (resultado) {
     mostrarExito('Incidencia creada exitosamente');
     formIncidencia.reset();
+    // Rellenar nuevamente el usuario_id después de limpiar el formulario
+    const userId = localStorage.getItem('user_id');
+    const userIdField = document.getElementById('incidencia-usuario_id');
+    if (userIdField && userId) {
+      userIdField.value = userId;
+    }
+    // Contraer el esquema: desmarcar todos los checkboxes y ocultar elementos anidados
+    const allCheckboxes = document.querySelectorAll('#incidencias-schema-container input[type="checkbox"]');
+    allCheckboxes.forEach(checkbox => {
+      checkbox.checked = false;
+      const nested = checkbox.parentElement.querySelector('.nested');
+      if (nested) {
+        nested.classList.add('hidden');
+        nested.querySelectorAll('input').forEach(i => {
+          if (i.type === 'checkbox') i.checked = false;
+          if (i.type === 'text') i.value = '';
+        });
+      }
+    });
     cargarIncidencias();
   }
 });

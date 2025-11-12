@@ -7,7 +7,7 @@ class IncidenciaBase(BaseModel):
     titulo: str
     descripcion: str
     estado: str = "abierta"
-    usuario_id: int
+    usuario_id: Optional[int] = None
 
 class IncidenciaCreate(IncidenciaBase):
     pass
@@ -22,6 +22,7 @@ class IncidenciaResponse(IncidenciaBase):
     id: int
     fecha_creacion: datetime
     fecha_actualizacion: datetime
+    usuario_nombre: Optional[str] = "Desconocido"
     
     class Config:
         from_attributes = True
