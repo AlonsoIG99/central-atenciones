@@ -49,11 +49,15 @@ async function crearUsuario(usuario) {
             headers: obtenerHeaders(),
             body: JSON.stringify(usuario)
         });
-        if (!response.ok) throw new Error('Error al crear usuario');
+        
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.detail || 'Error al crear usuario');
+        }
         return await response.json();
     } catch (error) {
         console.error('Error:', error);
-        mostrarError('Error al crear usuario');
+        mostrarError(error.message || 'Error al crear usuario');
         return null;
     }
 }

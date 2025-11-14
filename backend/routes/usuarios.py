@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.orm import Session
 from database import get_db
 from models.usuario import Usuario
@@ -6,18 +6,6 @@ from schemas.usuario import UsuarioCreate, UsuarioUpdate, UsuarioResponse
 from auth import obtener_hash_contraseña, verificar_token
 
 router = APIRouter(prefix="/usuarios", tags=["usuarios"])
-
-# Función para obtener el usuario actual desde el token
-def obtener_usuario_actual(authorization: str = None) -> dict:
-    if not authorization or not authorization.startswith("Bearer "):
-        raise HTTPException(status_code=401, detail="Token no proporcionado")
-    
-    token = authorization.replace("Bearer ", "")
-    token_data = verificar_token(token)
-    if not token_data:
-        raise HTTPException(status_code=401, detail="Token inválido")
-    
-    return {"user_id": token_data.user_id, "email": token_data.email, "rol": token_data.rol}
 
 @router.get("/", response_model=list[UsuarioResponse])
 def obtener_usuarios(db: Session = Depends(get_db)):
@@ -32,11 +20,23 @@ def obtener_usuario(usuario_id: int, db: Session = Depends(get_db)):
     return usuario
 
 @router.post("/", response_model=UsuarioResponse)
-def crear_usuario(usuario: UsuarioCreate, db: Session = Depends(get_db), authorization: str = None):
-    # Verificar que el usuario actual sea administrador
-    usuario_actual = obtener_usuario_actual(authorization)
+def crear_usuario(usuario: UsuarioCreate, db: Session = Depends(get_db), request: Request = None):
+    # Obtener token directamente del request
+    auth_header = request.headers.get("authorization") if request else None
     
-    if usuario_actual["rol"] != "administrador":
+    if not auth_header:
+        raise HTTPException(status_code=401, detail="Token no proporcionado")
+    
+    if not auth_header.startswith("Bearer "):
+        raise HTTPException(status_code=401, detail="Formato de token inválido")
+    
+    token = auth_header.replace("Bearer ", "").strip()
+    token_data = verificar_token(token)
+    
+    if not token_data:
+        raise HTTPException(status_code=401, detail="Token inválido o expirado")
+    
+    if token_data.rol != "administrador":
         raise HTTPException(status_code=403, detail="Solo los administradores pueden crear usuarios")
     
     # Hashear contraseña
