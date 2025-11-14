@@ -187,7 +187,7 @@ function makeId(str) {
 }
 
 // Renderizar esquema jerárquico
-function renderIncidenciaSchema(schema, container) {
+function renderIncidenciaSchema(schema, container, parentLabel = '') {
   if (!container) return;
   Object.entries(schema).forEach(([key, value]) => {
     const wrapper = document.createElement('div');
@@ -219,12 +219,33 @@ function renderIncidenciaSchema(schema, container) {
     }
 
     if (value && value.children) {
-      renderIncidenciaSchema(value.children, nested);
+      renderIncidenciaSchema(value.children, nested, key);
     }
 
     checkbox.addEventListener('change', () => {
       if (checkbox.checked) {
         nested.classList.remove('hidden');
+        
+        // Validación exclusiva para "Apoyo económico/Préstamo"
+        // Si el padre es "Apoyo económico/Préstamo", solo se puede seleccionar una opción
+        if (parentLabel === 'Apoyo económico/Préstamo') {
+          // Obtener todos los checkboxes hermanos (hijos del mismo contenedor)
+          const allCheckboxes = container.querySelectorAll(':scope > div > input[type="checkbox"]');
+          allCheckboxes.forEach(sibling => {
+            if (sibling !== checkbox && sibling.checked) {
+              sibling.checked = false;
+              // Limpiar el contenido del hermano
+              const siblingWrapper = sibling.closest('div');
+              const siblingNested = siblingWrapper.querySelector('.nested');
+              if (siblingNested) {
+                siblingNested.classList.add('hidden');
+                siblingNested.querySelectorAll('input[type="text"]').forEach(input => {
+                  input.value = '';
+                });
+              }
+            }
+          });
+        }
       } else {
         nested.classList.add('hidden');
         nested.querySelectorAll('input').forEach(i => {
