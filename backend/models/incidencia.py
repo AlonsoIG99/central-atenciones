@@ -7,12 +7,11 @@ class Incidencia(Base):
     __tablename__ = "incidencias"
     
     id = Column(Integer, primary_key=True, index=True)
-    dni = Column(String, index=True)  # DNI del trabajador
+    dni = Column(String, index=True)
     titulo = Column(String, index=True)
     descripcion = Column(String)
     estado = Column(String, default="abierta")
     usuario_id = Column(Integer, ForeignKey("usuarios.id"), nullable=True)
     fecha_creacion = Column(DateTime, default=datetime.utcnow)
     fecha_actualizacion = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    
-    usuario = relationship("Usuario", back_populates="incidencias")
+

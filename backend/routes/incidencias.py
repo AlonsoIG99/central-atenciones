@@ -15,15 +15,12 @@ def obtener_incidencias(db: Session = Depends(get_db)):
     resultado = []
     for incidencia in incidencias:
         # Buscar el usuario
-        usuario = None
         usuario_nombre = "Desconocido"
         
         if incidencia.usuario_id:
             usuario = db.query(Usuario).filter(Usuario.id == incidencia.usuario_id).first()
             if usuario:
                 usuario_nombre = usuario.nombre
-        
-        print(f"DEBUG - Inc ID: {incidencia.id}, Usuario ID: {incidencia.usuario_id}, Nombre: {usuario_nombre}")
         
         # Crear diccionario con los datos
         data = {
@@ -48,7 +45,6 @@ def obtener_incidencia(incidencia_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Incidencia no encontrada")
     
     # Buscar el usuario
-    usuario = None
     usuario_nombre = "Desconocido"
     
     if incidencia.usuario_id:

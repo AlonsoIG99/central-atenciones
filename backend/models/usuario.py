@@ -1,5 +1,4 @@
 from sqlalchemy import Column, Integer, String, DateTime
-from sqlalchemy.orm import relationship
 from datetime import datetime
 from database import Base
 
@@ -13,5 +12,3 @@ class Usuario(Base):
     rol = Column(String, default="gestor")  # "administrador" o "gestor"
     area = Column(String, index=True)  # Área a la que pertenece
     fecha_creacion = Column(DateTime, default=datetime.utcnow)
-    
-    incidencias = relationship("Incidencia", back_populates="usuario")

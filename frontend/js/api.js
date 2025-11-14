@@ -155,6 +155,22 @@ async function eliminarIncidencia(id) {
     }
 }
 
+// Funciones para Trabajadores
+async function buscarTrabajadorPorDni(dni) {
+    try {
+        if (!dni || dni.length === 0) return [];
+        
+        const response = await fetch(`${API_URL}/trabajadores/buscar/${dni}`, {
+            headers: obtenerHeaders()
+        });
+        if (!response.ok) return [];
+        return await response.json();
+    } catch (error) {
+        console.error('Error:', error);
+        return [];
+    }
+}
+
 // Función auxiliar para mostrar errores
 function mostrarError(mensaje) {
     const error = document.createElement('div');

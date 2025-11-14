@@ -9,6 +9,59 @@ if (dniInput) {
   });
 }
 
+// Autocomplete para DNI de trabajadores
+let debounceTimer;
+if (dniInput) {
+  dniInput.addEventListener('input', async (e) => {
+    clearTimeout(debounceTimer);
+    const dni = e.target.value.trim();
+    const resultadosContainer = document.getElementById('trabajadores-resultados');
+    
+    if (dni.length === 0) {
+      resultadosContainer.classList.add('hidden');
+      return;
+    }
+    
+    debounceTimer = setTimeout(async () => {
+      const resultados = await buscarTrabajadorPorDni(dni);
+      
+      if (resultados.length === 0) {
+        resultadosContainer.classList.add('hidden');
+        return;
+      }
+      
+      resultadosContainer.innerHTML = resultados.map(trabajador => `
+        <div class="p-2 border-b border-gray-200 hover:bg-blue-100 cursor-pointer transition flex justify-between items-center" 
+             data-dni="${trabajador.dni}"
+             data-nombre="${trabajador.nombre}"
+             data-apellido="${trabajador.apellido}"
+             data-zona="${trabajador.zona}">
+          <span class="font-bold text-blue-600">${trabajador.dni}</span>
+          <span class="text-gray-700 flex-1 ml-3">${trabajador.nombre} ${trabajador.apellido}</span>
+          <span class="text-xs text-gray-500 ml-2">${trabajador.zona}</span>
+        </div>
+      `).join('');
+      
+      resultadosContainer.classList.remove('hidden');
+      
+      // Evento para seleccionar un resultado
+      resultadosContainer.querySelectorAll('div[data-dni]').forEach(item => {
+        item.addEventListener('click', () => {
+          dniInput.value = item.getAttribute('data-dni');
+          resultadosContainer.classList.add('hidden');
+        });
+      });
+    }, 300);
+  });
+  
+  // Cerrar el dropdown al hacer click fuera
+  document.addEventListener('click', (e) => {
+    if (e.target !== dniInput && !e.target.closest('#trabajadores-resultados')) {
+      document.getElementById('trabajadores-resultados').classList.add('hidden');
+    }
+  });
+}
+
 const incidenciaSchema = {
   "Pago correcto": {},
   "Pago incorrecto": {

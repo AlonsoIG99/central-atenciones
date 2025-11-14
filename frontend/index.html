@@ -55,9 +55,10 @@
                     
                     <form id="incidencia-form" class="bg-white shadow-md rounded-xl p-6 space-y-4">
                         <div class="grid grid-cols-3 gap-4 mb-4">
-                            <div>
+                            <div class="relative">
                                 <label class="block text-gray-700 font-medium mb-2">DNI Trabajador</label>
                                 <input type="text" id="incidencia-dni" placeholder="DNI (8 dígitos)" maxlength="8" pattern="[0-9]*" inputmode="numeric" required class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600">
+                                <div id="trabajadores-resultados" class="absolute top-full left-0 right-0 mt-2 bg-white border border-blue-300 rounded-lg shadow-xl z-50 max-h-48 overflow-y-auto hidden"></div>
                             </div>
                             <div>
                                 <label class="block text-gray-700 font-medium mb-2">ID Usuario</label>
