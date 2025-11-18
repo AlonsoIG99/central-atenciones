@@ -6,6 +6,6 @@ class Trabajador(Base):
     
     id = Column(Integer, primary_key=True, index=True)
     dni = Column(String, unique=True, index=True, nullable=False)
-    nombre = Column(String, nullable=False)
-    apellido = Column(String, nullable=False)
-    zona = Column(String, nullable=False)
+    nombre_completo = Column(String, nullable=False)
+    fecha_ingreso = Column(String, nullable=True)
+    fecha_cese = Column(String, nullable=True)

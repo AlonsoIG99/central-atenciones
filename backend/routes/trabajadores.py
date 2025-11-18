@@ -1,8 +1,13 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Header
 from sqlalchemy.orm import Session
 from database import get_db
 from models.trabajador import Trabajador
 from schemas.trabajador import TrabajadorCreate, TrabajadorUpdate, TrabajadorResponse
+from auth import verificar_token
+import csv
+from io import StringIO
+from datetime import datetime
+from typing import Optional
 
 router = APIRouter(prefix="/trabajadores", tags=["trabajadores"])
 
@@ -59,3 +64,165 @@ def eliminar_trabajador(trabajador_id: int, db: Session = Depends(get_db)):
     db.delete(db_trabajador)
     db.commit()
     return {"mensaje": "Trabajador eliminado"}
+
+
+@router.post("/cargar-csv")
+async def cargar_csv_trabajadores(
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db),
+    authorization: Optional[str] = Header(None)
+):
+    """
+    Carga trabajadores desde CSV
+    Solo acceso: Administrador
+    
+    Formato CSV esperado:
+    dni,nombre_completo,fecha_ingreso,fecha_cese
+    12345678,Juan Pérez,2022-01-15,
+    87654321,María López,2021-03-20,2024-08-30
+    """
+    
+    # Verificar que sea administrador
+    if not authorization:
+        raise HTTPException(status_code=401, detail="Token no proporcionado")
+    
+    # Extraer token del header (formato: Bearer <token>)
+    try:
+        scheme, token = authorization.split()
+        if scheme.lower() != "bearer":
+            raise HTTPException(status_code=401, detail="Esquema de autenticación inválido")
+    except ValueError:
+        raise HTTPException(status_code=401, detail="Formato de token inválido")
+    
+    # Verificar token
+    token_data = verificar_token(token)
+    if not token_data:
+        raise HTTPException(status_code=401, detail="Token inválido o expirado")
+    
+    if token_data.rol != "administrador":
+        raise HTTPException(status_code=403, detail="Solo administradores pueden cargar CSV")
+    
+    # Validar que sea archivo CSV
+    if not file.filename.endswith('.csv'):
+        raise HTTPException(status_code=400, detail="Archivo debe ser CSV")
+    
+    try:
+        # Leer contenido del archivo
+        contenido = await file.read()
+        contenido_str = contenido.decode('utf-8')
+        
+        # Limpiar BOM (Byte Order Mark) si existe
+        if contenido_str.startswith('\ufeff'):
+            contenido_str = contenido_str[1:]
+        
+        # Procesar CSV
+        resumen = procesar_csv_trabajadores(contenido_str, db)
+        
+        return {
+            "status": "success",
+            "insertados": resumen["insertados"],
+            "actualizados": resumen["actualizados"],
+            "errores": resumen["errores"],
+            "detalles": resumen["detalles"],
+            "timestamp": datetime.utcnow().isoformat()
+        }
+        
+    except UnicodeDecodeError:
+        raise HTTPException(status_code=400, detail="Archivo debe estar en UTF-8")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error procesando archivo: {str(e)}")
+
+
+def procesar_csv_trabajadores(contenido_csv: str, db: Session) -> dict:
+    """
+    Procesa contenido CSV y retorna resumen de cambios
+    Detecta automáticamente el delimitador (coma o punto y coma)
+    """
+    # Detectar delimitador contando ocurrencias en la primera línea (header)
+    primera_linea = contenido_csv.split('\n')[0] if contenido_csv else ""
+    
+    # Contar delimitadores potenciales en la línea de header
+    cuenta_comas = primera_linea.count(',')
+    cuenta_punto_coma = primera_linea.count(';')
+    
+    # Usar el que tenga más ocurrencias (más confiable)
+    if cuenta_punto_coma > cuenta_comas:
+        delimitador = ';'
+    else:
+        delimitador = ','
+    
+    # Crear reader con delimitador detectado
+    csv_reader = csv.DictReader(StringIO(contenido_csv), delimiter=delimitador)
+    
+    resumen = {
+        "insertados": 0,
+        "actualizados": 0,
+        "errores": 0,
+        "detalles": []
+    }
+    
+    # Agrupar por DNI (última fila prevalece si hay duplicados)
+    filas_por_dni = {}
+    errores = []
+    
+    for numero_fila, fila in enumerate(csv_reader, start=2):  # Empieza en 2 (header es 1)
+        # Validar fila
+        es_valida, error = validar_fila_csv(fila, numero_fila)
+        if not es_valida:
+            errores.append(error)
+            resumen["errores"] += 1
+            continue
+        
+        dni = fila['dni'].strip()
+        filas_por_dni[dni] = fila  # Sobrescribe si existe (última gana)
+    
+    # Procesar cambios en BD
+    for dni, fila in filas_por_dni.items():
+        trabajador_existente = db.query(Trabajador).filter(
+            Trabajador.dni == dni
+        ).first()
+        
+        # Limpiar valores vacíos
+        nombre_completo = fila['nombre_completo'].strip()
+        fecha_ingreso = fila.get('fecha_ingreso', '').strip() or None
+        fecha_cese = fila.get('fecha_cese', '').strip() or None
+        
+        if trabajador_existente:
+            # UPDATE
+            trabajador_existente.nombre_completo = nombre_completo
+            trabajador_existente.fecha_ingreso = fecha_ingreso
+            trabajador_existente.fecha_cese = fecha_cese
+            resumen["actualizados"] += 1
+        else:
+            # INSERT
+            nuevo = Trabajador(
+                dni=dni,
+                nombre_completo=nombre_completo,
+                fecha_ingreso=fecha_ingreso,
+                fecha_cese=fecha_cese
+            )
+            db.add(nuevo)
+            resumen["insertados"] += 1
+    
+    # Guardar cambios
+    try:
+        db.commit()
+        resumen["detalles"] = errores
+        return resumen
+    except Exception as e:
+        db.rollback()
+        raise Exception(f"Error guardando cambios: {str(e)}")
+
+
+def validar_fila_csv(fila: dict, numero_fila: int) -> tuple[bool, str]:
+    """
+    Valida una fila del CSV
+    Retorna: (es_valida, mensaje_error)
+    """
+    if not fila.get('dni') or not fila.get('dni').strip():
+        return False, f"Fila {numero_fila}: DNI vacío"
+    if not fila.get('nombre_completo') or not fila.get('nombre_completo').strip():
+        return False, f"Fila {numero_fila}: Nombre completo vacío"
+    
+    # Las fechas se guardan como texto sin validación de formato
+    return True, ""

@@ -33,12 +33,11 @@ if (dniInput) {
       resultadosContainer.innerHTML = resultados.map(trabajador => `
         <div class="p-2 border-b border-gray-200 hover:bg-blue-100 cursor-pointer transition flex justify-between items-center" 
              data-dni="${trabajador.dni}"
-             data-nombre="${trabajador.nombre}"
-             data-apellido="${trabajador.apellido}"
-             data-zona="${trabajador.zona}">
+             data-nombre_completo="${trabajador.nombre_completo}"
+             data-fecha_ingreso="${trabajador.fecha_ingreso || ''}"
+             data-fecha_cese="${trabajador.fecha_cese || ''}">
           <span class="font-bold text-blue-600">${trabajador.dni}</span>
-          <span class="text-gray-700 flex-1 ml-3">${trabajador.nombre} ${trabajador.apellido}</span>
-          <span class="text-xs text-gray-500 ml-2">${trabajador.zona}</span>
+          <span class="text-gray-700 flex-1 ml-3">${trabajador.nombre_completo}</span>
         </div>
       `).join('');
       

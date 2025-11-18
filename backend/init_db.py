@@ -59,14 +59,14 @@ def seed_trabajadores():
     db = SessionLocal()
     
     trabajadores_prueba = [
-        {"dni": "12345678", "nombre": "Juan", "apellido": "Pérez", "zona": "Centro"},
-        {"dni": "23456789", "nombre": "María", "apellido": "García", "zona": "Sur"},
-        {"dni": "34567890", "nombre": "Carlos", "apellido": "López", "zona": "Norte"},
-        {"dni": "45678901", "nombre": "Ana", "apellido": "Rodríguez", "zona": "Este"},
-        {"dni": "56789012", "nombre": "Pedro", "apellido": "Martínez", "zona": "Oeste"},
-        {"dni": "67890123", "nombre": "Laura", "apellido": "Fernández", "zona": "Centro"},
-        {"dni": "78901234", "nombre": "Diego", "apellido": "Sánchez", "zona": "Sur"},
-        {"dni": "89012345", "nombre": "Sofía", "apellido": "González", "zona": "Norte"},
+        {"dni": "12345678", "nombre_completo": "Juan Pérez", "fecha_ingreso": "2022-01-15", "fecha_cese": None},
+        {"dni": "23456789", "nombre_completo": "María García", "fecha_ingreso": "2021-03-20", "fecha_cese": None},
+        {"dni": "34567890", "nombre_completo": "Carlos López", "fecha_ingreso": "2020-06-10", "fecha_cese": "2024-08-30"},
+        {"dni": "45678901", "nombre_completo": "Ana Rodríguez", "fecha_ingreso": "2023-02-01", "fecha_cese": None},
+        {"dni": "56789012", "nombre_completo": "Pedro Martínez", "fecha_ingreso": "2019-11-05", "fecha_cese": None},
+        {"dni": "67890123", "nombre_completo": "Laura Fernández", "fecha_ingreso": "2022-07-12", "fecha_cese": None},
+        {"dni": "78901234", "nombre_completo": "Diego Sánchez", "fecha_ingreso": "2021-09-08", "fecha_cese": None},
+        {"dni": "89012345", "nombre_completo": "Sofía González", "fecha_ingreso": "2023-04-18", "fecha_cese": None},
     ]
     
     try:

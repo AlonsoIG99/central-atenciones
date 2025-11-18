@@ -14,4 +14,3 @@ class Incidencia(Base):
     usuario_id = Column(Integer, ForeignKey("usuarios.id"), nullable=True)
     fecha_creacion = Column(DateTime, default=datetime.utcnow)
     fecha_actualizacion = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-

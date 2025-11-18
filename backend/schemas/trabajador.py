@@ -3,17 +3,17 @@ from typing import Optional
 
 class TrabajadorBase(BaseModel):
     dni: str
-    nombre: str
-    apellido: str
-    zona: str
+    nombre_completo: str
+    fecha_ingreso: Optional[str] = None
+    fecha_cese: Optional[str] = None
 
 class TrabajadorCreate(TrabajadorBase):
     pass
 
 class TrabajadorUpdate(BaseModel):
-    nombre: Optional[str] = None
-    apellido: Optional[str] = None
-    zona: Optional[str] = None
+    nombre_completo: Optional[str] = None
+    fecha_ingreso: Optional[str] = None
+    fecha_cese: Optional[str] = None
 
 class TrabajadorResponse(TrabajadorBase):
     id: int
