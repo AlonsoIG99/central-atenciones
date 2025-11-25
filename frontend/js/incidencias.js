@@ -320,11 +320,14 @@ formIncidencia.addEventListener('submit', async (e) => {
     return;
   }
   
+  // Obtener el usuario_id del localStorage (del usuario autenticado)
+  const usuarioId = localStorage.getItem('user_id');
+  
   const incidencia = {
     dni: document.getElementById('incidencia-dni').value,
     titulo: Object.keys(schemaData)[0] || 'Incidencia sin título',
     descripcion: JSON.stringify(schemaData),
-    usuario_id: document.getElementById('incidencia-usuario_id').value,
+    usuario_id: usuarioId,
     estado: document.getElementById('incidencia-estado').value
   };
   
