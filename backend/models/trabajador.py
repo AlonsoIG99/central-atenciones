@@ -1,11 +1,24 @@
-from sqlalchemy import Column, Integer, String
-from database import Base
+from mongoengine import Document, StringField
 
-class Trabajador(Base):
-    __tablename__ = "trabajadores"
+class Trabajador(Document):
+    """Modelo de Trabajador (histórico) para MongoDB"""
     
-    id = Column(Integer, primary_key=True, index=True)
-    dni = Column(String, unique=True, index=True, nullable=False)
-    nombre_completo = Column(String, nullable=False)
-    fecha_ingreso = Column(String, nullable=True)
-    fecha_cese = Column(String, nullable=True)
+    dni = StringField(required=True, unique=True, index=True)
+    nombre_completo = StringField(required=True)
+    fecha_ingreso = StringField(null=True)
+    fecha_cese = StringField(null=True)
+    
+    meta = {
+        'collection': 'trabajadores',
+        'indexes': ['dni', 'nombre_completo']
+    }
+    
+    def to_dict(self):
+        """Convierte el documento a diccionario"""
+        return {
+            'id': str(self.id),
+            'dni': self.dni,
+            'nombre_completo': self.nombre_completo,
+            'fecha_ingreso': self.fecha_ingreso,
+            'fecha_cese': self.fecha_cese
+        }

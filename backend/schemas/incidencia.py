@@ -19,10 +19,11 @@ class IncidenciaUpdate(BaseModel):
     estado: Optional[str] = None
 
 class IncidenciaResponse(IncidenciaBase):
-    id: int
+    id: str  # MongoDB ObjectId como string
     fecha_creacion: datetime
     fecha_actualizacion: datetime
     usuario_nombre: Optional[str] = "Desconocido"
     
     class Config:
         from_attributes = True
+

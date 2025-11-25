@@ -16,7 +16,8 @@ class TrabajadorUpdate(BaseModel):
     fecha_cese: Optional[str] = None
 
 class TrabajadorResponse(TrabajadorBase):
-    id: int
+    id: str  # MongoDB ObjectId como string
     
     class Config:
         from_attributes = True
+

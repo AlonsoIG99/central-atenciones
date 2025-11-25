@@ -1,5 +1,5 @@
 """
-Script para inicializar la base de datos con esquema nuevo y usuario admin por defecto
+Script para inicializar la base de datos MongoDB con colecciones y datos por defecto
 """
 
 import os
@@ -7,30 +7,36 @@ import sys
 sys.path.insert(0, os.path.dirname(__file__))
 
 from passlib.context import CryptContext
+from datetime import datetime
 
 # Importar modelos y base de datos
-from database import Base, engine, SessionLocal
+from database import conectar_db
 from models.usuario import Usuario
 from models.trabajador import Trabajador
-
-# Contexto para hash de contraseñas
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+from models.incidencia import Incidencia
+from models.asignado import Asignado
 
 def get_password_hash(password):
-    return pwd_context.hash(password)
+    """Hashear contraseña con bcrypt"""
+    try:
+        from passlib.context import CryptContext
+        pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+        return pwd_context.hash(password)
+    except Exception as e:
+        print(f"  ⚠ Error con bcrypt: {e}")
+        print(f"  ℹ Usando contraseña sin hash (para desarrollo)")
+        return password
 
 def init_database():
-    """Crear todas las tablas"""
-    Base.metadata.create_all(bind=engine)
-    print("✓ Tablas creadas correctamente")
+    """Inicializar conexión a MongoDB"""
+    # La conexión se realiza automáticamente al importar database.py
+    print("✓ Conexión a MongoDB establecida")
 
 def create_default_admin():
     """Crear usuario administrador por defecto"""
-    db = SessionLocal()
-    
     try:
         # Verificar si ya existe un admin
-        admin_existente = db.query(Usuario).filter(Usuario.email == "admin@central.com").first()
+        admin_existente = Usuario.objects(email="admin@central.com").first()
         
         if not admin_existente:
             admin = Usuario(
@@ -38,10 +44,10 @@ def create_default_admin():
                 email="admin@central.com",
                 contraseña=get_password_hash("admin123"),
                 rol="administrador",
-                area="Administración"
+                area="Administración",
+                fecha_creacion=datetime.utcnow()
             )
-            db.add(admin)
-            db.commit()
+            admin.save()
             print("✓ Usuario administrador creado:")
             print(f"  Email: admin@central.com")
             print(f"  Contraseña: admin123")
@@ -49,14 +55,10 @@ def create_default_admin():
         else:
             print("ℹ Usuario administrador ya existe")
     except Exception as e:
-        db.rollback()
         print(f"✗ Error al crear usuario administrador: {e}")
-    finally:
-        db.close()
 
 def seed_trabajadores():
     """Agregar trabajadores de prueba"""
-    db = SessionLocal()
     
     trabajadores_prueba = [
         {"dni": "12345678", "nombre_completo": "Juan Pérez", "fecha_ingreso": "2022-01-15", "fecha_cese": None},
@@ -72,37 +74,89 @@ def seed_trabajadores():
     try:
         agregados = 0
         for datos in trabajadores_prueba:
-            existente = db.query(Trabajador).filter(Trabajador.dni == datos["dni"]).first()
+            existente = Trabajador.objects(dni=datos["dni"]).first()
             
             if not existente:
                 trabajador = Trabajador(**datos)
-                db.add(trabajador)
+                trabajador.save()
                 agregados += 1
         
         if agregados > 0:
-            db.commit()
             print(f"✓ {agregados} trabajadores agregados")
         else:
             print("ℹ Los trabajadores ya existen")
     except Exception as e:
-        db.rollback()
         print(f"✗ Error al agregar trabajadores: {e}")
-    finally:
-        db.close()
+
+def seed_asignados():
+    """Agregar asignados de prueba (activos)"""
+    
+    asignados_prueba = [
+        {
+            "dni": "12345678",
+            "tipo_compania": "Privada",
+            "nombre_completo": "Juan Pérez",
+            "fecha_ingreso": "2022-01-15",
+            "cliente": "Cliente A",
+            "zona": "Norte",
+            "lider_zonal": "Carlos Manager",
+            "jefe_operaciones": "Operador 1",
+            "macrozona": "Lima",
+            "jurisdiccion": "Lima Centro",
+            "sector": "Sector 1",
+            "estado": "activo"
+        },
+        {
+            "dni": "23456789",
+            "tipo_compania": "Privada",
+            "nombre_completo": "María García",
+            "fecha_ingreso": "2021-03-20",
+            "cliente": "Cliente B",
+            "zona": "Sur",
+            "lider_zonal": "Laura Manager",
+            "jefe_operaciones": "Operador 2",
+            "macrozona": "Lima",
+            "jurisdiccion": "Lima Sur",
+            "sector": "Sector 2",
+            "estado": "activo"
+        },
+        {
+            "dni": "45678901",
+            "tipo_compania": "Pública",
+            "nombre_completo": "Ana Rodríguez",
+            "fecha_ingreso": "2023-02-01",
+            "cliente": "Cliente C",
+            "zona": "Este",
+            "lider_zonal": "José Manager",
+            "jefe_operaciones": "Operador 3",
+            "macrozona": "Callao",
+            "jurisdiccion": "Callao Este",
+            "sector": "Sector 3",
+            "estado": "activo"
+        },
+    ]
+    
+    try:
+        agregados = 0
+        for datos in asignados_prueba:
+            existente = Asignado.objects(dni=datos["dni"]).first()
+            
+            if not existente:
+                asignado = Asignado(**datos)
+                asignado.save()
+                agregados += 1
+        
+        if agregados > 0:
+            print(f"✓ {agregados} asignados agregados")
+        else:
+            print("ℹ Los asignados ya existen")
+    except Exception as e:
+        print(f"✗ Error al agregar asignados: {e}")
 
 if __name__ == "__main__":
-    print("🔄 Inicializando base de datos...\n")
+    print("🔄 Inicializando MongoDB...\n")
     
-    # Eliminar BD antigua si existe
-    if os.path.exists("central_atencion.db"):
-        try:
-            os.remove("central_atencion.db")
-            print("✓ Base de datos antigua eliminada")
-        except Exception as e:
-            print(f"ℹ No se pudo eliminar BD antigua (probablemente está en uso): {e}")
-            print("ℹ Continuando con inicialización...\n")
-    
-    # Crear tablas
+    # Inicializar conexión
     init_database()
     
     # Crear admin por defecto
@@ -113,10 +167,15 @@ if __name__ == "__main__":
     print("\n👥 Agregando trabajadores de prueba...")
     seed_trabajadores()
     
-    print("\n✅ Base de datos inicializada correctamente")
+    # Agregar asignados de prueba
+    print("\n👤 Agregando asignados de prueba...")
+    seed_asignados()
+    
+    print("\n✅ MongoDB inicializado correctamente")
     print("\n" + "="*50)
     print("CREDENCIALES POR DEFECTO:")
     print("="*50)
     print("Email: admin@central.com")
     print("Contraseña: admin123")
     print("="*50)
+

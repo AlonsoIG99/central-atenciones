@@ -20,8 +20,9 @@ class UsuarioUpdate(BaseModel):
     area: Optional[str] = None
 
 class UsuarioResponse(UsuarioBase):
-    id: int
+    id: str  # MongoDB ObjectId como string
     fecha_creacion: datetime
     
     class Config:
         from_attributes = True
+

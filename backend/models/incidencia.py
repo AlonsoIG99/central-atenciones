@@ -1,16 +1,31 @@
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey
-from sqlalchemy.orm import relationship
+from mongoengine import Document, StringField, DateTimeField, IntField
 from datetime import datetime
-from database import Base
 
-class Incidencia(Base):
-    __tablename__ = "incidencias"
+class Incidencia(Document):
+    """Modelo de Incidencia para MongoDB"""
     
-    id = Column(Integer, primary_key=True, index=True)
-    dni = Column(String, index=True)
-    titulo = Column(String, index=True)
-    descripcion = Column(String)
-    estado = Column(String, default="abierta")
-    usuario_id = Column(Integer, ForeignKey("usuarios.id"), nullable=True)
-    fecha_creacion = Column(DateTime, default=datetime.utcnow)
-    fecha_actualizacion = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    dni = StringField(required=True, index=True)
+    titulo = StringField(required=True, index=True)
+    descripcion = StringField(required=True)
+    estado = StringField(default="abierta", choices=["abierta", "en_proceso", "cerrada"])
+    usuario_id = IntField(null=True)
+    fecha_creacion = DateTimeField(default=datetime.utcnow)
+    fecha_actualizacion = DateTimeField(default=datetime.utcnow)
+    
+    meta = {
+        'collection': 'incidencias',
+        'indexes': ['dni', 'estado', 'fecha_creacion']
+    }
+    
+    def to_dict(self):
+        """Convierte el documento a diccionario"""
+        return {
+            'id': str(self.id),
+            'dni': self.dni,
+            'titulo': self.titulo,
+            'descripcion': self.descripcion,
+            'estado': self.estado,
+            'usuario_id': self.usuario_id,
+            'fecha_creacion': self.fecha_creacion.isoformat() if self.fecha_creacion else None,
+            'fecha_actualizacion': self.fecha_actualizacion.isoformat() if self.fecha_actualizacion else None
+        }

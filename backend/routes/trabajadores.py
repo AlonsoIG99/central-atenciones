@@ -1,9 +1,7 @@
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Header
-from sqlalchemy.orm import Session
-from database import get_db
-from models.trabajador import Trabajador
-from schemas.trabajador import TrabajadorCreate, TrabajadorUpdate, TrabajadorResponse
-from auth import verificar_token
+from fastapi import APIRouter, HTTPException, UploadFile, File, Header
+from backend.models.trabajador import Trabajador
+from backend.schemas.trabajador import TrabajadorCreate, TrabajadorUpdate, TrabajadorResponse
+from backend.auth import verificar_token
 import csv
 from io import StringIO
 from datetime import datetime
@@ -12,64 +10,115 @@ from typing import Optional
 router = APIRouter(prefix="/trabajadores", tags=["trabajadores"])
 
 @router.get("/", response_model=list[TrabajadorResponse])
-def obtener_trabajadores(db: Session = Depends(get_db)):
-    trabajadores = db.query(Trabajador).all()
-    return trabajadores
+def obtener_trabajadores():
+    """Obtener todos los trabajadores"""
+    trabajadores = Trabajador.objects.all()
+    return [
+        {
+            "id": str(t.id),
+            "dni": t.dni,
+            "nombre_completo": t.nombre_completo,
+            "fecha_ingreso": t.fecha_ingreso,
+            "fecha_cese": t.fecha_cese
+        }
+        for t in trabajadores
+    ]
 
 @router.get("/buscar/{dni}", response_model=list[TrabajadorResponse])
-def buscar_trabajador_por_dni(dni: str, db: Session = Depends(get_db)):
+def buscar_trabajador_por_dni(dni: str):
     """Busca trabajadores cuyo DNI comience con el valor proporcionado"""
-    trabajadores = db.query(Trabajador).filter(Trabajador.dni.ilike(f"{dni}%")).all()
-    return trabajadores
+    trabajadores = Trabajador.objects(dni__istartswith=dni).all()
+    return [
+        {
+            "id": str(t.id),
+            "dni": t.dni,
+            "nombre_completo": t.nombre_completo,
+            "fecha_ingreso": t.fecha_ingreso,
+            "fecha_cese": t.fecha_cese
+        }
+        for t in trabajadores
+    ]
 
 @router.get("/{trabajador_id}", response_model=TrabajadorResponse)
-def obtener_trabajador(trabajador_id: int, db: Session = Depends(get_db)):
-    trabajador = db.query(Trabajador).filter(Trabajador.id == trabajador_id).first()
-    if not trabajador:
-        raise HTTPException(status_code=404, detail="Trabajador no encontrado")
-    return trabajador
+def obtener_trabajador(trabajador_id: str):
+    """Obtener trabajador por ID"""
+    try:
+        trabajador = Trabajador.objects(id=trabajador_id).first()
+        if not trabajador:
+            raise HTTPException(status_code=404, detail="Trabajador no encontrado")
+        return {
+            "id": str(trabajador.id),
+            "dni": trabajador.dni,
+            "nombre_completo": trabajador.nombre_completo,
+            "fecha_ingreso": trabajador.fecha_ingreso,
+            "fecha_cese": trabajador.fecha_cese
+        }
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Error: {str(e)}")
 
 @router.post("/", response_model=TrabajadorResponse)
-def crear_trabajador(trabajador: TrabajadorCreate, db: Session = Depends(get_db)):
-    # Verificar si el DNI ya existe
-    trabajador_existente = db.query(Trabajador).filter(Trabajador.dni == trabajador.dni).first()
-    if trabajador_existente:
-        raise HTTPException(status_code=400, detail="El DNI ya existe")
-    
-    db_trabajador = Trabajador(**trabajador.dict())
-    db.add(db_trabajador)
-    db.commit()
-    db.refresh(db_trabajador)
-    return db_trabajador
+def crear_trabajador(trabajador: TrabajadorCreate):
+    """Crear nuevo trabajador"""
+    try:
+        # Verificar si el DNI ya existe
+        trabajador_existente = Trabajador.objects(dni=trabajador.dni).first()
+        if trabajador_existente:
+            raise HTTPException(status_code=400, detail="El DNI ya existe")
+        
+        db_trabajador = Trabajador(**trabajador.dict())
+        db_trabajador.save()
+        
+        return {
+            "id": str(db_trabajador.id),
+            "dni": db_trabajador.dni,
+            "nombre_completo": db_trabajador.nombre_completo,
+            "fecha_ingreso": db_trabajador.fecha_ingreso,
+            "fecha_cese": db_trabajador.fecha_cese
+        }
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Error: {str(e)}")
 
 @router.put("/{trabajador_id}", response_model=TrabajadorResponse)
-def actualizar_trabajador(trabajador_id: int, trabajador: TrabajadorUpdate, db: Session = Depends(get_db)):
-    db_trabajador = db.query(Trabajador).filter(Trabajador.id == trabajador_id).first()
-    if not db_trabajador:
-        raise HTTPException(status_code=404, detail="Trabajador no encontrado")
-    
-    for key, value in trabajador.dict(exclude_unset=True).items():
-        setattr(db_trabajador, key, value)
-    
-    db.commit()
-    db.refresh(db_trabajador)
-    return db_trabajador
+def actualizar_trabajador(trabajador_id: str, trabajador: TrabajadorUpdate):
+    """Actualizar trabajador"""
+    try:
+        db_trabajador = Trabajador.objects(id=trabajador_id).first()
+        if not db_trabajador:
+            raise HTTPException(status_code=404, detail="Trabajador no encontrado")
+        
+        for key, value in trabajador.dict(exclude_unset=True).items():
+            if value is not None:
+                setattr(db_trabajador, key, value)
+        
+        db_trabajador.save()
+        
+        return {
+            "id": str(db_trabajador.id),
+            "dni": db_trabajador.dni,
+            "nombre_completo": db_trabajador.nombre_completo,
+            "fecha_ingreso": db_trabajador.fecha_ingreso,
+            "fecha_cese": db_trabajador.fecha_cese
+        }
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Error: {str(e)}")
 
 @router.delete("/{trabajador_id}")
-def eliminar_trabajador(trabajador_id: int, db: Session = Depends(get_db)):
-    db_trabajador = db.query(Trabajador).filter(Trabajador.id == trabajador_id).first()
-    if not db_trabajador:
-        raise HTTPException(status_code=404, detail="Trabajador no encontrado")
-    
-    db.delete(db_trabajador)
-    db.commit()
-    return {"mensaje": "Trabajador eliminado"}
+def eliminar_trabajador(trabajador_id: str):
+    """Eliminar trabajador"""
+    try:
+        db_trabajador = Trabajador.objects(id=trabajador_id).first()
+        if not db_trabajador:
+            raise HTTPException(status_code=404, detail="Trabajador no encontrado")
+        
+        db_trabajador.delete()
+        return {"mensaje": "Trabajador eliminado"}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Error: {str(e)}")
 
 
 @router.post("/cargar-csv")
 async def cargar_csv_trabajadores(
     file: UploadFile = File(...),
-    db: Session = Depends(get_db),
     authorization: Optional[str] = Header(None)
 ):
     """
@@ -116,7 +165,7 @@ async def cargar_csv_trabajadores(
             contenido_str = contenido_str[1:]
         
         # Procesar CSV
-        resumen = procesar_csv_trabajadores(contenido_str, db)
+        resumen = procesar_csv_trabajadores(contenido_str)
         
         return {
             "status": "success",
@@ -133,7 +182,7 @@ async def cargar_csv_trabajadores(
         raise HTTPException(status_code=500, detail=f"Error procesando archivo: {str(e)}")
 
 
-def procesar_csv_trabajadores(contenido_csv: str, db: Session) -> dict:
+def procesar_csv_trabajadores(contenido_csv: str) -> dict:
     """
     Procesa contenido CSV y retorna resumen de cambios
     Detecta automáticamente el delimitador (coma o punto y coma)
@@ -165,7 +214,7 @@ def procesar_csv_trabajadores(contenido_csv: str, db: Session) -> dict:
     filas_por_dni = {}
     errores = []
     
-    for numero_fila, fila in enumerate(csv_reader, start=2):  # Empieza en 2 (header es 1)
+    for numero_fila, fila in enumerate(csv_reader, start=2):
         # Validar fila
         es_valida, error = validar_fila_csv(fila, numero_fila)
         if not es_valida:
@@ -178,9 +227,7 @@ def procesar_csv_trabajadores(contenido_csv: str, db: Session) -> dict:
     
     # Procesar cambios en BD
     for dni, fila in filas_por_dni.items():
-        trabajador_existente = db.query(Trabajador).filter(
-            Trabajador.dni == dni
-        ).first()
+        trabajador_existente = Trabajador.objects(dni=dni).first()
         
         # Limpiar valores vacíos
         nombre_completo = fila['nombre_completo'].strip()
@@ -192,6 +239,7 @@ def procesar_csv_trabajadores(contenido_csv: str, db: Session) -> dict:
             trabajador_existente.nombre_completo = nombre_completo
             trabajador_existente.fecha_ingreso = fecha_ingreso
             trabajador_existente.fecha_cese = fecha_cese
+            trabajador_existente.save()
             resumen["actualizados"] += 1
         else:
             # INSERT
@@ -201,17 +249,11 @@ def procesar_csv_trabajadores(contenido_csv: str, db: Session) -> dict:
                 fecha_ingreso=fecha_ingreso,
                 fecha_cese=fecha_cese
             )
-            db.add(nuevo)
+            nuevo.save()
             resumen["insertados"] += 1
     
-    # Guardar cambios
-    try:
-        db.commit()
-        resumen["detalles"] = errores
-        return resumen
-    except Exception as e:
-        db.rollback()
-        raise Exception(f"Error guardando cambios: {str(e)}")
+    resumen["detalles"] = errores
+    return resumen
 
 
 def validar_fila_csv(fila: dict, numero_fila: int) -> tuple[bool, str]:

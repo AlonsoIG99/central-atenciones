@@ -1,13 +1,14 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from database import engine, Base
-from routes import usuarios, incidencias, auth, trabajadores
-from models.usuario import Usuario
-from models.incidencia import Incidencia
-from models.trabajador import Trabajador
+from backend.database import conectar_db
+from backend.routes import usuarios, incidencias, auth, trabajadores, asignados
+from backend.models.usuario import Usuario
+from backend.models.incidencia import Incidencia
+from backend.models.trabajador import Trabajador
+from backend.models.asignado import Asignado
 
-# Crear las tablas
-Base.metadata.create_all(bind=engine)
+# Conectar a MongoDB (se hace automáticamente en database.py)
+# ya no necesitamos create_all para MongoDB
 
 app = FastAPI(title="Central de Atención")
 
@@ -25,6 +26,7 @@ app.include_router(auth.router)
 app.include_router(usuarios.router)
 app.include_router(trabajadores.router)
 app.include_router(incidencias.router)
+app.include_router(asignados.router)
 
 @app.get("/")
 def root():
@@ -33,3 +35,4 @@ def root():
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)
+
