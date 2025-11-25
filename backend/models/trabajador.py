@@ -3,7 +3,7 @@ from mongoengine import Document, StringField
 class Trabajador(Document):
     """Modelo de Trabajador (histórico) para MongoDB"""
     
-    dni = StringField(required=True, unique=True, index=True, sparse=True)
+    dni = StringField(required=True)
     nombre_completo = StringField(required=True)
     fecha_ingreso = StringField(null=True)
     fecha_cese = StringField(null=True)
@@ -11,9 +11,8 @@ class Trabajador(Document):
     meta = {
         'collection': 'trabajadores',
         'indexes': [
-            'dni',
-            'nombre_completo',
-            {'fields': ['dni'], 'unique': True}
+            {'fields': ['dni'], 'unique': True, 'sparse': True},
+            'nombre_completo'
         ]
     }
     
