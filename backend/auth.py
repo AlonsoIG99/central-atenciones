@@ -2,13 +2,16 @@ from datetime import datetime, timedelta
 from typing import Optional
 from jose import JWTError, jwt
 from pydantic import BaseModel
+import hashlib
+import os
+import binascii
 
 # Configuración
 SECRET_KEY = "tu-clave-secreta-muy-segura-cambiar-en-produccion"
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
-# Para desarrollo, usamos plaintext. En producción, usar bcrypt con hash SHA256
+# Para desarrollo, usamos SHA256 con salt
 class TokenData(BaseModel):
     email: Optional[str] = None
     user_id: Optional[str] = None
@@ -22,16 +25,28 @@ class Token(BaseModel):
     area: str
 
 def verificar_contraseña(contraseña_plana: str, contraseña_almacenada: str) -> bool:
-    """Verifica que la contraseña coincida"""
-    # Para desarrollo, comparación directa
-    # En producción, usar hash seguro
-    return contraseña_plana == contraseña_almacenada
+    """Verifica que la contraseña coincida usando SHA256 con salt"""
+    try:
+        # Separar salt y hash
+        salt_hex, hash_hex = contraseña_almacenada.split('$')
+        salt = bytes.fromhex(salt_hex)
+        
+        # Calcular hash de la contraseña proporcionada
+        hash_obj = hashlib.sha256(salt + contraseña_plana.encode('utf-8'))
+        return hash_obj.hexdigest() == hash_hex
+    except Exception:
+        return False
 
 def obtener_hash_contraseña(contraseña: str) -> str:
-    """Genera el hash de una contraseña (en desarrollo es plaintext)"""
-    # Para desarrollo, almacenar en plaintext
-    # En producción, implementar hash seguro con SHA256 + salt
-    return contraseña
+    """Genera un hash SHA256 con salt para una contraseña"""
+    # Generar salt aleatorio
+    salt = os.urandom(32)
+    
+    # Generar hash SHA256
+    hash_obj = hashlib.sha256(salt + contraseña.encode('utf-8'))
+    
+    # Retornar salt y hash en formato hex separados por $
+    return f"{salt.hex()}${hash_obj.hexdigest()}"
 
 def crear_token_acceso(data: dict, expires_delta: Optional[timedelta] = None) -> str:
     """Crea un JWT token"""
