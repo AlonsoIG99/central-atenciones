@@ -13,6 +13,7 @@ def obtener_usuarios():
     return [
         {
             "id": str(u.id),
+            "dni": u.dni,
             "nombre": u.nombre,
             "email": u.email,
             "contraseña": u.contraseña,
@@ -32,6 +33,7 @@ def obtener_usuario(usuario_id: str):
             raise HTTPException(status_code=404, detail="Usuario no encontrado")
         return {
             "id": str(usuario.id),
+            "dni": usuario.dni,
             "nombre": usuario.nombre,
             "email": usuario.email,
             "contraseña": usuario.contraseña,
@@ -73,6 +75,7 @@ def crear_usuario(usuario: UsuarioCreate, request: Request = None):
         
         return {
             "id": str(db_usuario.id),
+            "dni": db_usuario.dni,
             "nombre": db_usuario.nombre,
             "email": db_usuario.email,
             "contraseña": db_usuario.contraseña,
@@ -103,6 +106,7 @@ def actualizar_usuario(usuario_id: str, usuario: UsuarioUpdate):
         
         return {
             "id": str(db_usuario.id),
+            "dni": db_usuario.dni,
             "nombre": db_usuario.nombre,
             "email": db_usuario.email,
             "contraseña": db_usuario.contraseña,

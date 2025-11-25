@@ -3,6 +3,7 @@ from typing import Optional
 from datetime import datetime
 
 class UsuarioBase(BaseModel):
+    dni: Optional[str] = None
     nombre: str
     email: str
     contraseña: str

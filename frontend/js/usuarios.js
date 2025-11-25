@@ -19,6 +19,7 @@ async function cargarUsuarios() {
         <div class="flex-1">
           <h4 class="font-semibold text-gray-800">${usuario.nombre}</h4>
           <p class="text-sm text-gray-600">${usuario.email}</p>
+          <p class="text-sm text-gray-600">DNI: ${usuario.dni}</p>
           <div class="flex gap-4 mt-2">
             <span class="text-xs bg-blue-200 text-blue-800 px-2 py-1 rounded">Rol: ${usuario.rol}</span>
             <span class="text-xs bg-green-200 text-green-800 px-2 py-1 rounded">Área: ${usuario.area}</span>
@@ -42,6 +43,7 @@ formUsuario.addEventListener('submit', async (e) => {
   }
   
   const usuario = {
+    dni: document.getElementById('usuario-dni').value,
     nombre: document.getElementById('usuario-nombre').value,
     email: document.getElementById('usuario-email').value,
     contraseña: document.getElementById('usuario-contraseña').value,

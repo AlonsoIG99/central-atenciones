@@ -4,6 +4,7 @@ from datetime import datetime
 class Usuario(Document):
     """Modelo de Usuario para MongoDB"""
     
+    dni = StringField(null=True, index=True)
     nombre = StringField(required=True, index=True)
     email = StringField(required=True, unique=True, index=True)
     contraseña = StringField(required=True)
@@ -20,6 +21,7 @@ class Usuario(Document):
         """Convierte el documento a diccionario"""
         return {
             'id': str(self.id),
+            'dni': self.dni,
             'nombre': self.nombre,
             'email': self.email,
             'rol': self.rol,
