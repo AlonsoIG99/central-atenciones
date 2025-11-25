@@ -129,6 +129,8 @@ async def cargar_csv_trabajadores(
     dni,nombre_completo,fecha_ingreso,fecha_cese
     12345678,Juan Pérez,2022-01-15,
     87654321,María López,2021-03-20,2024-08-30
+    
+    Límite máximo: 10,000 filas
     """
     
     # Verificar que sea administrador
@@ -155,6 +157,10 @@ async def cargar_csv_trabajadores(
     if not file.filename.endswith('.csv'):
         raise HTTPException(status_code=400, detail="Archivo debe ser CSV")
     
+    # Validar tamaño del archivo (máximo 10MB)
+    if file.size and file.size > 10 * 1024 * 1024:
+        raise HTTPException(status_code=400, detail="Archivo no debe superar 10MB")
+    
     try:
         # Leer contenido del archivo
         contenido = await file.read()
@@ -164,7 +170,7 @@ async def cargar_csv_trabajadores(
         if contenido_str.startswith('\ufeff'):
             contenido_str = contenido_str[1:]
         
-        # Procesar CSV
+        # Procesar CSV con timeout implícito
         resumen = procesar_csv_trabajadores(contenido_str)
         
         return {
@@ -187,6 +193,9 @@ def procesar_csv_trabajadores(contenido_csv: str) -> dict:
     Procesa contenido CSV y retorna resumen de cambios
     Detecta automáticamente el delimitador (coma o punto y coma)
     """
+    import logging
+    logger = logging.getLogger(__name__)
+    
     # Detectar delimitador contando ocurrencias en la primera línea (header)
     primera_linea = contenido_csv.split('\n')[0] if contenido_csv else ""
     
@@ -213,44 +222,67 @@ def procesar_csv_trabajadores(contenido_csv: str) -> dict:
     # Agrupar por DNI (última fila prevalece si hay duplicados)
     filas_por_dni = {}
     errores = []
+    max_filas = 10000  # Límite máximo de filas a procesar
     
-    for numero_fila, fila in enumerate(csv_reader, start=2):
-        # Validar fila
-        es_valida, error = validar_fila_csv(fila, numero_fila)
-        if not es_valida:
-            errores.append(error)
-            resumen["errores"] += 1
-            continue
-        
-        dni = fila['dni'].strip()
-        filas_por_dni[dni] = fila  # Sobrescribe si existe (última gana)
+    try:
+        for numero_fila, fila in enumerate(csv_reader, start=2):
+            # Límite máximo de filas
+            if numero_fila > max_filas:
+                errores.append(f"Límite máximo de {max_filas} filas excedido")
+                resumen["errores"] += 1
+                break
+            
+            if fila is None or all(v is None or str(v).strip() == '' for v in fila.values()):
+                continue
+                
+            # Validar fila
+            es_valida, error = validar_fila_csv(fila, numero_fila)
+            if not es_valida:
+                errores.append(error)
+                resumen["errores"] += 1
+                continue
+            
+            dni = fila['dni'].strip()
+            filas_por_dni[dni] = fila  # Sobrescribe si existe (última gana)
+    except Exception as e:
+        logger.error(f"Error leyendo CSV: {str(e)}")
+        errores.append(f"Error al leer CSV: {str(e)}")
+        resumen["errores"] += 1
     
-    # Procesar cambios en BD
+    # Procesar cambios en BD con manejo de errores
     for dni, fila in filas_por_dni.items():
-        trabajador_existente = Trabajador.objects(dni=dni).first()
-        
-        # Limpiar valores vacíos
-        nombre_completo = fila['nombre_completo'].strip()
-        fecha_ingreso = fila.get('fecha_ingreso', '').strip() or None
-        fecha_cese = fila.get('fecha_cese', '').strip() or None
-        
-        if trabajador_existente:
-            # UPDATE
-            trabajador_existente.nombre_completo = nombre_completo
-            trabajador_existente.fecha_ingreso = fecha_ingreso
-            trabajador_existente.fecha_cese = fecha_cese
-            trabajador_existente.save()
-            resumen["actualizados"] += 1
-        else:
-            # INSERT
-            nuevo = Trabajador(
-                dni=dni,
-                nombre_completo=nombre_completo,
-                fecha_ingreso=fecha_ingreso,
-                fecha_cese=fecha_cese
-            )
-            nuevo.save()
-            resumen["insertados"] += 1
+        try:
+            trabajador_existente = Trabajador.objects(dni=dni).first()
+            
+            # Limpiar valores vacíos
+            nombre_completo = fila.get('nombre_completo', '').strip()
+            fecha_ingreso = fila.get('fecha_ingreso', '').strip() or None
+            fecha_cese = fila.get('fecha_cese', '').strip() or None
+            
+            if trabajador_existente:
+                # UPDATE
+                trabajador_existente.nombre_completo = nombre_completo
+                trabajador_existente.fecha_ingreso = fecha_ingreso
+                trabajador_existente.fecha_cese = fecha_cese
+                trabajador_existente.save()
+                resumen["actualizados"] += 1
+                logger.info(f"Actualizado trabajador DNI: {dni}")
+            else:
+                # INSERT
+                nuevo = Trabajador(
+                    dni=dni,
+                    nombre_completo=nombre_completo,
+                    fecha_ingreso=fecha_ingreso,
+                    fecha_cese=fecha_cese
+                )
+                nuevo.save()
+                resumen["insertados"] += 1
+                logger.info(f"Insertado nuevo trabajador DNI: {dni}")
+        except Exception as e:
+            error_msg = f"Error procesando DNI {dni}: {str(e)}"
+            logger.error(error_msg)
+            errores.append(error_msg)
+            resumen["errores"] += 1
     
     resumen["detalles"] = errores
     return resumen
