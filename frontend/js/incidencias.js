@@ -324,7 +324,7 @@ formIncidencia.addEventListener('submit', async (e) => {
     dni: document.getElementById('incidencia-dni').value,
     titulo: Object.keys(schemaData)[0] || 'Incidencia sin título',
     descripcion: JSON.stringify(schemaData),
-    usuario_id: parseInt(document.getElementById('incidencia-usuario_id').value),
+    usuario_id: document.getElementById('incidencia-usuario_id').value,
     estado: document.getElementById('incidencia-estado').value
   };
   
