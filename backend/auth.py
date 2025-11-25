@@ -1,7 +1,6 @@
 from datetime import datetime, timedelta
 from typing import Optional
 from jose import JWTError, jwt
-from passlib.context import CryptContext
 from pydantic import BaseModel
 
 # Configuración
@@ -9,33 +8,30 @@ SECRET_KEY = "tu-clave-secreta-muy-segura-cambiar-en-produccion"
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
-# Contexto para hashear contraseñas
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-
+# Para desarrollo, usamos plaintext. En producción, usar bcrypt con hash SHA256
 class TokenData(BaseModel):
     email: Optional[str] = None
-    user_id: Optional[int] = None
+    user_id: Optional[str] = None
     rol: Optional[str] = None
 
 class Token(BaseModel):
     access_token: str
     token_type: str
-    user_id: int
+    user_id: str
     rol: str
     area: str
 
-def verificar_contraseña(contraseña_plana: str, contraseña_hash: str) -> bool:
-    """Verifica que la contraseña coincida con el hash"""
-    try:
-        # Intentar verificación con bcrypt
-        return pwd_context.verify(contraseña_plana, contraseña_hash)
-    except Exception:
-        # Si falla (ej: password no hasheada), comparación directa para desarrollo
-        return contraseña_plana == contraseña_hash
+def verificar_contraseña(contraseña_plana: str, contraseña_almacenada: str) -> bool:
+    """Verifica que la contraseña coincida"""
+    # Para desarrollo, comparación directa
+    # En producción, usar hash seguro
+    return contraseña_plana == contraseña_almacenada
 
 def obtener_hash_contraseña(contraseña: str) -> str:
-    """Genera el hash de una contraseña"""
-    return pwd_context.hash(contraseña)
+    """Genera el hash de una contraseña (en desarrollo es plaintext)"""
+    # Para desarrollo, almacenar en plaintext
+    # En producción, implementar hash seguro con SHA256 + salt
+    return contraseña
 
 def crear_token_acceso(data: dict, expires_delta: Optional[timedelta] = None) -> str:
     """Crea un JWT token"""

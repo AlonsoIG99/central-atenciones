@@ -1,5 +1,13 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from pathlib import Path
+import os
+import sys
+
+# Agregar backend al path para importes correctos
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
 from backend.database import conectar_db
 from backend.routes import usuarios, incidencias, auth, trabajadores, asignados
 from backend.models.usuario import Usuario

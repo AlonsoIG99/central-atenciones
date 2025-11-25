@@ -249,7 +249,7 @@ function mostrarModalEditarEstado(incidencia) {
     
     try {
       const headers = obtenerHeaders();
-      const response = await fetch(`http://localhost:8000/incidencias/${incidencia.id}`, {
+      const response = await fetch(`http://127.0.0.1:8000/incidencias/${incidencia.id}`, {
         method: 'PUT',
         headers,
         body: JSON.stringify({

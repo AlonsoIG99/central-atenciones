@@ -1,4 +1,10 @@
 from fastapi import APIRouter, HTTPException, status
+import sys
+from pathlib import Path
+
+# Agregar backend al path
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
 from backend.models.usuario import Usuario
 from backend.auth import (
     verificar_contraseña,
@@ -44,9 +50,14 @@ def login(credenciales: LoginRequest):
             "rol": usuario.rol,
             "area": usuario.area
         }
-    except Usuario.DoesNotExist:
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"ERROR en login: {e}")
+        import traceback
+        traceback.print_exc()
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Email o contraseña incorrectos"
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error interno: {str(e)}"
         )
 
