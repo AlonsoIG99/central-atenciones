@@ -131,7 +131,10 @@ async def cargar_csv_trabajadores(
     87654321,María López,2021-03-20,2024-08-30
     
     Límite máximo: 10,000 filas
+    
+    ⚠️ TEMPORAL: Deshabilitado por problemas de inserción automática
     """
+    raise HTTPException(status_code=503, detail="Carga CSV temporalmente deshabilitada por mantenimiento. Contacta al administrador.")
     
     # Verificar que sea administrador
     if not authorization:
