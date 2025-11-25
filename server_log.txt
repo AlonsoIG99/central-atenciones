@@ -1,3 +1,3 @@
 INFO:     Will watch for changes in these directories: ['C:\\Users\\aingar\\Proyectos\\proyecto-central-atencion']
 INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
-INFO:     Started reloader process [31840] using StatReload
+INFO:     Started reloader process [9396] using StatReload

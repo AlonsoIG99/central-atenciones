@@ -7,7 +7,7 @@ class IncidenciaBase(BaseModel):
     titulo: str
     descripcion: str
     estado: str = "abierta"
-    usuario_id: Optional[int] = None
+    usuario_id: Optional[str] = None
 
 class IncidenciaCreate(IncidenciaBase):
     pass

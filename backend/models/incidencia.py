@@ -1,4 +1,4 @@
-from mongoengine import Document, StringField, DateTimeField, IntField
+from mongoengine import Document, StringField, DateTimeField
 from datetime import datetime
 
 class Incidencia(Document):
@@ -8,7 +8,7 @@ class Incidencia(Document):
     titulo = StringField(required=True, index=True)
     descripcion = StringField(required=True)
     estado = StringField(default="abierta", choices=["abierta", "en_proceso", "cerrada"])
-    usuario_id = IntField(null=True)
+    usuario_id = StringField(null=True)
     fecha_creacion = DateTimeField(default=datetime.utcnow)
     fecha_actualizacion = DateTimeField(default=datetime.utcnow)
     
