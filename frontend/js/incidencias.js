@@ -1,5 +1,4 @@
 const formIncidencia = document.getElementById('incidencia-form');
-const incidenciasList = document.getElementById('incidencias-list');
 const dniInput = document.getElementById('incidencia-dni');
 
 // Validar que DNI solo acepte números
@@ -281,33 +280,6 @@ function collectIncidenciaData(schema) {
 }
 
 // Cargar incidencias
-async function cargarIncidencias() {
-  const incidencias = await obtenerIncidencias();
-  incidenciasList.innerHTML = '';
-  
-  if (incidencias.length === 0) {
-    incidenciasList.innerHTML = '<p class="text-gray-500 text-center py-4">No hay incidencias registradas</p>';
-    return;
-  }
-  
-  incidencias.forEach(incidencia => {
-    const div = document.createElement('div');
-    div.className = 'bg-gray-50 p-4 mb-4 rounded-lg border border-gray-200 hover:shadow-md transition';
-    div.innerHTML = `
-      <div class="flex justify-between items-start mb-2">
-        <div>
-          <h4 class="font-semibold text-gray-800">Incidencia #${incidencia.id}</h4>
-          <p class="text-sm text-gray-600">DNI: ${incidencia.dni}</p>
-          <p class="text-sm text-gray-600">Usuario ID: ${incidencia.usuario_id}</p>
-          <p class="text-sm text-gray-600">Estado: <span class="font-medium">${incidencia.estado}</span></p>
-        </div>
-        <button class="btn-delete px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition" onclick="eliminarInc(${incidencia.id})">Eliminar</button>
-      </div>
-      <pre class="text-xs bg-white p-3 rounded border border-gray-300 overflow-x-auto">${JSON.stringify(JSON.parse(incidencia.descripcion || '{}'), null, 2)}</pre>
-    `;
-    incidenciasList.appendChild(div);
-  });
-}
 
 // Crear incidencia
 formIncidencia.addEventListener('submit', async (e) => {
@@ -354,7 +326,6 @@ formIncidencia.addEventListener('submit', async (e) => {
         });
       }
     });
-    cargarIncidencias();
   }
 });
 
@@ -364,7 +335,6 @@ async function eliminarInc(id) {
     const resultado = await eliminarIncidencia(id);
     if (resultado) {
       mostrarExito('Incidencia eliminada exitosamente');
-      cargarIncidencias();
     }
   }
 }
