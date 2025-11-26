@@ -24,15 +24,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Elementos del DOM
 const btnUsuarios = document.getElementById('btn-usuarios');
+const btnAsignados = document.getElementById('btn-asignados');
 const btnIncidencias = document.getElementById('btn-incidencias');
 const btnReportes = document.getElementById('btn-reportes');
 const usuariosSection = document.getElementById('usuarios-section');
+const asignadosSection = document.getElementById('asignados-section');
 const incidenciasSection = document.getElementById('incidencias-section');
 const reportesSection = document.getElementById('reportes-section');
 
 // Navegación entre secciones
 btnUsuarios.addEventListener('click', () => {
   mostrarSeccion('usuarios');
+});
+
+btnAsignados.addEventListener('click', () => {
+  mostrarSeccion('asignados');
 });
 
 btnIncidencias.addEventListener('click', () => {
@@ -45,10 +51,12 @@ btnReportes.addEventListener('click', () => {
 
 function mostrarSeccion(seccion) {
   usuariosSection.classList.remove('active');
+  asignadosSection.classList.remove('active');
   incidenciasSection.classList.remove('active');
   reportesSection.classList.remove('active');
   
   btnUsuarios.classList.remove('active');
+  btnAsignados.classList.remove('active');
   btnIncidencias.classList.remove('active');
   btnReportes.classList.remove('active');
   
@@ -56,6 +64,10 @@ function mostrarSeccion(seccion) {
     usuariosSection.classList.add('active');
     btnUsuarios.classList.add('active');
     cargarUsuarios();
+  } else if (seccion === 'asignados') {
+    asignadosSection.classList.add('active');
+    btnAsignados.classList.add('active');
+    loadAsignadosList();
   } else if (seccion === 'incidencias') {
     incidenciasSection.classList.add('active');
     btnIncidencias.classList.add('active');

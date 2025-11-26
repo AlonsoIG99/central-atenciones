@@ -17,6 +17,7 @@
                 <h1 class="text-3xl font-bold text-gray-800 mb-4 text-center">CENTRAL DE ATENCIONES</h1>
                 <nav class="flex justify-center gap-4 flex-wrap">
                     <button id="btn-usuarios" class="nav-btn active px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">Usuarios</button>
+                    <button id="btn-asignados" class="nav-btn px-6 py-2 bg-gray-400 text-white rounded-lg hover:bg-gray-500 transition">Asignados</button>
                     <button id="btn-incidencias" class="nav-btn px-6 py-2 bg-gray-400 text-white rounded-lg hover:bg-gray-500 transition">Incidencias</button>
                     <button id="btn-reportes" class="nav-btn px-6 py-2 bg-gray-400 text-white rounded-lg hover:bg-gray-500 transition">Reportes</button>
                 </nav>
@@ -77,6 +78,46 @@ dni,nombre_completo,fecha_ingreso,fecha_cese<br>
                     <div>
                         <h3 class="text-xl font-semibold text-gray-700 mb-4">Lista de Usuarios</h3>
                         <div id="usuarios-list"></div>
+                    </div>
+                </section>
+
+                <!-- Sección de Asignados -->
+                <section id="asignados-section" class="section">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-6 pb-3 border-b-4 border-green-600">Gestión de Asignados</h2>
+                    
+                    <!-- Cargar CSV Asignados -->
+                    <div id="asignados-csv-container" class="bg-green-50 p-6 rounded-lg mb-8 border-2 border-green-300">
+                        <h3 class="text-xl font-semibold text-gray-700 mb-4">📤 Cargar Asignados desde CSV</h3>
+                        
+                        <!-- Instrucciones -->
+                        <div class="mb-4 p-3 bg-green-100 rounded-lg text-sm text-green-800">
+                            <p class="font-semibold mb-2">Formato requerido del CSV:</p>
+                            <code class="block bg-white p-2 rounded border border-green-300 text-xs overflow-x-auto">
+tipo_compania,nombre_completo,dni,fecha_ingreso,cliente,zona,lider_zonal,jefe_operaciones,macrozona,jurisdiccion,sector<br>
+Privada,Juan Pérez,12345678,2022-01-15,Cliente A,Zona A,Lider 1,Jefe 1,MacroZona 1,Jurisdicción 1,Sector 1<br>
+Pública,María García,23456789,2021-03-20,Cliente B,Zona B,Lider 2,Jefe 2,MacroZona 2,Jurisdicción 2,Sector 2
+                            </code>
+                        </div>
+                        
+                        <!-- Form para subir archivo -->
+                        <form id="asignados-csv-form" class="space-y-4">
+                            <div>
+                                <label class="block text-gray-700 font-medium mb-2">Selecciona archivo CSV</label>
+                                <input type="file" id="asignados-csv-file" accept=".csv" required class="w-full p-3 border-2 border-dashed border-green-300 rounded-lg cursor-pointer">
+                            </div>
+                            
+                            <button type="submit" class="w-full px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition font-semibold">
+                                Cargar Asignados
+                            </button>
+                        </form>
+                        
+                        <!-- Resultado -->
+                        <div id="asignados-csv-resultado" class="hidden mt-4 p-4 rounded-lg border-2"></div>
+                    </div>
+
+                    <div>
+                        <h3 class="text-xl font-semibold text-gray-700 mb-4">Lista de Asignados</h3>
+                        <div id="asignados-list"></div>
                     </div>
                 </section>
 
@@ -160,6 +201,7 @@ dni,nombre_completo,fecha_ingreso,fecha_cese<br>
 
     <script src="js/api.js"></script>
     <script src="js/usuarios.js"></script>
+    <script src="js/asignados.js"></script>
     <script src="js/incidencias.js"></script>
     <script src="js/reportes.js"></script>
     <script src="script.js"></script>
