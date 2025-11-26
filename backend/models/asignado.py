@@ -3,7 +3,7 @@ from mongoengine import Document, StringField
 class Asignado(Document):
     """Modelo de Asignado (empleados activos) para MongoDB"""
     
-    dni = StringField(required=True, unique=True, index=True)
+    dni = StringField(required=True)
     tipo_compania = StringField(null=True)
     nombre_completo = StringField(required=True)
     fecha_ingreso = StringField(null=True)
@@ -18,7 +18,12 @@ class Asignado(Document):
     
     meta = {
         'collection': 'asignados',
-        'indexes': ['dni', 'zona', 'macrozona', 'estado']
+        'indexes': [
+            {'fields': ['dni'], 'unique': True, 'sparse': True},
+            'zona',
+            'macrozona',
+            'estado'
+        ]
     }
     
     def to_dict(self):

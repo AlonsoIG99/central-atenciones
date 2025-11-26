@@ -190,6 +190,11 @@ async def cargar_csv_asignados(
     
     Formato CSV esperado:
     tipo_compania,nombre_completo,dni,fecha_ingreso,cliente,zona,lider_zonal,jefe_operaciones,macrozona,jurisdiccion,sector
+    
+    Límites:
+    - Máximo: 100,000 filas por archivo
+    - Máximo: 50MB por archivo
+    - Delimitadores: Coma (,) o Punto y coma (;)
     """
     
     # Verificar que sea administrador
@@ -215,6 +220,10 @@ async def cargar_csv_asignados(
     # Validar que sea archivo CSV
     if not file.filename.endswith('.csv'):
         raise HTTPException(status_code=400, detail="Archivo debe ser CSV")
+    
+    # Validar tamaño del archivo (máximo 50MB)
+    if file.size and file.size > 50 * 1024 * 1024:
+        raise HTTPException(status_code=400, detail="Archivo no debe superar 50MB")
     
     try:
         # Leer contenido del archivo
@@ -247,7 +256,11 @@ def procesar_csv_asignados(contenido_csv: str) -> dict:
     """
     Procesa contenido CSV y retorna resumen de cambios
     Detecta automáticamente el delimitador (coma o punto y coma)
+    OPTIMIZADO: Usa operaciones en lote para mejor rendimiento
     """
+    from pymongo import MongoClient
+    from pymongo.errors import BulkWriteError
+    
     # Detectar delimitador contando ocurrencias en la primera línea (header)
     primera_linea = contenido_csv.split('\n')[0] if contenido_csv else ""
     
@@ -274,66 +287,92 @@ def procesar_csv_asignados(contenido_csv: str) -> dict:
     # Agrupar por DNI (última fila prevalece si hay duplicados)
     filas_por_dni = {}
     errores = []
+    max_filas = 100000  # Límite máximo de filas a procesar
     
-    for numero_fila, fila in enumerate(csv_reader, start=2):
-        # Validar fila
-        es_valida, error = validar_fila_csv(fila, numero_fila)
-        if not es_valida:
-            errores.append(error)
-            resumen["errores"] += 1
-            continue
-        
-        dni = fila['dni'].strip()
-        filas_por_dni[dni] = fila  # Sobrescribe si existe (última gana)
+    try:
+        for numero_fila, fila in enumerate(csv_reader, start=2):
+            # Límite máximo de filas
+            if numero_fila > max_filas:
+                errores.append(f"Límite máximo de {max_filas} filas excedido")
+                resumen["errores"] += 1
+                break
+            
+            # Validar fila
+            es_valida, error = validar_fila_csv(fila, numero_fila)
+            if not es_valida:
+                errores.append(error)
+                resumen["errores"] += 1
+                continue
+            
+            dni = fila['dni'].strip()
+            filas_por_dni[dni] = fila  # Sobrescribe si existe (última gana)
+    except Exception as e:
+        errores.append(f"Error al leer CSV: {str(e)}")
+        resumen["errores"] += 1
     
-    # Procesar cambios en BD
-    for dni, fila in filas_por_dni.items():
-        asignado_existente = Asignado.objects(dni=dni).first()
-        
-        # Limpiar valores vacíos
-        nombre_completo = fila.get('nombre_completo', '').strip()
-        tipo_compania = fila.get('tipo_compania', '').strip() or None
-        fecha_ingreso = fila.get('fecha_ingreso', '').strip() or None
-        cliente = fila.get('cliente', '').strip() or None
-        zona = fila.get('zona', '').strip() or None
-        lider_zonal = fila.get('lider_zonal', '').strip() or None
-        jefe_operaciones = fila.get('jefe_operaciones', '').strip() or None
-        macrozona = fila.get('macrozona', '').strip() or None
-        jurisdiccion = fila.get('jurisdiccion', '').strip() or None
-        sector = fila.get('sector', '').strip() or None
-        
-        if asignado_existente:
-            # UPDATE
-            asignado_existente.tipo_compania = tipo_compania
-            asignado_existente.nombre_completo = nombre_completo
-            asignado_existente.fecha_ingreso = fecha_ingreso
-            asignado_existente.cliente = cliente
-            asignado_existente.zona = zona
-            asignado_existente.lider_zonal = lider_zonal
-            asignado_existente.jefe_operaciones = jefe_operaciones
-            asignado_existente.macrozona = macrozona
-            asignado_existente.jurisdiccion = jurisdiccion
-            asignado_existente.sector = sector
-            asignado_existente.save()
-            resumen["actualizados"] += 1
-        else:
-            # INSERT
-            nuevo = Asignado(
-                dni=dni,
-                tipo_compania=tipo_compania,
-                nombre_completo=nombre_completo,
-                fecha_ingreso=fecha_ingreso,
-                cliente=cliente,
-                zona=zona,
-                lider_zonal=lider_zonal,
-                jefe_operaciones=jefe_operaciones,
-                macrozona=macrozona,
-                jurisdiccion=jurisdiccion,
-                sector=sector,
-                estado="activo"
+    # OPTIMIZADO: Procesar en lotes usando MongoDB directly
+    if filas_por_dni:
+        try:
+            client = MongoClient(
+                f"mongodb://root:Jdg27aCQqOzR@nexus.liderman.net.pe:27017/central_db?authSource=admin"
             )
-            nuevo.save()
-            resumen["insertados"] += 1
+            db = client['central_db']
+            collection = db['asignados']
+            
+            # Preparar operaciones para bulk write
+            from pymongo import InsertOne, UpdateOne
+            operaciones = []
+            
+            for dni, fila in filas_por_dni.items():
+                nombre_completo = fila.get('nombre_completo', '').strip()
+                tipo_compania = fila.get('tipo_compania', '').strip() or None
+                fecha_ingreso = fila.get('fecha_ingreso', '').strip() or None
+                cliente = fila.get('cliente', '').strip() or None
+                zona = fila.get('zona', '').strip() or None
+                lider_zonal = fila.get('lider_zonal', '').strip() or None
+                jefe_operaciones = fila.get('jefe_operaciones', '').strip() or None
+                macrozona = fila.get('macrozona', '').strip() or None
+                jurisdiccion = fila.get('jurisdiccion', '').strip() or None
+                sector = fila.get('sector', '').strip() or None
+                
+                # Usar upsert para combinar INSERT y UPDATE en una operación
+                operaciones.append(
+                    UpdateOne(
+                        {'dni': dni},
+                        {
+                            '$set': {
+                                'tipo_compania': tipo_compania,
+                                'nombre_completo': nombre_completo,
+                                'fecha_ingreso': fecha_ingreso,
+                                'cliente': cliente,
+                                'zona': zona,
+                                'lider_zonal': lider_zonal,
+                                'jefe_operaciones': jefe_operaciones,
+                                'macrozona': macrozona,
+                                'jurisdiccion': jurisdiccion,
+                                'sector': sector,
+                                'estado': 'activo'
+                            }
+                        },
+                        upsert=True
+                    )
+                )
+            
+            # Ejecutar operaciones en lote
+            if operaciones:
+                resultado = collection.bulk_write(operaciones, ordered=False)
+                resumen["insertados"] = resultado.upserted_count
+                resumen["actualizados"] = resultado.modified_count
+            
+            client.close()
+            
+        except BulkWriteError as e:
+            # Algunos documentos pudieron tener problemas
+            errores.append(f"Algunos registros no pudieron procesarse")
+            resumen["errores"] += 1
+        except Exception as e:
+            errores.append(f"Error en procesamiento de lote: {str(e)}")
+            resumen["errores"] += 1
     
     resumen["detalles"] = errores
     return resumen
