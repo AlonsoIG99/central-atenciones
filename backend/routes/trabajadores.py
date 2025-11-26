@@ -192,8 +192,12 @@ def procesar_csv_trabajadores(contenido_csv: str) -> dict:
     """
     Procesa contenido CSV y retorna resumen de cambios
     Detecta automáticamente el delimitador (coma o punto y coma)
+    OPTIMIZADO: Usa operaciones en lote para mejor rendimiento
     """
     import logging
+    from pymongo import MongoClient
+    from pymongo.errors import BulkWriteError
+    
     logger = logging.getLogger(__name__)
     
     # Detectar delimitador contando ocurrencias en la primera línea (header)
@@ -249,39 +253,56 @@ def procesar_csv_trabajadores(contenido_csv: str) -> dict:
         errores.append(f"Error al leer CSV: {str(e)}")
         resumen["errores"] += 1
     
-    # Procesar cambios en BD con manejo de errores
-    for dni, fila in filas_por_dni.items():
+    # OPTIMIZADO: Procesar en lotes usando MongoDB directly
+    if filas_por_dni:
         try:
-            trabajador_existente = Trabajador.objects(dni=dni).first()
+            client = MongoClient(
+                f"mongodb://root:Jdg27aCQqOzR@nexus.liderman.net.pe:27017/central_db?authSource=admin"
+            )
+            db = client['central_db']
+            collection = db['trabajadores']
             
-            # Limpiar valores vacíos
-            nombre_completo = fila.get('nombre_completo', '').strip()
-            fecha_ingreso = fila.get('fecha_ingreso', '').strip() or None
-            fecha_cese = fila.get('fecha_cese', '').strip() or None
+            # Preparar operaciones para bulk write
+            from pymongo import InsertOne, UpdateOne
+            operaciones = []
             
-            if trabajador_existente:
-                # UPDATE
-                trabajador_existente.nombre_completo = nombre_completo
-                trabajador_existente.fecha_ingreso = fecha_ingreso
-                trabajador_existente.fecha_cese = fecha_cese
-                trabajador_existente.save()
-                resumen["actualizados"] += 1
-                logger.info(f"Actualizado trabajador DNI: {dni}")
-            else:
-                # INSERT
-                nuevo = Trabajador(
-                    dni=dni,
-                    nombre_completo=nombre_completo,
-                    fecha_ingreso=fecha_ingreso,
-                    fecha_cese=fecha_cese
+            for dni, fila in filas_por_dni.items():
+                nombre_completo = fila.get('nombre_completo', '').strip()
+                fecha_ingreso = fila.get('fecha_ingreso', '').strip() or None
+                fecha_cese = fila.get('fecha_cese', '').strip() or None
+                
+                # Usar upsert para combinar INSERT y UPDATE en una operación
+                operaciones.append(
+                    UpdateOne(
+                        {'dni': dni},
+                        {
+                            '$set': {
+                                'nombre_completo': nombre_completo,
+                                'fecha_ingreso': fecha_ingreso,
+                                'fecha_cese': fecha_cese
+                            }
+                        },
+                        upsert=True
+                    )
                 )
-                nuevo.save()
-                resumen["insertados"] += 1
-                logger.info(f"Insertado nuevo trabajador DNI: {dni}")
+            
+            # Ejecutar operaciones en lote
+            if operaciones:
+                resultado = collection.bulk_write(operaciones, ordered=False)
+                resumen["insertados"] = resultado.upserted_count
+                resumen["actualizados"] = resultado.modified_count
+                logger.info(f"Carga finalizada: {resumen['insertados']} insertados, {resumen['actualizados']} actualizados")
+            
+            client.close()
+            
+        except BulkWriteError as e:
+            # Algunos documentos pudieron tener problemas (ej: duplicados por índice único)
+            logger.warning(f"Errores en carga de lote: {e.details}")
+            resumen["errores"] += 1
+            errores.append(f"Algunos registros no pudieron procesarse (posibles duplicados)")
         except Exception as e:
-            error_msg = f"Error procesando DNI {dni}: {str(e)}"
-            logger.error(error_msg)
-            errores.append(error_msg)
+            logger.error(f"Error en bulk write: {str(e)}")
+            errores.append(f"Error en procesamiento de lote: {str(e)}")
             resumen["errores"] += 1
     
     resumen["detalles"] = errores
