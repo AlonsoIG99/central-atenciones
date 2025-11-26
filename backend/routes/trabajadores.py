@@ -130,7 +130,10 @@ async def cargar_csv_trabajadores(
     12345678,Juan Pérez,2022-01-15,
     87654321,María López,2021-03-20,2024-08-30
     
-    Límite máximo: 10,000 filas
+    Límites:
+    - Máximo: 100,000 filas por archivo
+    - Máximo: 50MB por archivo
+    - Delimitadores: Coma (,) o Punto y coma (;)
     """
     
     # Verificar que sea administrador
@@ -157,9 +160,9 @@ async def cargar_csv_trabajadores(
     if not file.filename.endswith('.csv'):
         raise HTTPException(status_code=400, detail="Archivo debe ser CSV")
     
-    # Validar tamaño del archivo (máximo 10MB)
-    if file.size and file.size > 10 * 1024 * 1024:
-        raise HTTPException(status_code=400, detail="Archivo no debe superar 10MB")
+    # Validar tamaño del archivo (máximo 50MB)
+    if file.size and file.size > 50 * 1024 * 1024:
+        raise HTTPException(status_code=400, detail="Archivo no debe superar 50MB")
     
     try:
         # Leer contenido del archivo
@@ -226,7 +229,7 @@ def procesar_csv_trabajadores(contenido_csv: str) -> dict:
     # Agrupar por DNI (última fila prevalece si hay duplicados)
     filas_por_dni = {}
     errores = []
-    max_filas = 10000  # Límite máximo de filas a procesar
+    max_filas = 100000  # Límite máximo de filas a procesar (100k)
     
     try:
         for numero_fila, fila in enumerate(csv_reader, start=2):
