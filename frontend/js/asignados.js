@@ -55,10 +55,9 @@ async function handleAsignadosCSVUpload(event) {
         if (response.ok) {
             const mensaje = `
                 ✅ <strong>Carga completada exitosamente</strong><br>
-                📊 Registros insertados: <strong>${data.resumen.insertados}</strong><br>
-                🔄 Registros actualizados: <strong>${data.resumen.actualizados}</strong><br>
-                ⚠️ Errores: <strong>${data.resumen.errores}</strong><br>
-                ⏱️ Tiempo total: <strong>${data.resumen.tiempo_segundos.toFixed(2)}s</strong>
+                📊 Registros insertados: <strong>${data.insertados}</strong><br>
+                🔄 Registros actualizados: <strong>${data.actualizados}</strong><br>
+                ⚠️ Errores: <strong>${data.errores}</strong>
             `;
             showAsignadosResult('success', mensaje);
 
@@ -68,11 +67,12 @@ async function handleAsignadosCSVUpload(event) {
             // Recargar la lista
             setTimeout(loadAsignadosList, 1000);
         } else {
-            showAsignadosResult('error', `Error: ${data.detail || 'Error desconocido'}`);
+            const errorMsg = data.detail || data.error || 'Error desconocido';
+            showAsignadosResult('error', `Error: ${errorMsg}`);
         }
     } catch (error) {
         console.error('Error:', error);
-        showAsignadosResult('error', `Error al cargar: ${error.message}`);
+        showAsignadosResult('error', `Error al cargar: ${error.message}. Verifica la consola para más detalles.`);
     }
 }
 
