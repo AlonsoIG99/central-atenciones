@@ -9,11 +9,12 @@ import sys
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from backend.database import conectar_db
-from backend.routes import usuarios, incidencias, auth, trabajadores, asignados
+from backend.routes import usuarios, incidencias, auth, trabajadores, asignados, reporte_dashboards
 from backend.models.usuario import Usuario
 from backend.models.incidencia import Incidencia
 from backend.models.trabajador import Trabajador
 from backend.models.asignado import Asignado
+from backend.models.reporte_dashboard import ReporteDashboard
 
 # Conectar a MongoDB (se hace automáticamente en database.py)
 # ya no necesitamos create_all para MongoDB
@@ -35,6 +36,7 @@ app.include_router(usuarios.router)
 app.include_router(trabajadores.router)
 app.include_router(incidencias.router)
 app.include_router(asignados.router)
+app.include_router(reporte_dashboards.router)
 
 @app.get("/")
 def root():

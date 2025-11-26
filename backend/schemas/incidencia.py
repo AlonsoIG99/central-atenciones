@@ -22,6 +22,8 @@ class IncidenciaResponse(IncidenciaBase):
     id: str  # MongoDB ObjectId como string
     fecha_creacion: datetime
     fecha_actualizacion: datetime
+    fecha_cierre: Optional[datetime] = None
+    dias_abierta: Optional[str] = None
     usuario_nombre: Optional[str] = "Desconocido"
     
     class Config:

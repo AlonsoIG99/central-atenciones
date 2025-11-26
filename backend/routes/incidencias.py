@@ -32,6 +32,8 @@ def obtener_incidencias():
             "usuario_id": incidencia.usuario_id,
             "fecha_creacion": incidencia.fecha_creacion,
             "fecha_actualizacion": incidencia.fecha_actualizacion,
+            "fecha_cierre": incidencia.fecha_cierre,
+            "dias_abierta": incidencia.dias_abierta,
             "usuario_nombre": usuario_nombre
         }
         resultado.append(IncidenciaResponse(**data))
@@ -65,6 +67,8 @@ def obtener_incidencia(incidencia_id: str):
             "usuario_id": incidencia.usuario_id,
             "fecha_creacion": incidencia.fecha_creacion,
             "fecha_actualizacion": incidencia.fecha_actualizacion,
+            "fecha_cierre": incidencia.fecha_cierre,
+            "dias_abierta": incidencia.dias_abierta,
             "usuario_nombre": usuario_nombre
         }
         return IncidenciaResponse(**data)
@@ -96,6 +100,8 @@ def crear_incidencia(incidencia: IncidenciaCreate):
             "usuario_id": db_incidencia.usuario_id,
             "fecha_creacion": db_incidencia.fecha_creacion,
             "fecha_actualizacion": db_incidencia.fecha_actualizacion,
+            "fecha_cierre": db_incidencia.fecha_cierre,
+            "dias_abierta": db_incidencia.dias_abierta,
             "usuario_nombre": usuario_nombre
         }
         return IncidenciaResponse(**data)
@@ -106,15 +112,23 @@ def crear_incidencia(incidencia: IncidenciaCreate):
 def actualizar_incidencia(incidencia_id: str, incidencia: IncidenciaUpdate):
     """Actualizar incidencia"""
     try:
+        from datetime import datetime
+        
         db_incidencia = Incidencia.objects(id=incidencia_id).first()
         if not db_incidencia:
             raise HTTPException(status_code=404, detail="Incidencia no encontrada")
+        
+        # Si se cambia a cerrada, calcular dias_abierta
+        if incidencia.estado == "cerrada" and db_incidencia.estado != "cerrada":
+            db_incidencia.fecha_cierre = datetime.utcnow()
+            dias = (db_incidencia.fecha_cierre - db_incidencia.fecha_creacion).days
+            db_incidencia.dias_abierta = str(dias)
         
         for key, value in incidencia.dict(exclude_unset=True).items():
             if value is not None:
                 setattr(db_incidencia, key, value)
         
-        db_incidencia.fecha_actualizacion = Incidencia.fecha_actualizacion.default()
+        db_incidencia.fecha_actualizacion = datetime.utcnow()
         db_incidencia.save()
         
         usuario_nombre = "Desconocido"
@@ -135,6 +149,8 @@ def actualizar_incidencia(incidencia_id: str, incidencia: IncidenciaUpdate):
             "usuario_id": db_incidencia.usuario_id,
             "fecha_creacion": db_incidencia.fecha_creacion,
             "fecha_actualizacion": db_incidencia.fecha_actualizacion,
+            "fecha_cierre": db_incidencia.fecha_cierre,
+            "dias_abierta": db_incidencia.dias_abierta,
             "usuario_nombre": usuario_nombre
         }
         return IncidenciaResponse(**data)

@@ -17,9 +17,9 @@
                 <h1 class="text-3xl font-bold text-gray-800 mb-4 text-center">CENTRAL DE ATENCIONES</h1>
                 <nav class="flex justify-center gap-4 flex-wrap">
                     <button id="btn-usuarios" class="nav-btn active px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">Usuarios</button>
-                    <button id="btn-asignados" class="nav-btn px-6 py-2 bg-gray-400 text-white rounded-lg hover:bg-gray-500 transition">Asignados</button>
                     <button id="btn-incidencias" class="nav-btn px-6 py-2 bg-gray-400 text-white rounded-lg hover:bg-gray-500 transition">Incidencias</button>
                     <button id="btn-reportes" class="nav-btn px-6 py-2 bg-gray-400 text-white rounded-lg hover:bg-gray-500 transition">Reportes</button>
+                    <button id="btn-asignados" class="nav-btn px-6 py-2 bg-gray-400 text-white rounded-lg hover:bg-gray-500 transition">Dashboard</button>
                     <button id="btn-logout" class="nav-btn px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition">Logout</button>
                 </nav>
             </header>
@@ -84,11 +84,10 @@ dni,nombre_completo,fecha_ingreso,fecha_cese<br>
 
                 <!-- Sección de Asignados -->
                 <section id="asignados-section" class="section">
-                    <h2 class="text-2xl font-bold text-gray-800 mb-6 pb-3 border-b-4 border-green-600">Gestión de Asignados</h2>
                     
                     <!-- Cargar CSV Asignados -->
                     <div id="asignados-csv-container" class="bg-green-50 p-6 rounded-lg mb-8 border-2 border-green-300">
-                        <h3 class="text-xl font-semibold text-gray-700 mb-4">📤 Cargar Asignados desde CSV</h3>
+                        <h3 class="text-xl font-semibold text-gray-700 mb-4">📤 Paso 1: Cargar Asignados desde CSV</h3>
                         
                         <!-- Instrucciones -->
                         <div class="mb-4 p-3 bg-green-100 rounded-lg text-sm text-green-800">
@@ -114,6 +113,45 @@ Pública,María García,23456789,2021-03-20,Cliente B,Zona B,Lider 2,Jefe 2,Macr
                         
                         <!-- Resultado -->
                         <div id="asignados-csv-resultado" class="hidden mt-4 p-4 rounded-lg border-2"></div>
+                    </div>
+
+                    <!-- Paso 2: Generar Reporte para Dashboard -->
+                    <div id="dashboard-reporte-container" class="bg-purple-50 p-6 rounded-lg mb-8 border-2 border-purple-300">
+                        <h3 class="text-xl font-semibold text-gray-700 mb-4">📊 Paso 2: Generar Reporte para Dashboard</h3>
+                        
+                        <p class="text-sm text-gray-600 mb-4">
+                            Este reporte unirá todos los datos de incidencias, trabajadores y asignados por DNI. Se mostrarán también los datos del usuario que registró cada incidencia.
+                        </p>
+                        
+                        <button id="btn-generar-dashboard" class="w-full px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition font-semibold mb-4">
+                            Generar Reporte
+                        </button>
+                        
+                        <!-- Resultado de generación -->
+                        <div id="dashboard-generar-resultado" class="hidden mt-4 p-4 rounded-lg border-2"></div>
+                        
+                        <!-- Tabla de últimos registros -->
+                        <div id="dashboard-ultimos-container" class="hidden mt-6">
+                            <h4 class="text-lg font-semibold text-gray-800 mb-4">Últimos 5 registros generados</h4>
+                            <div class="overflow-x-auto">
+                                <table class="w-full border-collapse border border-gray-300">
+                                    <thead class="bg-purple-200">
+                                        <tr>
+                                            <th class="border border-gray-300 px-3 py-2 text-left text-sm font-semibold">DNI</th>
+                                            <th class="border border-gray-300 px-3 py-2 text-left text-sm font-semibold">Incidencia</th>
+                                            <th class="border border-gray-300 px-3 py-2 text-left text-sm font-semibold">Estado</th>
+                                            <th class="border border-gray-300 px-3 py-2 text-left text-sm font-semibold">Usuario</th>
+                                            <th class="border border-gray-300 px-3 py-2 text-left text-sm font-semibold">Área</th>
+                                            <th class="border border-gray-300 px-3 py-2 text-left text-sm font-semibold">Trabajador</th>
+                                            <th class="border border-gray-300 px-3 py-2 text-left text-sm font-semibold">Zona</th>
+                                            <th class="border border-gray-300 px-3 py-2 text-left text-sm font-semibold">Días Abierta</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="dashboard-ultimos-tbody">
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
                     </div>
                 </section>
 
@@ -189,6 +227,7 @@ Pública,María García,23456789,2021-03-20,Cliente B,Zona B,Lider 2,Jefe 2,Macr
     <script src="js/api.js"></script>
     <script src="js/usuarios.js"></script>
     <script src="js/asignados.js"></script>
+    <script src="js/dashboard.js"></script>
     <script src="js/incidencias.js"></script>
     <script src="js/reportes.js"></script>
     <script src="script.js"></script>

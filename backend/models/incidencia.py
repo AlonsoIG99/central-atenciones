@@ -11,6 +11,8 @@ class Incidencia(Document):
     usuario_id = StringField(null=True)
     fecha_creacion = DateTimeField(default=datetime.utcnow)
     fecha_actualizacion = DateTimeField(default=datetime.utcnow)
+    fecha_cierre = DateTimeField(null=True)
+    dias_abierta = StringField(null=True)  # Se calcula cuando se cierra
     
     meta = {
         'collection': 'incidencias',
@@ -27,5 +29,7 @@ class Incidencia(Document):
             'estado': self.estado,
             'usuario_id': self.usuario_id,
             'fecha_creacion': self.fecha_creacion.isoformat() if self.fecha_creacion else None,
-            'fecha_actualizacion': self.fecha_actualizacion.isoformat() if self.fecha_actualizacion else None
+            'fecha_actualizacion': self.fecha_actualizacion.isoformat() if self.fecha_actualizacion else None,
+            'fecha_cierre': self.fecha_cierre.isoformat() if self.fecha_cierre else None,
+            'dias_abierta': self.dias_abierta
         }

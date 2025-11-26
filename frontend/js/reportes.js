@@ -98,7 +98,7 @@ async function cargarReportes() {
       <p class="text-lg font-semibold text-gray-800">DNI: ${incidencia.dni}</p>
       <p class="text-sm text-gray-500">Usuario: <span class="font-medium">${incidencia.usuario_nombre || 'Desconocido'}</span></p>
       <p class="text-sm text-gray-500">Fecha: ${new Date(incidencia.fecha_creacion).toLocaleDateString('es-ES')}</p>
-      <p class="text-sm text-gray-600">Estado: <span class="font-medium estado-badge">${incidencia.estado}</span></p>
+      <p class="text-sm text-gray-600">Estado: <span class="font-medium estado-badge">${incidencia.estado}</span>${incidencia.dias_abierta ? ` - <span class="text-orange-600 font-semibold">${incidencia.dias_abierta} días abierta</span>` : ''}</p>
     `;
     
     const actions = document.createElement('div');
@@ -113,6 +113,13 @@ async function cargarReportes() {
     editBtn.className = "px-3 py-1 bg-green-600 text-white text-sm rounded hover:bg-green-700 transition";
     editBtn.textContent = 'Editar';
     editBtn.type = 'button';
+    
+    // Deshabilitar botón si la incidencia está cerrada
+    if (incidencia.estado === 'cerrada') {
+      editBtn.disabled = true;
+      editBtn.className = "px-3 py-1 bg-gray-400 text-white text-sm rounded cursor-not-allowed";
+      editBtn.title = "No se puede editar una incidencia cerrada";
+    }
     
     actions.appendChild(toggleBtn);
     actions.appendChild(editBtn);
@@ -203,6 +210,12 @@ async function cargarReportes() {
 
 // Modal para editar estado
 function mostrarModalEditarEstado(incidencia) {
+  // No permitir editar si está cerrada
+  if (incidencia.estado === 'cerrada') {
+    mostrarError('No se puede editar una incidencia que ya está cerrada');
+    return;
+  }
+  
   const modal = document.createElement('div');
   modal.className = "fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50";
   
@@ -216,8 +229,7 @@ function mostrarModalEditarEstado(incidencia) {
     <select id="nuevoEstado" class="w-full px-4 py-2 border border-gray-300 rounded-lg mb-4 focus:outline-none focus:ring-2 focus:ring-blue-600">
       <option value="">-- Seleccionar estado --</option>
       <option value="abierta">Abierta</option>
-      <option value="en_progreso">En progreso</option>
-      <option value="resuelta">Resuelta</option>
+      <option value="en_proceso">En progreso</option>
       <option value="cerrada">Cerrada</option>
     </select>
     
