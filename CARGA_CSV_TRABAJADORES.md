@@ -3,6 +3,7 @@
 ## 🎯 REQUERIMIENTO
 
 El administrador debe poder:
+
 1. **Cargar un archivo CSV** con lista completa de trabajadores
 2. **Actualizar semanalmente** la tabla de trabajadores
 3. **Evitar duplicados** usando DNI como clave única
@@ -50,12 +51,14 @@ dni,nombre,apellido,zona
 ```
 
 **Columnas requeridas:**
+
 - `dni` (String, único)
 - `nombre` (String)
 - `apellido` (String)
 - `zona` (String)
 
 **Validaciones:**
+
 - DNI no puede estar vacío
 - DNI debe ser único (pero pueden repetirse en el mismo archivo)
 - Nombre y apellido no pueden estar vacíos
@@ -85,6 +88,7 @@ async def cargar_csv_trabajadores(
 ```
 
 **Responsabilidades del endpoint:**
+
 1. Verificar que es admin
 2. Validar que sea CSV
 3. Leer línea por línea
@@ -133,7 +137,7 @@ def procesar_csv_trabajadores(
 ) -> dict:
     """
     Procesa contenido CSV y retorna resumen
-    
+
     Lógica:
     1. Parsear CSV
     2. Agrupar por DNI (usar último en caso de duplicados)
@@ -144,37 +148,37 @@ def procesar_csv_trabajadores(
     """
     import csv
     from io import StringIO
-    
+
     resumen = {
         "insertados": 0,
         "actualizados": 0,
         "errores": 0,
         "detalles": []
     }
-    
+
     # Leer CSV
     csv_reader = csv.DictReader(StringIO(file_content))
-    
+
     # Agrupar por DNI (última fila prevalece)
     filas_por_dni = {}
     errores = []
-    
+
     for numero_fila, fila in enumerate(csv_reader, start=2):  # Empieza en 2 (header es 1)
         es_valida, error = validar_fila_csv(fila, numero_fila)
         if not es_valida:
             errores.append(error)
             resumen["errores"] += 1
             continue
-        
+
         dni = fila['dni'].strip()
         filas_por_dni[dni] = fila  # Sobrescribe si existe (última gana)
-    
+
     # Procesar cambios en BD
     for dni, fila in filas_por_dni.items():
         trabajador_existente = db.query(Trabajador).filter(
             Trabajador.dni == dni
         ).first()
-        
+
         if trabajador_existente:
             # UPDATE
             trabajador_existente.nombre = fila['nombre'].strip()
@@ -191,7 +195,7 @@ def procesar_csv_trabajadores(
             )
             db.add(nuevo)
             resumen["insertados"] += 1
-    
+
     # Guardar cambios
     try:
         db.commit()
@@ -221,33 +225,33 @@ async def cargar_csv_trabajadores(
 ):
     """
     Carga trabajadores desde CSV
-    
+
     Solo acceso: Administrador
-    
+
     Formato CSV esperado:
     dni,nombre,apellido,zona
     12345678,Juan,Pérez,Centro
     87654321,María,López,Norte
-    
+
     Validaciones:
     - Columnas requeridas: dni, nombre, apellido, zona
     - DNI único (si se repite, usa última fila)
     - Sin campos vacíos
     - Archivo debe ser .csv
     """
-    
+
     # 1. Validar que sea archivo CSV
     if not file.filename.endswith('.csv'):
         raise HTTPException(status_code=400, detail="Archivo debe ser CSV")
-    
+
     try:
         # 2. Leer contenido del archivo
         contenido = await file.read()
         contenido_str = contenido.decode('utf-8')
-        
+
         # 3. Procesar CSV
         resumen = procesar_csv_trabajadores(contenido_str, db)
-        
+
         # 4. Retornar resultado
         return {
             "status": "success",
@@ -257,7 +261,7 @@ async def cargar_csv_trabajadores(
             "detalles": resumen["detalles"],
             "timestamp": datetime.utcnow()
         }
-        
+
     except UnicodeDecodeError:
         raise HTTPException(status_code=400, detail="Archivo debe estar en UTF-8")
     except Exception as e:
@@ -277,10 +281,10 @@ async def verify_token_admin(token: str = Depends(oauth2_scheme)):
     payload = verify_token(token)
     if not payload:
         raise HTTPException(status_code=401, detail="Token inválido")
-    
+
     if payload.get("rol") != "administrador":
         raise HTTPException(status_code=403, detail="Solo administradores pueden cargar CSV")
-    
+
     return payload
 ```
 
@@ -294,33 +298,51 @@ En la sección de usuarios, agregar:
 
 ```html
 <!-- NUEVA SECCIÓN: Cargar CSV Trabajadores -->
-<div id="csv-upload-container" class="hidden bg-blue-50 p-6 rounded-lg mb-8 border-2 border-blue-300">
-    <h3 class="text-xl font-semibold text-gray-700 mb-4">📤 Cargar Trabajadores desde CSV</h3>
-    
-    <!-- Instrucciones -->
-    <div class="mb-4 p-3 bg-blue-100 rounded-lg text-sm text-blue-800">
-        <p class="font-semibold mb-2">Formato requerido del CSV:</p>
-        <code class="block bg-white p-2 rounded border border-blue-300 text-xs overflow-x-auto">
-dni,nombre,apellido,zona<br>
-12345678,Juan,Pérez,Centro<br>
-87654321,María,López,Norte
-        </code>
+<div
+  id="csv-upload-container"
+  class="hidden bg-blue-50 p-6 rounded-lg mb-8 border-2 border-blue-300"
+>
+  <h3 class="text-xl font-semibold text-gray-700 mb-4">
+    📤 Cargar Trabajadores desde CSV
+  </h3>
+
+  <!-- Instrucciones -->
+  <div class="mb-4 p-3 bg-blue-100 rounded-lg text-sm text-blue-800">
+    <p class="font-semibold mb-2">Formato requerido del CSV:</p>
+    <code
+      class="block bg-white p-2 rounded border border-blue-300 text-xs overflow-x-auto"
+    >
+      dni,nombre,apellido,zona<br />
+      12345678,Juan,Pérez,Centro<br />
+      87654321,María,López,Norte
+    </code>
+  </div>
+
+  <!-- Form para subir archivo -->
+  <form id="csv-form" class="space-y-4">
+    <div>
+      <label class="block text-gray-700 font-medium mb-2"
+        >Selecciona archivo CSV</label
+      >
+      <input
+        type="file"
+        id="csv-file"
+        accept=".csv"
+        required
+        class="w-full p-3 border-2 border-dashed border-blue-300 rounded-lg cursor-pointer"
+      />
     </div>
-    
-    <!-- Form para subir archivo -->
-    <form id="csv-form" class="space-y-4">
-        <div>
-            <label class="block text-gray-700 font-medium mb-2">Selecciona archivo CSV</label>
-            <input type="file" id="csv-file" accept=".csv" required class="w-full p-3 border-2 border-dashed border-blue-300 rounded-lg cursor-pointer">
-        </div>
-        
-        <button type="submit" class="w-full px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-semibold">
-            Cargar Trabajadores
-        </button>
-    </form>
-    
-    <!-- Resultado -->
-    <div id="csv-resultado" class="hidden mt-4 p-4 rounded-lg border-2"></div>
+
+    <button
+      type="submit"
+      class="w-full px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-semibold"
+    >
+      Cargar Trabajadores
+    </button>
+  </form>
+
+  <!-- Resultado -->
+  <div id="csv-resultado" class="hidden mt-4 p-4 rounded-lg border-2"></div>
 </div>
 
 <!-- Este contenedor solo se muestra para administradores -->
@@ -330,119 +352,127 @@ dni,nombre,apellido,zona<br>
 
 ```javascript
 // Mostrar/ocultar sección CSV según rol del usuario
-const currentUser = JSON.parse(localStorage.getItem('usuario'));
-const csvUploadContainer = document.getElementById('csv-upload-container');
+const currentUser = JSON.parse(localStorage.getItem("usuario"));
+const csvUploadContainer = document.getElementById("csv-upload-container");
 
-if (currentUser && currentUser.rol === 'administrador') {
-    csvUploadContainer.classList.remove('hidden');
+if (currentUser && currentUser.rol === "administrador") {
+  csvUploadContainer.classList.remove("hidden");
 }
 
 // Manejo del formulario CSV
-const csvForm = document.getElementById('csv-form');
-const csvFile = document.getElementById('csv-file');
-const csvResultado = document.getElementById('csv-resultado');
+const csvForm = document.getElementById("csv-form");
+const csvFile = document.getElementById("csv-file");
+const csvResultado = document.getElementById("csv-resultado");
 
-csvForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    
-    // 1. Validar que se seleccionó archivo
-    if (!csvFile.files.length) {
-        mostrarError('Selecciona un archivo CSV');
-        return;
+csvForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
+
+  // 1. Validar que se seleccionó archivo
+  if (!csvFile.files.length) {
+    mostrarError("Selecciona un archivo CSV");
+    return;
+  }
+
+  const file = csvFile.files[0];
+
+  // 2. Validar que sea CSV
+  if (!file.name.endsWith(".csv")) {
+    mostrarError("El archivo debe ser CSV");
+    return;
+  }
+
+  // 3. Validar tamaño (máximo 5MB)
+  if (file.size > 5 * 1024 * 1024) {
+    mostrarError("El archivo no debe superar 5MB");
+    return;
+  }
+
+  try {
+    // 4. Enviar archivo
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const response = await fetch(`${API_URL}/trabajadores/cargar-csv`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+      body: formData,
+    });
+
+    const data = await response.json();
+
+    if (response.ok) {
+      // 5. Mostrar resumen de éxito
+      mostrarResultadoCSV(data, "success");
+
+      // 6. Limpiar formulario
+      csvForm.reset();
+
+      // 7. Recargar lista de trabajadores
+      setTimeout(() => {
+        cargarTrabajadores();
+      }, 1500);
+    } else {
+      mostrarResultadoCSV(data, "error");
     }
-    
-    const file = csvFile.files[0];
-    
-    // 2. Validar que sea CSV
-    if (!file.name.endsWith('.csv')) {
-        mostrarError('El archivo debe ser CSV');
-        return;
-    }
-    
-    // 3. Validar tamaño (máximo 5MB)
-    if (file.size > 5 * 1024 * 1024) {
-        mostrarError('El archivo no debe superar 5MB');
-        return;
-    }
-    
-    try {
-        // 4. Enviar archivo
-        const formData = new FormData();
-        formData.append('file', file);
-        
-        const response = await fetch(
-            `${API_URL}/trabajadores/cargar-csv`,
-            {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
-                },
-                body: formData
-            }
-        );
-        
-        const data = await response.json();
-        
-        if (response.ok) {
-            // 5. Mostrar resumen de éxito
-            mostrarResultadoCSV(data, 'success');
-            
-            // 6. Limpiar formulario
-            csvForm.reset();
-            
-            // 7. Recargar lista de trabajadores
-            setTimeout(() => {
-                cargarTrabajadores();
-            }, 1500);
-            
-        } else {
-            mostrarResultadoCSV(data, 'error');
-        }
-        
-    } catch (error) {
-        console.error('Error cargando CSV:', error);
-        mostrarError('Error al procesar el archivo');
-    }
+  } catch (error) {
+    console.error("Error cargando CSV:", error);
+    mostrarError("Error al procesar el archivo");
+  }
 });
 
 // Función para mostrar resultado
 function mostrarResultadoCSV(data, tipo) {
-    const resultado = document.getElementById('csv-resultado');
-    
-    if (tipo === 'success') {
-        resultado.className = 'p-4 rounded-lg border-2 border-green-300 bg-green-50';
-        resultado.innerHTML = `
+  const resultado = document.getElementById("csv-resultado");
+
+  if (tipo === "success") {
+    resultado.className =
+      "p-4 rounded-lg border-2 border-green-300 bg-green-50";
+    resultado.innerHTML = `
             <h4 class="font-bold text-green-800 mb-2">✅ Archivo procesado correctamente</h4>
             <div class="text-green-700 space-y-1">
-                <p>✨ Insertados: <span class="font-bold">${data.insertados}</span></p>
-                <p>🔄 Actualizados: <span class="font-bold">${data.actualizados}</span></p>
-                <p>⚠️ Errores: <span class="font-bold">${data.errores}</span></p>
+                <p>✨ Insertados: <span class="font-bold">${
+                  data.insertados
+                }</span></p>
+                <p>🔄 Actualizados: <span class="font-bold">${
+                  data.actualizados
+                }</span></p>
+                <p>⚠️ Errores: <span class="font-bold">${
+                  data.errores
+                }</span></p>
             </div>
-            ${data.detalles.length > 0 ? `
+            ${
+              data.detalles.length > 0
+                ? `
                 <div class="mt-3 text-sm font-mono bg-white p-2 rounded border border-yellow-300 max-h-32 overflow-y-auto">
-                    ${data.detalles.map(e => `<p class="text-yellow-700">${e}</p>`).join('')}
+                    ${data.detalles
+                      .map((e) => `<p class="text-yellow-700">${e}</p>`)
+                      .join("")}
                 </div>
-            ` : ''}
+            `
+                : ""
+            }
         `;
-    } else {
-        resultado.className = 'p-4 rounded-lg border-2 border-red-300 bg-red-50';
-        resultado.innerHTML = `
+  } else {
+    resultado.className = "p-4 rounded-lg border-2 border-red-300 bg-red-50";
+    resultado.innerHTML = `
             <h4 class="font-bold text-red-800 mb-2">❌ Error al procesar archivo</h4>
-            <p class="text-red-700">${data.detail || 'Error desconocido'}</p>
+            <p class="text-red-700">${data.detail || "Error desconocido"}</p>
         `;
-    }
-    
-    resultado.classList.remove('hidden');
+  }
+
+  resultado.classList.remove("hidden");
 }
 
 // Función auxiliar para mostrar errores
 function mostrarError(mensaje) {
-    const resultado = document.getElementById('csv-resultado');
-    resultado.className = 'p-4 rounded-lg border-2 border-red-300 bg-red-50';
-    resultado.innerHTML = `
+  const resultado = document.getElementById("csv-resultado");
+  resultado.className = "p-4 rounded-lg border-2 border-red-300 bg-red-50";
+  resultado.innerHTML = `
         <h4 class="font-bold text-red-800">❌ ${mensaje}</h4>
     `;
-    resultado.classList.remove('hidden');
+  resultado.classList.remove("hidden");
 }
 ```
 
@@ -453,6 +483,7 @@ function mostrarError(mensaje) {
 ### **Ejemplo Real:**
 
 **CSV entrada:**
+
 ```csv
 dni,nombre,apellido,zona
 12345678,Juan,Pérez,Centro
@@ -462,6 +493,7 @@ dni,nombre,apellido,zona
 ```
 
 **BD antes:**
+
 ```
 id | dni      | nombre | apellido | zona
 1  | 12345678 | Juan   | Pérez    | Centro
@@ -469,21 +501,23 @@ id | dni      | nombre | apellido | zona
 ```
 
 **Procesamiento:**
+
 ```
 1. Leer fila 2: dni=12345678, nombre=Juan, apellido=Pérez, zona=Centro
    → DNI existe → UPDATE (pero los datos son iguales)
-   
+
 2. Leer fila 3: dni=87654321, nombre=María, apellido=López, zona=Norte
    → DNI existe → UPDATE (pero los datos son iguales)
-   
+
 3. Leer fila 4: dni=11223344, nombre=Carlos, apellido=García, zona=Sur
    → DNI NO existe → INSERT nuevo trabajador
-   
+
 4. Leer fila 5: dni=12345678, nombre=Juan, apellido=Pérez Actualizado, zona=Centro Nuevo
    → DNI existe → UPDATE con nuevos datos (últimos en el CSV)
 ```
 
 **BD después:**
+
 ```
 id | dni      | nombre | apellido              | zona
 1  | 12345678 | Juan   | Pérez Actualizado     | Centro Nuevo  (ACTUALIZADO)
@@ -492,6 +526,7 @@ id | dni      | nombre | apellido              | zona
 ```
 
 **Respuesta al usuario:**
+
 ```json
 {
   "status": "success",
@@ -562,7 +597,7 @@ Resultado:
 - Nuevos insertados: 1
 - Actualizados: 47
 - Errores: 2
-- Detalles: 
+- Detalles:
   * Fila 5: DNI vacío
   * Fila 10: Nombre vacío
 ```
@@ -694,6 +729,7 @@ TESTING INTEGRAL:
 **¿Cómo lo haría?**
 
 1. **Backend endpoint** que:
+
    - Valide que sea admin
    - Lea CSV línea por línea
    - Agrupe por DNI (última fila prevalece)
@@ -701,6 +737,7 @@ TESTING INTEGRAL:
    - Retorne resumen (insertados, actualizados, errores)
 
 2. **Frontend section** que:
+
    - Solo muestre para admin
    - Valide archivo antes de enviar
    - Envíe con FormData
@@ -708,6 +745,7 @@ TESTING INTEGRAL:
    - Recargue lista después
 
 3. **Validaciones**:
+
    - DNI único en BD (constraint)
    - No campos vacíos
    - Archivo CSV válido

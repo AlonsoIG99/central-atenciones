@@ -3,12 +3,14 @@
 ## 🎯 Descripción del Cambio
 
 Anteriormente, en el formulario de incidencias, era posible seleccionar **ambas opciones** simultáneamente:
+
 ```
 ☑️ Aprobado: 5000
 ☑️ No aprobado: Razón X
 ```
 
 **Ahora es exclusivo:** Solo puedes seleccionar UNA opción:
+
 ```
 ☑️ Aprobado: 5000
 ☐ No aprobado: (deshabilitado automáticamente)
@@ -28,6 +30,7 @@ O
 #### Función: `renderIncidenciaSchema(schema, container, parentLabel = '')`
 
 **Antes:**
+
 ```javascript
 function renderIncidenciaSchema(schema, container) {
   // No pasaba parámetro de parent
@@ -35,8 +38,9 @@ function renderIncidenciaSchema(schema, container) {
 ```
 
 **Después:**
+
 ```javascript
-function renderIncidenciaSchema(schema, container, parentLabel = '') {
+function renderIncidenciaSchema(schema, container, parentLabel = "") {
   // Ahora acepta el label del padre para identificar si estamos en "Apoyo económico/Préstamo"
   if (value && value.children) {
     renderIncidenciaSchema(value.children, nested, key); // Pasa el key actual como parentLabel
@@ -47,24 +51,28 @@ function renderIncidenciaSchema(schema, container, parentLabel = '') {
 #### Lógica en el Event Listener:
 
 ```javascript
-checkbox.addEventListener('change', () => {
+checkbox.addEventListener("change", () => {
   if (checkbox.checked) {
-    nested.classList.remove('hidden');
-    
+    nested.classList.remove("hidden");
+
     // ✨ NUEVO: Validación exclusiva
-    if (parentLabel === 'Apoyo económico/Préstamo') {
+    if (parentLabel === "Apoyo económico/Préstamo") {
       // Si estamos en "Apoyo económico/Préstamo", deselecciona hermanos
-      const allCheckboxes = container.querySelectorAll(':scope > div > input[type="checkbox"]');
-      allCheckboxes.forEach(sibling => {
+      const allCheckboxes = container.querySelectorAll(
+        ':scope > div > input[type="checkbox"]'
+      );
+      allCheckboxes.forEach((sibling) => {
         if (sibling !== checkbox && sibling.checked) {
           sibling.checked = false;
           // Limpia también los inputs de texto
-          const siblingNested = sibling.closest('div').querySelector('.nested');
+          const siblingNested = sibling.closest("div").querySelector(".nested");
           if (siblingNested) {
-            siblingNested.classList.add('hidden');
-            siblingNested.querySelectorAll('input[type="text"]').forEach(input => {
-              input.value = '';
-            });
+            siblingNested.classList.add("hidden");
+            siblingNested
+              .querySelectorAll('input[type="text"]')
+              .forEach((input) => {
+                input.value = "";
+              });
           }
         }
       });
@@ -78,11 +86,13 @@ checkbox.addEventListener('change', () => {
 ## 🚀 Cómo Funciona
 
 1. **Usuario selecciona "Aprobado":**
+
    - Se muestra el campo de texto "Monto aprobado"
    - Si "No aprobado" estaba seleccionado, se deselecciona automáticamente
    - El campo "Motivo de no aprobación" se oculta
 
 2. **Usuario selecciona "No aprobado":**
+
    - Se muestra el campo de texto "Motivo de no aprobación"
    - Si "Aprobado" estaba seleccionado, se deselecciona automáticamente
    - El campo "Monto aprobado" se oculta
@@ -162,6 +172,7 @@ R: Sí. Cualquier sección puede tener comportamiento exclusivo si pasamos su no
 ## ✨ Mejoras Futuras
 
 Si necesitas:
+
 - ✅ Validación en backend (asegurar que solo 1 esté guardado)
 - ✅ Otros campos exclusivos
 - ✅ Radio buttons en lugar de checkboxes

@@ -6,22 +6,23 @@
 
 ## 📊 Estadísticas de la Migración
 
-| Métrica | Cantidad |
-|---------|----------|
-| Archivos Python modificados | 14 |
-| Nuevos archivos creados | 5 |
-| Archivos de documentación | 7 |
-| Modelos migrados | 4 |
-| Rutas migradas | 5 |
-| Tests de validación | 15 ✓ |
-| Cambios frontend | 2 |
-| Líneas de código modificadas | ~2500 |
+| Métrica                      | Cantidad |
+| ---------------------------- | -------- |
+| Archivos Python modificados  | 14       |
+| Nuevos archivos creados      | 5        |
+| Archivos de documentación    | 7        |
+| Modelos migrados             | 4        |
+| Rutas migradas               | 5        |
+| Tests de validación          | 15 ✓     |
+| Cambios frontend             | 2        |
+| Líneas de código modificadas | ~2500    |
 
 ---
 
 ## 🗄️ Cambio de Arquitectura
 
 ### ANTES (SQLite)
+
 ```
 Frontend (HTML/JS)
     ↓
@@ -33,6 +34,7 @@ SQLite (archivo local: central_atencion.db)
 ```
 
 ### DESPUÉS (MongoDB)
+
 ```
 Frontend (HTML/JS) - IDÉNTICO
     ↓
@@ -50,23 +52,27 @@ MongoDB (VPS: nexus.liderman.net.pe:27017)
 ### 1. BACKEND (14 archivos)
 
 #### Configuración
+
 - ✅ `backend/app.py` - Imports actualizados para MongoEngine
 - ✅ `backend/database.py` - Conexión MongoDB configurada
 - ✅ `backend/requirements.txt` - Dependencias añadidas
 
 #### Modelos (4 convertidos)
+
 - ✅ `backend/models/usuario.py` - MongoEngine Document
-- ✅ `backend/models/trabajador.py` - MongoEngine Document  
+- ✅ `backend/models/trabajador.py` - MongoEngine Document
 - ✅ `backend/models/incidencia.py` - MongoEngine Document
 - ✅ `backend/models/asignado.py` - NUEVO Document (12 campos)
 
 #### Esquemas (4 actualizados)
+
 - ✅ `backend/schemas/usuario.py` - IDs como strings
 - ✅ `backend/schemas/trabajador.py` - IDs como strings
 - ✅ `backend/schemas/incidencia.py` - IDs como strings
 - ✅ `backend/schemas/asignado.py` - NUEVO (12 campos)
 
 #### Rutas (5 migradas)
+
 - ✅ `backend/routes/auth.py` - Campo password corregido
 - ✅ `backend/routes/usuarios.py` - CRUD con MongoEngine
 - ✅ `backend/routes/trabajadores.py` - CRUD + CSV MongoEngine
@@ -74,6 +80,7 @@ MongoDB (VPS: nexus.liderman.net.pe:27017)
 - ✅ `backend/routes/asignados.py` - NUEVO CRUD + CSV
 
 #### Inicialización
+
 - ✅ `backend/init_db.py` - Rewritten para MongoDB con seed data
 
 ### 2. FRONTEND (2 cambios)
@@ -106,6 +113,7 @@ MongoDB (VPS: nexus.liderman.net.pe:27017)
 ### 1. ORM: SQLAlchemy → MongoEngine
 
 **Antes:**
+
 ```python
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -119,6 +127,7 @@ session.commit()
 ```
 
 **Después:**
+
 ```python
 from mongoengine import connect, Document
 
@@ -135,6 +144,7 @@ Usuario.save()
 ### 2. Modelos: Tablas → Documentos
 
 **Antes (SQLAlchemy):**
+
 ```python
 class Usuario(Base):
     __tablename__ = 'usuarios'
@@ -143,6 +153,7 @@ class Usuario(Base):
 ```
 
 **Después (MongoEngine):**
+
 ```python
 class Usuario(Document):
     email = StringField()
@@ -152,11 +163,13 @@ class Usuario(Document):
 ### 3. Queries: SQL → Python Objects
 
 **Antes:**
+
 ```python
 usuario = session.query(Usuario).filter_by(email=email).first()
 ```
 
 **Después:**
+
 ```python
 usuario = Usuario.objects(email=email).first()
 ```
@@ -164,11 +177,13 @@ usuario = Usuario.objects(email=email).first()
 ### 4. IDs: Enteros → Strings
 
 **Antes:**
+
 ```python
 id: int = 1
 ```
 
 **Después:**
+
 ```python
 id: str = "507f1f77bcf86cd799439011"  # ObjectId MongoDB
 ```
@@ -178,6 +193,7 @@ id: str = "507f1f77bcf86cd799439011"  # ObjectId MongoDB
 ## 🎯 Funcionalidades Migradas
 
 ### Usuarios
+
 - ✅ GET /usuarios - Lista todos
 - ✅ POST /usuarios - Crear usuario
 - ✅ PUT /usuarios/{id} - Editar usuario
@@ -185,6 +201,7 @@ id: str = "507f1f77bcf86cd799439011"  # ObjectId MongoDB
 - ✅ GET /auth/login - Autenticación JWT
 
 ### Trabajadores
+
 - ✅ GET /trabajadores - Lista todos
 - ✅ GET /trabajadores/{id} - Obtener uno
 - ✅ POST /trabajadores - Crear
@@ -194,6 +211,7 @@ id: str = "507f1f77bcf86cd799439011"  # ObjectId MongoDB
 - ✅ POST /trabajadores/cargar-csv - CSV upload (coma y semicolon)
 
 ### Asignados (NUEVO)
+
 - ✅ GET /asignados - Lista todos
 - ✅ GET /asignados/{id} - Obtener uno
 - ✅ POST /asignados - Crear
@@ -204,6 +222,7 @@ id: str = "507f1f77bcf86cd799439011"  # ObjectId MongoDB
 - ✅ POST /asignados/cargar-csv - CSV upload
 
 ### Incidencias
+
 - ✅ GET /incidencias - Lista todos
 - ✅ GET /incidencias/{id} - Obtener uno
 - ✅ POST /incidencias - Crear
@@ -215,6 +234,7 @@ id: str = "507f1f77bcf86cd799439011"  # ObjectId MongoDB
 ## 🔐 Configuración MongoDB
 
 ### Conexión
+
 ```
 Host:         nexus.liderman.net.pe
 Puerto:       27017
@@ -226,6 +246,7 @@ Version:      8.2.1
 ```
 
 ### Collections (Automáticas)
+
 - usuarios (1 registro: admin)
 - trabajadores (8 registros)
 - incidencias (vacía)
@@ -236,15 +257,18 @@ Version:      8.2.1
 ## 📈 Datos Seeded para Testing
 
 ### Usuarios
+
 - admin@central.com / admin123
 
 ### Trabajadores (8 registros)
+
 ```
 DNI: 12345678, 87654321, etc.
 Nombre: Juan Pérez, María González, etc.
 ```
 
 ### Asignados (3 registros)
+
 ```
 12 campos incluyendo: DNI, zona, macrozona, tipo_compañía
 ```
@@ -254,6 +278,7 @@ Nombre: Juan Pérez, María González, etc.
 ## ✅ Pruebas Completadas
 
 ### Validación Automática (verificar_migracion.py)
+
 - ✅ Conexión a MongoDB
 - ✅ Todos los archivos importan correctamente
 - ✅ Modelos cargados
@@ -262,6 +287,7 @@ Nombre: Juan Pérez, María González, etc.
 - **Resultado: 15/15 checks PASS**
 
 ### Testing Manual (test_api.py)
+
 - ✅ GET / - Root endpoint
 - ✅ GET /trabajadores - Lista
 - ✅ POST /auth/login - Autenticación
@@ -269,6 +295,7 @@ Nombre: Juan Pérez, María González, etc.
 - ✅ CSV upload funcional
 
 ### Frontend Compatibility (test_frontend_compat.py)
+
 - ✅ Login con campo password
 - ✅ IDs como strings
 - ✅ Todos los endpoints accesibles
@@ -278,19 +305,20 @@ Nombre: Juan Pérez, María González, etc.
 
 ## 📝 Documentación Generada
 
-| Archivo | Propósito |
-|---------|-----------|
-| INSTRUCCIONES_MONGODB.md | Guía técnica completa (350+ líneas) |
-| RESUMEN_EJECUTIVO.txt | Resumen para stakeholders (300+ líneas) |
-| GUIA_TESTING_FRONTEND.md | Plan de testing con 4 fases |
-| RESPUESTA_TESTING_FRONTEND.md | Respuesta a preguntas comunes |
-| README.md (implícito) | Este documento |
+| Archivo                       | Propósito                               |
+| ----------------------------- | --------------------------------------- |
+| INSTRUCCIONES_MONGODB.md      | Guía técnica completa (350+ líneas)     |
+| RESUMEN_EJECUTIVO.txt         | Resumen para stakeholders (300+ líneas) |
+| GUIA_TESTING_FRONTEND.md      | Plan de testing con 4 fases             |
+| RESPUESTA_TESTING_FRONTEND.md | Respuesta a preguntas comunes           |
+| README.md (implícito)         | Este documento                          |
 
 ---
 
 ## 🚀 Próximos Pasos
 
 ### Fase 1: Testing Local (HOY)
+
 ```bash
 # Terminal 1: Iniciar servidor
 cd backend
@@ -304,12 +332,14 @@ python verificar_migracion.py
 ```
 
 ### Fase 2: Testing Integración (ESTA SEMANA)
+
 - [ ] Pruebas manuales de todas las funcionalidades
 - [ ] Testing con navegadores múltiples
 - [ ] Performance testing
 - [ ] Validar con usuarios reales si es posible
 
 ### Fase 3: Deployment (CUANDO ESTÉ LISTO)
+
 - [ ] Backup de datos SQLite actual (si es necesario)
 - [ ] Migración de datos históricos (si aplica)
 - [ ] Certificado SSL en VPS
@@ -321,16 +351,19 @@ python verificar_migracion.py
 ## 🎓 Lecciones Aprendidas
 
 1. **MongoEngine > SQLAlchemy** para noSQL
+
    - Simpler syntax
    - Better for document structure
    - Automatic ObjectId management
 
 2. **IDs como strings** universalmente
+
    - Facilita API REST
    - Compatible con JSON
    - Mismo en frontend y backend
 
 3. **CSV handling** se preservó
+
    - BOM UTF-8 removal funciona igual
    - Delimitadores (coma/semicolon) detectados
    - MongoEngine insert_many() es eficiente
@@ -347,15 +380,18 @@ python verificar_migracion.py
 ### Problemas Comunes
 
 **Error: "Conexión rechazada a MongoDB"**
+
 - Verificar: VPN activa
 - Verificar: Credenciales correctas
 - Verificar: Host/puerto correctos
 
 **Error: "IDs no son strings"**
+
 - Causa: Desactualizar el schema
 - Solución: Ejecutar verificar_migracion.py
 
 **Error: "Login rechazado"**
+
 - Verificar: Campo "password" en payload
 - Verificar: Contraseña correcta
 

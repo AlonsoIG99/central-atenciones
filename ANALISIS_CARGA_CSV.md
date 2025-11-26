@@ -32,10 +32,12 @@ Procesamiento por DNI:
 ### **1. ¿Cómo manejar duplicados en CSV?**
 
 **Opción A:** Rechazar el CSV si hay DNI duplicados ❌
+
 - Problema: El user debe "limpiar" antes
 - Usuario: frustración
 
 **Opción B:** Usar la ÚLTIMA fila si hay duplicados ✅
+
 - Solución simple
 - User puede tener una fila actualizada al final
 - Lógica: `filas_por_dni[dni] = fila` (sobrescribe)
@@ -47,6 +49,7 @@ Procesamiento por DNI:
 ### **2. ¿UPDATE o DELETE+INSERT?**
 
 **Opción A:** UPDATE (si existe) ✅
+
 ```python
 if dni_existe:
     trabajador.nombre = datos_nuevos
@@ -55,6 +58,7 @@ if dni_existe:
 ```
 
 **Ventaja:**
+
 - Preserva ID
 - Histórico intacto
 - Más eficiente
@@ -66,6 +70,7 @@ if dni_existe:
 ### **3. ¿Validar antes o después?**
 
 **Opción A:** Validar línea por línea, registrar errores, continuar ✅
+
 ```python
 # Fila 5: DNI vacío → Error pero continúa
 # Fila 6: Válida → Procesa
@@ -74,6 +79,7 @@ if dni_existe:
 ```
 
 **Ventaja:**
+
 - No pierdes trabajo por una fila mala
 - User ve exactamente dónde está el problema
 - Más profesional
@@ -85,6 +91,7 @@ if dni_existe:
 ### **4. ¿Qué tan grande puede ser el archivo?**
 
 **Propuesta:**
+
 ```
 Máximo: 5MB
 Razón: Típicamente 5MB = ~100k trabajadores (más que suficiente)
@@ -97,6 +104,7 @@ Validación en backend: Double-check
 ### **5. ¿Logging y auditoría?**
 
 **Básico (Fase 1):**
+
 ```
 - Usuario: admin@company.com
 - Timestamp: 2024-11-18 10:30:00
@@ -106,6 +114,7 @@ Validación en backend: Double-check
 ```
 
 **Avanzado (Fase 2):**
+
 ```
 - Registrar qué cambió para cada trabajador
 - Permite "deshacer" última carga
@@ -144,20 +153,14 @@ POST /trabajadores/cargar-csv
 ```html
 <!-- Nuevo HTML (solo visible para admin): -->
 <form id="csv-form">
-  <input type="file" accept=".csv" required>
+  <input type="file" accept=".csv" required />
   <button type="submit">Cargar CSV</button>
 </form>
-<div id="csv-resultado">
-  Resumen: X insertados, Y actualizados, Z errores
-</div>
+<div id="csv-resultado">Resumen: X insertados, Y actualizados, Z errores</div>
 
 <!-- JavaScript: -->
-1. Validar archivo (tipo, tamaño)
-2. Enviar con FormData
-3. Mostrar progreso
-4. Procesar respuesta
-5. Mostrar resumen
-6. Recargar lista
+1. Validar archivo (tipo, tamaño) 2. Enviar con FormData 3. Mostrar progreso 4.
+Procesar respuesta 5. Mostrar resumen 6. Recargar lista
 ```
 
 ---
@@ -182,6 +185,7 @@ POST /trabajadores/cargar-csv
 ### **Caso 1: DNI duplicado en BD (constraint unique)**
 
 **Solución:** Ya existe constraint en modelo:
+
 ```python
 dni = Column(String, unique=True, index=True, nullable=False)
 ```
@@ -194,6 +198,7 @@ Si intenta INSERT con DNI duplicado → Error de BD
 ### **Caso 2: CSV con saltos de línea raros**
 
 **Solución:** Python csv.DictReader maneja esto automáticamente
+
 ```python
 csv_reader = csv.DictReader(StringIO(file_content))
 # Funciona con \n, \r\n, \r
@@ -204,6 +209,7 @@ csv_reader = csv.DictReader(StringIO(file_content))
 ### **Caso 3: Nombres con tildes o caracteres especiales**
 
 **Solución:** UTF-8 encoding
+
 ```python
 contenido = await file.read()
 contenido_str = contenido.decode('utf-8')  # ← Maneja tildes, acentos, etc.
@@ -278,6 +284,7 @@ id | dni      | nombre                | apellido | zona
 ## 🎯 DIFERENCIA: Este enfoque vs Alternativas
 
 ### **Alternativa 1: TRUNCATE + INSERT (Borrar todo)**
+
 ```python
 # ❌ NO hacer esto:
 db.query(Trabajador).delete()  # BORRA TODO
@@ -291,6 +298,7 @@ Problemas:
 ```
 
 ### **Alternativa 2: INSERT IGNORE (Ignorar duplicados)**
+
 ```python
 # ❌ NO ideal:
 INSERT OR IGNORE INTO trabajadores VALUES (...)
@@ -301,6 +309,7 @@ Problema:
 ```
 
 ### **Alternativa 3: MERGE/UPSERT (Nuestro enfoque)**
+
 ```python
 # ✅ PERFECTO:
 IF dni EXISTS
@@ -348,6 +357,7 @@ Escalabilidad:
 ```
 
 **Si necesitas >100k registros:**
+
 - Considerar batch processing
 - O usar jobs asincronos (Celery)
 - O paginar la carga

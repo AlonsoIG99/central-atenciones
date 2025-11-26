@@ -9,7 +9,9 @@ Proyecto de gestión de incidencias con **FastAPI**, **SQLite** y **Vanilla Java
 ## 🚀 INICIO RÁPIDO
 
 ### 1. Haz doble click en `start.bat` (Windows)
+
 O ejecuta en terminal:
+
 ```bash
 python init_db.py
 python -m uvicorn app:app --reload
@@ -18,6 +20,7 @@ python -m uvicorn app:app --reload
 ### 2. Abre en navegador: `frontend/index.html`
 
 ### 3. Login con:
+
 ```
 Email: admin@central.com
 Contraseña: admin123
@@ -37,6 +40,7 @@ Contraseña: admin123
 ## 📋 CARACTERÍSTICAS
 
 ### 1. Inicializar Base de Datos (Primera vez)
+
 ```bash
 cd backend
 source venv/Scripts/activate
@@ -44,20 +48,25 @@ python init_db.py
 ```
 
 **Resultado:**
+
 - ✅ BD con nuevas tablas creadas
 - ✅ Usuario admin: `admin@central.com` / `admin123`
 - ✅ 8 trabajadores de prueba
 
 ### 2. Iniciar Backend
+
 ```bash
 python -m uvicorn app:app --reload
 ```
+
 Backend en: http://localhost:8000
 
 ### 3. Abrir Frontend
+
 Abre en navegador: `frontend/index.html`
 
 ### 4. Acceder
+
 - Email: `admin@central.com`
 - Contraseña: `admin123`
 
@@ -66,28 +75,33 @@ Abre en navegador: `frontend/index.html`
 ## ��� Características
 
 ### ��� Autenticación
+
 - Login con Email/Contraseña
 - JWT con expiración (30 minutos)
 - Roles: Administrador, Gestor
 - Solo admins crean usuarios
 
 ### ��� Gestión de Usuarios
+
 - CRUD de usuarios (admin only)
 - Roles con permisos diferentes
 - Área/Departamento asignado
 
 ### ��� Gestión de Incidencias
+
 - Formulario jerárquico dinámico
 - **Autocompletado DNI** en tiempo real
 - Estados: Abierta, En Progreso, Cerrada
 - Búsqueda y filtrado
 
 ### ��� Base de Trabajadores
+
 - 8 trabajadores de prueba preinstalados
 - Búsqueda por DNI para autocompletado
 - Independiente de incidencias
 
 ### ��� Reportes
+
 - Filtro por DNI
 - Filtro por rango de fechas
 - Vista detallada de incidencias
@@ -126,16 +140,19 @@ proyecto-central-atencion/
 ## ��� API Endpoints
 
 ### Autenticación
+
 - `POST /login` - Login usuario
 - `POST /refresh` - Refrescar token
 
 ### Usuarios (Admin Only)
+
 - `GET /usuarios/` - Listar usuarios
 - `POST /usuarios/` - Crear usuario
 - `PUT /usuarios/{id}` - Actualizar usuario
 - `DELETE /usuarios/{id}` - Eliminar usuario
 
 ### Incidencias
+
 - `GET /incidencias/` - Listar incidencias
 - `GET /incidencias/{id}` - Obtener incidencia
 - `POST /incidencias/` - Crear incidencia
@@ -143,6 +160,7 @@ proyecto-central-atencion/
 - `DELETE /incidencias/{id}` - Eliminar incidencia
 
 ### Trabajadores (Para Autocompletado)
+
 - `GET /trabajadores/` - Listar trabajadores
 - `GET /trabajadores/buscar/{dni}` - Buscar por DNI (autocomplete)
 - `GET /trabajadores/{id}` - Obtener trabajador
@@ -155,10 +173,12 @@ proyecto-central-atencion/
 ## ��� Datos de Prueba
 
 **Usuario Admin:**
+
 - Email: `admin@central.com`
 - Contraseña: `admin123`
 
 **Trabajadores Incluidos:**
+
 1. Juan Pérez - 12345678 (Centro)
 2. María García - 23456789 (Sur)
 3. Carlos López - 34567890 (Norte)
@@ -173,6 +193,7 @@ proyecto-central-atencion/
 ## ��� Roles y Permisos
 
 ### Administrador
+
 - ✅ Crear usuarios
 - ✅ Ver todos los usuarios
 - ✅ Crear incidencias
@@ -180,6 +201,7 @@ proyecto-central-atencion/
 - ✅ Gestionar trabajadores
 
 ### Gestor
+
 - ❌ Crear usuarios
 - ✅ Crear incidencias
 - ✅ Ver sus incidencias
@@ -190,6 +212,7 @@ proyecto-central-atencion/
 ## ��� Documentación
 
 Para documentación interactiva de la API (Swagger):
+
 1. Inicia el backend
 2. Visita: http://localhost:8000/docs
 
@@ -198,6 +221,7 @@ Para documentación interactiva de la API (Swagger):
 ## ��� Flujo de Uso
 
 ### Primer Login
+
 ```
 1. Email: admin@central.com
 2. Contraseña: admin123
@@ -205,6 +229,7 @@ Para documentación interactiva de la API (Swagger):
 ```
 
 ### Crear Gestores
+
 ```
 1. Pestaña: Usuarios
 2. Llenar formulario
@@ -213,6 +238,7 @@ Para documentación interactiva de la API (Swagger):
 ```
 
 ### Crear Incidencia
+
 ```
 1. Pestaña: Incidencias
 2. DNI: 12345678 (con autocompletado)
@@ -222,6 +248,7 @@ Para documentación interactiva de la API (Swagger):
 ```
 
 ### Ver Reportes
+
 ```
 1. Pestaña: Reportes
 2. Buscar por DNI (opcional)
@@ -234,6 +261,7 @@ Para documentación interactiva de la API (Swagger):
 ## ���️ Tecnologías
 
 **Backend:**
+
 - FastAPI 0.104.1
 - SQLAlchemy 2.0.23
 - SQLite
@@ -241,6 +269,7 @@ Para documentación interactiva de la API (Swagger):
 - bcrypt/passlib
 
 **Frontend:**
+
 - Vanilla JavaScript (ES6+)
 - Tailwind CSS
 - Fetch API

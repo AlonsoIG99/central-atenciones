@@ -22,6 +22,7 @@ Si empezara de cero, seguiría esta estrategia:
 ### **FASE 1: DEFINICIÓN Y PLANIFICACIÓN (Antes de escribir código)**
 
 #### 1.1 Entender Requerimientos
+
 ```
 Pregunta clave:
 ¿Cuál es el PROBLEMA que resuelve este sistema?
@@ -39,6 +40,7 @@ Alcance:
 ```
 
 #### 1.2 Definir Arquitectura de Datos
+
 ```
 ENTIDADES PRINCIPALES:
 
@@ -82,11 +84,13 @@ Usuario busca DNI
 ```
 
 **Decisión arquitectónica clave:**
+
 - ❌ NO hacer FK entre Incidencia y Trabajador (más flexible)
 - ✅ Dejar "dni" como String en Incidencia
 - ✅ Trabajador solo para búsqueda/autocomplete
 
 #### 1.3 Definir Flujos de Datos
+
 ```
 FLUJO 1: CREAR INCIDENCIA
 1. Usuario selecciona DNI (autocomplete consulta /trabajadores/buscar/{dni})
@@ -108,6 +112,7 @@ FLUJO 3: GESTIÓN USUARIOS
 ```
 
 #### 1.4 Definir Tecnología Stack
+
 ```
 BACKEND:
 - FastAPI (más moderno que Django)
@@ -134,6 +139,7 @@ DEPLOYMENT:
 ### **FASE 2: ESTRUCTURA BASE (Primeras 2 horas)**
 
 #### 2.1 Crear Estructura de Carpetas
+
 ```
 proyecto-central-atencion/
 ├── backend/
@@ -182,6 +188,7 @@ proyecto-central-atencion/
 #### 2.2 Crear Archivos Base Mínimos
 
 **backend/requirements.txt**
+
 ```
 fastapi==0.104.1
 uvicorn==0.24.0
@@ -194,6 +201,7 @@ pydantic==2.4.2
 ```
 
 **backend/config.py**
+
 ```python
 import os
 from dotenv import load_dotenv
@@ -207,6 +215,7 @@ ACCESS_TOKEN_EXPIRE_MINUTES = 30
 ```
 
 **backend/database.py**
+
 ```python
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
@@ -231,6 +240,7 @@ def get_db():
 #### 3.1 Definir Modelos SQLAlchemy
 
 **backend/models/usuario.py**
+
 ```python
 from sqlalchemy import Column, Integer, String, DateTime
 from datetime import datetime
@@ -238,7 +248,7 @@ from database import Base
 
 class Usuario(Base):
     __tablename__ = "usuarios"
-    
+
     id = Column(Integer, primary_key=True)
     nombre = Column(String, index=True)
     email = Column(String, unique=True, index=True)
@@ -249,6 +259,7 @@ class Usuario(Base):
 ```
 
 **backend/models/incidencia.py**
+
 ```python
 from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, JSON
 from datetime import datetime
@@ -256,7 +267,7 @@ from database import Base
 
 class Incidencia(Base):
     __tablename__ = "incidencias"
-    
+
     id = Column(Integer, primary_key=True)
     dni = Column(String, index=True)
     titulo = Column(String)
@@ -268,13 +279,14 @@ class Incidencia(Base):
 ```
 
 **backend/models/trabajador.py**
+
 ```python
 from sqlalchemy import Column, Integer, String
 from database import Base
 
 class Trabajador(Base):
     __tablename__ = "trabajadores"
-    
+
     id = Column(Integer, primary_key=True)
     dni = Column(String, unique=True, index=True)
     nombre = Column(String, index=True)
@@ -287,6 +299,7 @@ class Trabajador(Base):
 ### **FASE 4: SCHEMAS PYDANTIC (30 minutos)**
 
 **backend/schemas/usuario.py**
+
 ```python
 from pydantic import BaseModel, EmailStr
 from typing import Optional
@@ -306,7 +319,7 @@ class UsuarioResponse(BaseModel):
     rol: str
     area: str
     fecha_creacion: datetime
-    
+
     class Config:
         from_attributes = True
 ```
@@ -316,6 +329,7 @@ class UsuarioResponse(BaseModel):
 ### **FASE 5: AUTENTICACIÓN (1.5 horas)**
 
 **backend/auth.py**
+
 ```python
 from datetime import datetime, timedelta
 from jose import JWTError, jwt
@@ -345,6 +359,7 @@ def verify_token(token: str) -> dict:
 ```
 
 **backend/routes/auth.py**
+
 ```python
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
@@ -360,7 +375,7 @@ async def login(email: str, contraseña: str, db: Session = Depends(get_db)):
     usuario = db.query(Usuario).filter(Usuario.email == email).first()
     if not usuario or not verify_password(contraseña, usuario.contraseña_hash):
         raise HTTPException(status_code=401, detail="Credenciales inválidas")
-    
+
     token = create_access_token({"email": usuario.email, "user_id": usuario.id, "rol": usuario.rol})
     return {"access_token": token, "user_id": usuario.id, "rol": usuario.rol}
 ```
@@ -401,49 +416,50 @@ GET    /reportes/filtrar?dni=12&fecha_desde=2024-01-01&fecha_hasta=2024-12-31
 ### **FASE 7: FRONTEND HTML BÁSICO (1 hora)**
 
 **frontend/index.html** (estructura mínima)
+
 ```html
 <!DOCTYPE html>
 <html>
-<head>
+  <head>
     <title>Central de Atención</title>
     <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body>
+  </head>
+  <body>
     <div id="app">
-        <nav>
-            <button id="btn-usuarios">Usuarios</button>
-            <button id="btn-incidencias">Incidencias</button>
-            <button id="btn-reportes">Reportes</button>
-        </nav>
-        
-        <main>
-            <!-- USUARIOS -->
-            <section id="usuarios-section">
-                <form id="usuario-form"></form>
-                <div id="usuarios-list"></div>
-            </section>
-            
-            <!-- INCIDENCIAS -->
-            <section id="incidencias-section">
-                <form id="incidencia-form"></form>
-                <div id="incidencias-list"></div>
-            </section>
-            
-            <!-- REPORTES -->
-            <section id="reportes-section">
-                <div id="filtros"></div>
-                <div id="reportes-list"></div>
-            </section>
-        </main>
+      <nav>
+        <button id="btn-usuarios">Usuarios</button>
+        <button id="btn-incidencias">Incidencias</button>
+        <button id="btn-reportes">Reportes</button>
+      </nav>
+
+      <main>
+        <!-- USUARIOS -->
+        <section id="usuarios-section">
+          <form id="usuario-form"></form>
+          <div id="usuarios-list"></div>
+        </section>
+
+        <!-- INCIDENCIAS -->
+        <section id="incidencias-section">
+          <form id="incidencia-form"></form>
+          <div id="incidencias-list"></div>
+        </section>
+
+        <!-- REPORTES -->
+        <section id="reportes-section">
+          <div id="filtros"></div>
+          <div id="reportes-list"></div>
+        </section>
+      </main>
     </div>
-    
+
     <script src="js/api.js"></script>
     <script src="js/auth.js"></script>
     <script src="js/usuarios.js"></script>
     <script src="js/incidencias.js"></script>
     <script src="js/reportes.js"></script>
     <script src="js/script.js"></script>
-</body>
+  </body>
 </html>
 ```
 
@@ -452,49 +468,55 @@ GET    /reportes/filtrar?dni=12&fecha_desde=2024-01-01&fecha_hasta=2024-12-31
 ### **FASE 8: API CALLS EN FRONTEND (1 hora)**
 
 **frontend/js/api.js** (funciones HTTP reutilizables)
+
 ```javascript
 const API_URL = "http://localhost:8000";
 
-async function apiFetch(endpoint, method = "GET", body = null, requireAuth = true) {
-    const options = {
-        method,
-        headers: {
-            "Content-Type": "application/json"
-        }
-    };
-    
-    if (requireAuth) {
-        const token = localStorage.getItem("token");
-        options.headers["Authorization"] = `Bearer ${token}`;
-    }
-    
-    if (body) options.body = JSON.stringify(body);
-    
-    const response = await fetch(`${API_URL}${endpoint}`, options);
-    return response.json();
+async function apiFetch(
+  endpoint,
+  method = "GET",
+  body = null,
+  requireAuth = true
+) {
+  const options = {
+    method,
+    headers: {
+      "Content-Type": "application/json",
+    },
+  };
+
+  if (requireAuth) {
+    const token = localStorage.getItem("token");
+    options.headers["Authorization"] = `Bearer ${token}`;
+  }
+
+  if (body) options.body = JSON.stringify(body);
+
+  const response = await fetch(`${API_URL}${endpoint}`, options);
+  return response.json();
 }
 
 // USUARIOS
 async function obtenerUsuarios() {
-    return apiFetch("/usuarios");
+  return apiFetch("/usuarios");
 }
 
 async function crearUsuario(data) {
-    return apiFetch("/usuarios", "POST", data);
+  return apiFetch("/usuarios", "POST", data);
 }
 
 // INCIDENCIAS
 async function obtenerIncidencias() {
-    return apiFetch("/incidencias");
+  return apiFetch("/incidencias");
 }
 
 async function crearIncidencia(data) {
-    return apiFetch("/incidencias", "POST", data);
+  return apiFetch("/incidencias", "POST", data);
 }
 
 // TRABAJADORES
 async function buscarTrabajadorPorDni(dni) {
-    return apiFetch(`/trabajadores/buscar/${dni}`);
+  return apiFetch(`/trabajadores/buscar/${dni}`);
 }
 ```
 
@@ -503,6 +525,7 @@ async function buscarTrabajadorPorDni(dni) {
 ### **FASE 9: INICIALIZACIÓN DE BD (30 minutos)**
 
 **backend/init_db.py** (Script crítico)
+
 ```python
 from database import engine, Base, SessionLocal
 from models.usuario import Usuario
@@ -545,6 +568,7 @@ print("✅ BD inicializada correctamente")
 ### **FASE 10: APP PRINCIPAL (1 hora)**
 
 **backend/app.py**
+
 ```python
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -673,7 +697,7 @@ VENTAJA: Máxima flexibilidad
 - Puedes cambiar datos del trabajador sin afectar histórico
 - Más realista para datos históricos
 
-RECOMENDACIÓN: 
+RECOMENDACIÓN:
 Tu enfoque (sin FK) es correcto ✅
 Trabajador es solo para búsqueda/autocomplete
 Incidencias son históricas (nunca cambian)
@@ -684,6 +708,7 @@ Incidencias son históricas (nunca cambian)
 ## 📊 COMPARACIÓN: TU PROYECTO vs DESDE 0
 
 ### Cosas que ya tienes ✅
+
 ```
 ✅ Autenticación JWT completa
 ✅ Roles (admin/gestor)
@@ -698,6 +723,7 @@ Incidencias son históricas (nunca cambian)
 ```
 
 ### Cosas pendientes 📋
+
 ```
 📋 Dashboards/Analytics
 📋 Tests unitarios (backend)
@@ -715,26 +741,26 @@ Incidencias son históricas (nunca cambian)
 1. Agregar Tests desde el inicio
    - Backend: pytest
    - Frontend: Jest
-   
+
 2. Validaciones más estrictas
    - Backend valida "préstamo exclusivo"
    - Frontend solo complementa
-   
+
 3. Logging profesional
    - Logger en cada endpoint
    - Error tracking (Sentry)
-   
+
 4. API documentation
    - Swagger/OpenAPI (FastAPI tiene incluido)
    - Ejemplos en cada endpoint
-   
+
 5. Database migrations (Alembic)
    - Para cambios de schema en el futuro
-   
+
 6. Separar concerns mejor
    - business_logic.py para lógica principal
    - utils.py para funciones auxiliares
-   
+
 7. Environment variables desde el inicio
    - .env nunca en git
    - Diferentes configs por ambiente
@@ -805,16 +831,19 @@ DEPLOYMENT:
 **Opciones:**
 
 1. **Agregar Dashboards** (3-4 horas)
+
    - Endpoints de estadísticas
    - Frontend con Chart.js
    - Filtros por fecha, estado, usuario
 
 2. **Agregar Tests** (8-10 horas)
+
    - Backend: pytest + fixtures
    - Frontend: Jest + testing-library
    - Coverage > 80%
 
 3. **Optimizar para Producción** (4 horas)
+
    - Validación backend (préstamo exclusivo)
    - Rate limiting
    - Indices en BD

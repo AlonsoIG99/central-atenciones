@@ -3,6 +3,7 @@
 ## OPCIÓN 1: Con Script (La más fácil) ⭐ RECOMENDADA
 
 ### En Windows:
+
 1. Ve a la carpeta raíz del proyecto
 2. **Haz doble click en: `start.bat`**
 3. Espera a que aparezca el mensaje de éxito
@@ -13,6 +14,7 @@
 ```
 
 ### En Linux/Mac:
+
 ```bash
 cd proyecto-central-atencion
 bash start.sh
@@ -53,37 +55,46 @@ start frontend/index.html
 ## OPCIÓN 3: Sin Scripts (Si no funciona el .bat)
 
 ### Paso 1: Abre PowerShell o CMD
+
 Presiona: **Windows Key + R** → Escribe `powershell` → Enter
 
 ### Paso 2: Navega al backend
+
 ```powershell
 cd "C:\Users\aingar\Proyectos\proyecto-central-atencion\backend"
 ```
 
 ### Paso 3: Activa entorno virtual
+
 ```powershell
 .\venv\Scripts\Activate.ps1
 ```
 
 ### Paso 4: Inicializa BD
+
 ```powershell
 python init_db.py
 ```
 
 ### Paso 5: Inicia servidor
+
 ⚠️ **IMPORTANTE:** Usa este comando (NO `python app.py`):
+
 ```powershell
 python -m uvicorn app:app --reload
 ```
 
 Deberías ver:
+
 ```
 INFO:     Uvicorn running on http://127.0.0.1:8000
 INFO:     Application startup complete
 ```
 
 ### Paso 6: En OTRA ventana, abre frontend
+
 Presiona: **Windows Key + R** → Escribe:
+
 ```
 C:\Users\aingar\Proyectos\proyecto-central-atencion\frontend\index.html
 ```
@@ -93,23 +104,27 @@ C:\Users\aingar\Proyectos\proyecto-central-atencion\frontend\index.html
 ## ✅ ¿Cómo Saber que Todo Funciona?
 
 ### Backend (Deberías ver algo como esto)
+
 ```
 INFO:     Uvicorn running on http://127.0.0.1:8000
 INFO:     Application startup complete
 ```
 
 ### Frontend (Deberías ver)
+
 - Un formulario de login
 - Campo de Email y Contraseña
 - Botón "Iniciar Sesión"
 
 ### Login (Credentials)
+
 ```
 Email: admin@central.com
 Contraseña: admin123
 ```
 
 ### Después de Login (Deberías ver)
+
 - Pestaña: Usuarios
 - Pestaña: Incidencias ← PRUEBA AQUÍ EL AUTOCOMPLETE
 - Pestaña: Reportes
@@ -121,9 +136,11 @@ Contraseña: admin123
 1. Ve a pestaña **Incidencias**
 2. En el campo **DNI Trabajador** escribe: `12`
 3. Deberías ver aparecer:
+
 ```
 12345678 | Juan Pérez        | Centro
 ```
+
 4. Haz click → Se rellena el campo
 5. ¡LISTO! ✅
 
@@ -132,6 +149,7 @@ Contraseña: admin123
 ## 🆘 Si No Funciona
 
 ### Problema: "Error al inicializar BD"
+
 ```bash
 # Solución:
 # 1. Cierra todas las ventanas
@@ -140,6 +158,7 @@ Contraseña: admin123
 ```
 
 ### Problema: "No se conecta al API"
+
 ```bash
 # Solución:
 # 1. Revisa que la terminal del backend NO tenga errores rojos
@@ -148,6 +167,7 @@ Contraseña: admin123
 ```
 
 ### Problema: "Login no funciona"
+
 ```bash
 # Solución:
 # 1. Abre consola del navegador (F12)
@@ -157,6 +177,7 @@ Contraseña: admin123
 ```
 
 ### Problema: "Autocomplete no aparece"
+
 ```bash
 # Solución:
 # 1. Abre consola del navegador (F12)
@@ -170,10 +191,10 @@ Contraseña: admin123
 
 ## 📊 Resumen de URLs
 
-| Cosa | URL |
-|------|-----|
-| **API** | http://localhost:8000 |
-| **Docs API** | http://localhost:8000/docs |
+| Cosa         | URL                                                                             |
+| ------------ | ------------------------------------------------------------------------------- |
+| **API**      | http://localhost:8000                                                           |
+| **Docs API** | http://localhost:8000/docs                                                      |
 | **Frontend** | file:///C:/Users/aingar/Proyectos/proyecto-central-atencion/frontend/index.html |
 
 ---

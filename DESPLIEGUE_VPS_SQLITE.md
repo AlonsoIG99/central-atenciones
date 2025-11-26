@@ -19,6 +19,7 @@ SQLite en VPS es perfectamente viable porque:
 ```
 
 **Comparar con MongoDB:**
+
 - MongoDB = Servidor + servicio corriendo = más recursos
 - SQLite = Archivo en disco = más eficiente
 
@@ -102,6 +103,7 @@ EOF
 ```
 
 **Importante:** Cambiar `SECRET_KEY` por una clave aleatoria segura:
+
 ```bash
 python3 -c "import secrets; print(secrets.token_urlsafe(32))"
 ```
@@ -164,6 +166,7 @@ sudo nano /etc/systemd/system/central-atencion.service
 ```
 
 Contenido:
+
 ```ini
 [Unit]
 Description=Central de Atención - FastAPI
@@ -207,6 +210,7 @@ sudo nano /etc/nginx/sites-available/central-atencion
 ```
 
 Contenido:
+
 ```nginx
 server {
     listen 80;
@@ -329,6 +333,7 @@ sudo ufw allow 443/tcp  # HTTPS
 ### 4. Cambiar Contraseña Admin
 
 Una vez que levantes el servidor:
+
 1. Login con admin@central.com / admin123
 2. Cambiar contraseña inmediatamente
 3. Crear usuario gestor adicional
@@ -378,6 +383,7 @@ bash setup_vps.sh
 ```
 
 Este script haría:
+
 - ✅ Actualizar sistema
 - ✅ Instalar dependencias
 - ✅ Clonar repo
@@ -404,6 +410,7 @@ No necesitas hacer nada con MongoDB. SQLite funciona perfecto en VPS porque:
 5. **Backup fácil** - copias el archivo y ya
 
 **Lo único que haces:**
+
 1. Clonar repositorio en VPS
 2. `python init_db.py` (crea BD)
 3. `python -m uvicorn app:app --host 0.0.0.0 --port 8000`

@@ -5,6 +5,7 @@ Sistema de Atención al Cliente migrado de SQLite a **MongoDB**.
 ## 🚀 Inicio Rápido
 
 ### Requisitos Previos
+
 - Python 3.11+
 - MongoDB 8.2.1 (en VPS: nexus.liderman.net.pe:27017)
 - pip
@@ -12,16 +13,19 @@ Sistema de Atención al Cliente migrado de SQLite a **MongoDB**.
 ### Instalación
 
 1. **Clonar el repositorio** (ya está clonado):
+
 ```bash
 cd proyecto-central-atencion
 ```
 
 2. **Instalar dependencias**:
+
 ```bash
 pip install -r requirements.txt
 ```
 
 3. **Inicializar base de datos** (opcional - para agregar datos de prueba):
+
 ```bash
 cd backend
 python init_db.py
@@ -30,12 +34,14 @@ python init_db.py
 4. **Iniciar servidor FastAPI**:
 
 **Opción A: Desde el directorio backend**:
+
 ```bash
 cd backend
 python -m uvicorn app:app --port 8000 --reload
 ```
 
 **Opción B: Desde el directorio raíz**:
+
 ```bash
 python -m uvicorn backend.app:app --port 8000 --reload
 ```
@@ -60,10 +66,12 @@ El servidor estará disponible en: **http://127.0.0.1:8000**
 ## 🔐 Autenticación
 
 **Usuario por defecto**:
+
 - Email: `admin@central.com`
 - Contraseña: `admin123`
 
 ### Obtener JWT Token
+
 ```bash
 curl -X POST http://127.0.0.1:8000/auth/login \
   -H "Content-Type: application/json" \
@@ -71,6 +79,7 @@ curl -X POST http://127.0.0.1:8000/auth/login \
 ```
 
 Respuesta:
+
 ```json
 {
   "access_token": "eyJ0eXAiOiJKV1QiLCJhbGc...",
@@ -84,6 +93,7 @@ Respuesta:
 ## 📡 Endpoints Principales
 
 ### Usuarios
+
 - `GET /usuarios/` - Listar todos los usuarios
 - `GET /usuarios/{id}` - Obtener usuario específico
 - `POST /usuarios/` - Crear nuevo usuario
@@ -91,6 +101,7 @@ Respuesta:
 - `DELETE /usuarios/{id}` - Eliminar usuario
 
 ### Trabajadores
+
 - `GET /trabajadores/` - Listar trabajadores
 - `GET /trabajadores/{id}` - Obtener trabajador
 - `POST /trabajadores/` - Crear trabajador
@@ -100,12 +111,14 @@ Respuesta:
 - `GET /trabajadores/buscar/{dni}` - Buscar por DNI
 
 ### Asignados
+
 - `GET /asignados/` - Listar asignados
 - `GET /asignados/activos` - Solo activos
 - `POST /asignados/cargar-csv` - Upload CSV (admin)
 - (CRUD similar a trabajadores)
 
 ### Incidencias
+
 - `GET /incidencias/` - Listar incidencias
 - `POST /incidencias/` - Crear incidencia
 - `PUT /incidencias/{id}` - Actualizar incidencia
@@ -114,17 +127,20 @@ Respuesta:
 ## 📄 Carga de CSV
 
 ### Formato Aceptado
+
 - Delimitador: Coma (`,`) o Punto y Coma (`;`) - detección automática
 - Codificación: UTF-8
 - Limpieza de BOM automática
 
 ### Ejemplo de CSV de Trabajadores
+
 ```
 tipo_compania,nombre_completo,dni,fecha_ingreso,cliente,zona,lider_zonal,jefe_operaciones,macrozona,jurisdiccion,sector
 Privada,Juan Pérez,12345678,2022-01-15,Cliente A,Norte,Carlos Manager,Operador 1,Lima,Lima Centro,Sector 1
 ```
 
 ### Subir CSV
+
 ```bash
 curl -X POST http://127.0.0.1:8000/trabajadores/cargar-csv \
   -H "Authorization: Bearer {TOKEN}" \
@@ -134,12 +150,14 @@ curl -X POST http://127.0.0.1:8000/trabajadores/cargar-csv \
 ## 🔄 Migración SQLite → MongoDB
 
 ### Cambios Principales
+
 - **ORM**: SQLAlchemy → MongoEngine
 - **IDs**: Integer → String (MongoDB ObjectId)
 - **Consultas**: `.query().filter()` → `.objects().filter()`
 - **Persistencia**: `db.add()` + `db.commit()` → `.save()`
 
 ### Compatibilidad
+
 - ✅ Todos los endpoints funcionan igual
 - ✅ Estructura de respuestas idéntica (excepto IDs que son strings)
 - ✅ Validaciones preservadas
@@ -165,35 +183,42 @@ proyecto-central-atencion/
 ## 🛠️ Desarrollo
 
 ### Ejecutar con reload automático
+
 ```bash
 python -m uvicorn backend.app:app --reload
 ```
 
 ### Ver documentación interactiva (Swagger UI)
+
 Ir a: http://127.0.0.1:8000/docs
 
 ### Ver documentación ReDoc
+
 Ir a: http://127.0.0.1:8000/redoc
 
 ## 🐛 Solución de Problemas
 
 ### Puerto 8000 en uso
+
 ```bash
 python -m uvicorn backend.app:app --port 8001
 ```
 
 ### Conexión a MongoDB falla
+
 - Verificar credenciales en `.env`
 - Verificar conectividad a nexus.liderman.net.pe:27017
 - Verificar firewall
 
 ### Error de encoding Unicode en Windows
+
 - El servidor limpia automáticamente emojis en logs
 - CSV debe estar en UTF-8
 
 ## 📋 Variables de Entorno
 
 Crear `.env` en backend/ si es necesario:
+
 ```
 MONGODB_HOST=nexus.liderman.net.pe
 MONGODB_PORT=27017
