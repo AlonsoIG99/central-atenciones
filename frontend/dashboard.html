@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Central de Atención</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-gray-900 text-white">
+    <div class="min-h-screen">
+        <!-- Header -->
+        <header class="bg-gray-800 shadow-lg p-4">
+            <div class="max-w-7xl mx-auto flex justify-between items-center">
+                <h1 class="text-3xl font-bold text-indigo-400">Dashboard de Incidencias</h1>
+                <button id="btn-cerrar" class="px-6 py-2 bg-red-600 hover:bg-red-700 rounded-lg transition font-semibold">
+                    Cerrar
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="max-w-7xl mx-auto p-6">
+            <!-- Métrica Cards -->
+            <div class="grid grid-cols-4 gap-4 mb-8">
+                <div class="bg-gray-800 rounded-lg p-6 shadow-lg border border-gray-700">
+                    <h3 class="text-gray-400 text-sm font-semibold mb-2">Total de Incidencias</h3>
+                    <div class="text-4xl font-bold text-indigo-400" id="metric-total">0</div>
+                </div>
+                <div class="bg-gray-800 rounded-lg p-6 shadow-lg border border-gray-700">
+                    <h3 class="text-gray-400 text-sm font-semibold mb-2">Pago Correcto</h3>
+                    <div class="text-4xl font-bold text-green-400" id="metric-pago-correcto">0</div>
+                </div>
+                <div class="bg-gray-800 rounded-lg p-6 shadow-lg border border-gray-700">
+                    <h3 class="text-gray-400 text-sm font-semibold mb-2">Pago Incorrecto</h3>
+                    <div class="text-4xl font-bold text-red-400" id="metric-pago-incorrecto">0</div>
+                </div>
+                <div class="bg-gray-800 rounded-lg p-6 shadow-lg border border-gray-700">
+                    <h3 class="text-gray-400 text-sm font-semibold mb-2">Apoyo Económico</h3>
+                    <div class="text-4xl font-bold text-blue-400" id="metric-apoyo-economico">0</div>
+                </div>
+            </div>
+
+            <!-- Charts -->
+            <div class="grid grid-cols-2 gap-6 mb-8">
+                <div class="bg-gray-800 rounded-lg p-6 shadow-lg border border-gray-700">
+                    <h2 class="text-xl font-semibold text-white mb-4">Distribución (Gráfico Dona)</h2>
+                    <canvas id="chart-dona" height="300"></canvas>
+                </div>
+                <div class="bg-gray-800 rounded-lg p-6 shadow-lg border border-gray-700">
+                    <h2 class="text-xl font-semibold text-white mb-4">Distribución (Gráfico Barras)</h2>
+                    <canvas id="chart-barras" height="300"></canvas>
+                </div>
+            </div>
+
+            <!-- Data Table -->
+            <div class="bg-gray-800 rounded-lg p-6 shadow-lg border border-gray-700">
+                <h2 class="text-xl font-semibold text-white mb-4">Últimos 20 Registros</h2>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead class="bg-gray-700">
+                            <tr>
+                                <th class="px-4 py-2 text-left">DNI</th>
+                                <th class="px-4 py-2 text-left">Trabajador</th>
+                                <th class="px-4 py-2 text-left">Usuario</th>
+                                <th class="px-4 py-2 text-left">Tipo</th>
+                                <th class="px-4 py-2 text-left">Estado</th>
+                                <th class="px-4 py-2 text-left">Días Abierta</th>
+                                <th class="px-4 py-2 text-left">Fecha</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabla-registros">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script src="js/dashboard-page.js"></script>
+    <script>
+        document.getElementById('btn-cerrar').addEventListener('click', () => {
+            window.close();
+        });
+    </script>
+</body>
+</html>

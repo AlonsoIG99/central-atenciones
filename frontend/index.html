@@ -11,8 +11,8 @@
     </style>
 </head>
 <body class="bg-gray-100">
-    <div class="min-h-screen flex items-center justify-center p-6">
-        <div class="w-full max-w-3xl">
+    <div class="flex flex-col min-h-screen p-6">
+        <div class="w-full max-w-3xl mx-auto">
             <header class="bg-white rounded-t-xl shadow-md p-6">
                 <h1 class="text-3xl font-bold text-gray-800 mb-4 text-center">CENTRAL DE ATENCIONES</h1>
                 <nav class="flex justify-center gap-4 flex-wrap">
@@ -150,6 +150,91 @@ Pública,María García,23456789,2021-03-20,Cliente B,Zona B,Lider 2,Jefe 2,Macr
                                     <tbody id="dashboard-ultimos-tbody">
                                     </tbody>
                                 </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Paso 3: Ver Dashboard -->
+                    <div id="dashboard-visualizacion-container" class="bg-indigo-50 p-6 rounded-lg mb-8 border-2 border-indigo-300">
+                        <h3 class="text-xl font-semibold text-gray-700 mb-4">📈 Paso 3: Ver Dashboard</h3>
+                        
+                        <button id="btn-generar-visualizacion" class="w-full px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition font-semibold mb-4">
+                            Generar Dashboard
+                        </button>
+                        
+                        <!-- Dashboard visualización -->
+                        <div id="dashboard-visualizacion" class="hidden mt-6">
+                            <!-- Tarjeta con total de incidencias -->
+                            <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+                                <h4 class="text-lg font-semibold text-gray-800 mb-4">Total de Incidencias</h4>
+                                <div class="text-4xl font-bold text-indigo-600 text-center" id="dashboard-total">0</div>
+                            </div>
+                            
+                            <!-- Gráfico de distribución por tipo -->
+                            <div class="bg-white rounded-lg shadow-md p-6">
+                                <h4 class="text-lg font-semibold text-gray-800 mb-6">Distribución por Tipo de Incidencia</h4>
+                                
+                                <div id="dashboard-tipos-container" class="space-y-4">
+                                    <!-- Pago Correcto -->
+                                    <div class="flex items-center">
+                                        <div class="flex-1">
+                                            <div class="flex justify-between items-center mb-2">
+                                                <span class="text-gray-700 font-medium">Pago Correcto</span>
+                                                <span class="text-sm font-semibold text-gray-600" id="pago-correcto-count">0</span>
+                                            </div>
+                                            <div class="w-full bg-gray-200 rounded-full h-6 overflow-hidden">
+                                                <div class="bg-green-500 h-full flex items-center justify-center text-white text-xs font-bold" id="pago-correcto-bar" style="width: 0%">
+                                                    <span id="pago-correcto-percent">0%</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Pago Incorrecto -->
+                                    <div class="flex items-center">
+                                        <div class="flex-1">
+                                            <div class="flex justify-between items-center mb-2">
+                                                <span class="text-gray-700 font-medium">Pago Incorrecto</span>
+                                                <span class="text-sm font-semibold text-gray-600" id="pago-incorrecto-count">0</span>
+                                            </div>
+                                            <div class="w-full bg-gray-200 rounded-full h-6 overflow-hidden">
+                                                <div class="bg-red-500 h-full flex items-center justify-center text-white text-xs font-bold" id="pago-incorrecto-bar" style="width: 0%">
+                                                    <span id="pago-incorrecto-percent">0%</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Apoyo Económico/Préstamo -->
+                                    <div class="flex items-center">
+                                        <div class="flex-1">
+                                            <div class="flex justify-between items-center mb-2">
+                                                <span class="text-gray-700 font-medium">Apoyo Económico/Préstamo</span>
+                                                <span class="text-sm font-semibold text-gray-600" id="apoyo-economico-count">0</span>
+                                            </div>
+                                            <div class="w-full bg-gray-200 rounded-full h-6 overflow-hidden">
+                                                <div class="bg-blue-500 h-full flex items-center justify-center text-white text-xs font-bold" id="apoyo-economico-bar" style="width: 0%">
+                                                    <span id="apoyo-economico-percent">0%</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Otros/Soporte -->
+                                    <div class="flex items-center">
+                                        <div class="flex-1">
+                                            <div class="flex justify-between items-center mb-2">
+                                                <span class="text-gray-700 font-medium">Otros/Soporte</span>
+                                                <span class="text-sm font-semibold text-gray-600" id="otros-soporte-count">0</span>
+                                            </div>
+                                            <div class="w-full bg-gray-200 rounded-full h-6 overflow-hidden">
+                                                <div class="bg-purple-500 h-full flex items-center justify-center text-white text-xs font-bold" id="otros-soporte-bar" style="width: 0%">
+                                                    <span id="otros-soporte-percent">0%</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>

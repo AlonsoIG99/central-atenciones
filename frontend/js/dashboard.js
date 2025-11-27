@@ -148,3 +148,94 @@ function mostrarUltimosRegistrosDashboard(registros) {
   container.classList.remove('hidden');
 }
 
+// Generar visualización del dashboard
+async function generarVisualizacionDashboard() {
+  try {
+    // Obtener todos los reportes
+    const reportes = await obtenerTodosDashboard();
+    
+    if (reportes.length === 0) {
+      mostrarError('No hay datos en el reporte para generar el dashboard');
+      return;
+    }
+    
+    // Contar por tipo de incidencia (extrayendo del JSON de descripcion)
+    let contadores = {
+      "Pago correcto": 0,
+      "Pago incorrecto": 0,
+      "Apoyo económico/Préstamo": 0,
+      "Otros/Soporte": 0
+    };
+    
+    reportes.forEach(reporte => {
+      try {
+        // Parsear el JSON de descripcion_incidencia
+        const descripcion = JSON.parse(reporte.descripcion_incidencia || '{}');
+        
+        // Obtener todas las claves del objeto JSON y contar cada una
+        const tiposIncidencia = Object.keys(descripcion);
+        
+        tiposIncidencia.forEach(tipo => {
+          if (tipo === "Pago correcto") {
+            contadores["Pago correcto"]++;
+          } else if (tipo === "Pago incorrecto") {
+            contadores["Pago incorrecto"]++;
+          } else if (tipo === "Apoyo económico/Préstamo") {
+            contadores["Apoyo económico/Préstamo"]++;
+          } else if (tipo === "Otros/Soporte") {
+            contadores["Otros/Soporte"]++;
+          }
+        });
+      } catch (e) {
+        console.warn('Error parseando descripción:', e);
+      }
+    });
+    
+    // Calcular el total de conteos (puede ser mayor que reportes.length si hay múltiples tipos por registro)
+    const total = contadores["Pago correcto"] + contadores["Pago incorrecto"] + contadores["Apoyo económico/Préstamo"] + contadores["Otros/Soporte"];
+    
+    // Actualizar UI con el total de incidencias
+    document.getElementById('dashboard-total').textContent = total;
+    
+    // Actualizar barras de progreso
+    actualizarBarra('pago-correcto', contadores["Pago correcto"], total);
+    actualizarBarra('pago-incorrecto', contadores["Pago incorrecto"], total);
+    actualizarBarra('apoyo-economico', contadores["Apoyo económico/Préstamo"], total);
+    actualizarBarra('otros-soporte', contadores["Otros/Soporte"], total);
+    
+    // Mostrar dashboard
+    document.getElementById('dashboard-visualizacion').classList.remove('hidden');
+    
+  } catch (error) {
+    console.error('Error:', error);
+    mostrarError('Error al generar el dashboard');
+  }
+}
+
+// Actualizar barra de progreso
+function actualizarBarra(tipo, cantidad, total) {
+  const porcentaje = total > 0 ? Math.round((cantidad / total) * 100) : 0;
+  
+  document.getElementById(`${tipo}-count`).textContent = cantidad;
+  document.getElementById(`${tipo}-percent`).textContent = `${porcentaje}%`;
+  document.getElementById(`${tipo}-bar`).style.width = `${porcentaje}%`;
+}
+
+// Evento del botón Generar Dashboard
+document.addEventListener('DOMContentLoaded', () => {
+  const btnGenerarVisualizacion = document.getElementById('btn-generar-visualizacion');
+  
+  if (btnGenerarVisualizacion) {
+    btnGenerarVisualizacion.addEventListener('click', async () => {
+      btnGenerarVisualizacion.disabled = true;
+      btnGenerarVisualizacion.textContent = 'Abriendo...';
+      
+      // Abrir dashboard con slides en una nueva pestaña
+      window.open('dashboard-slides.html', 'dashboard', 'width=1600,height=900');
+      
+      btnGenerarVisualizacion.disabled = false;
+      btnGenerarVisualizacion.textContent = 'Generar Dashboard';
+    });
+  }
+});
+

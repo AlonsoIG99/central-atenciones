@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard de Incidencias - Slides</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        html, body {
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+        }
+        .min-h-screen {
+            height: 100vh;
+        }
+        #slide-1 {
+            display: block;
+        }
+        .slide-container {
+            display: none;
+            animation: fadeIn 0.5s ease-in;
+        }
+        .slide-container.active {
+            display: block;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-white">
+    <div class="min-h-screen flex flex-col h-screen w-screen">
+        <!-- Main Content -->
+        <main class="flex-1 w-full h-full p-4 overflow-hidden">
+            <!-- Slide 1: Gráficos principales -->
+            <div id="slide-1" class="slide-container active">
+                <div class="flex justify-between items-center mb-3">
+                    <h2 class="text-2xl font-bold">Análisis de Atenciones</h2>
+                    <button id="btn-cerrar" class="px-4 py-1 text-sm bg-red-600 hover:bg-red-700 rounded-lg transition font-semibold">
+                        Cerrar
+                    </button>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-3">
+                    <!-- Gráfico Pie: Atenciones por Macrozona -->
+                    <div class="bg-gray-800 rounded-lg p-3 border border-gray-700" style="height: 350px;">
+                        <h3 class="text-sm font-semibold mb-2 text-left">Atenciones por Macrozona</h3>
+                        <div style="position: relative; width: 100%; height: calc(100% - 24px);">
+                            <canvas id="chart-macrozona"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Gráfico Barras: Atenciones por Razón Social -->
+                    <div class="bg-gray-800 rounded-lg p-3 border border-gray-700" style="height: 350px;">
+                        <h3 class="text-sm font-semibold mb-2">Atenciones por Razón Social</h3>
+                        <div style="position: relative; width: 100%; height: calc(100% - 24px);">
+                            <canvas id="chart-compania"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Gráfico Barras Horizontal: Tipos de Atenciones -->
+                <div class="bg-gray-800 rounded-lg p-3 border border-gray-700 mt-3" style="height: 250px;">
+                    <h3 class="text-sm font-semibold mb-2">Suma de Tipos de Atenciones</h3>
+                    <div style="position: relative; width: 100%; height: calc(100% - 24px);">
+                        <canvas id="chart-tipos"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slides 2-9: Placeholder -->
+            <div id="slide-2" class="slide-container">
+                <h2 class="text-3xl font-bold mb-8">Slide 2</h2>
+                <p class="text-gray-400">Contenido del slide 2</p>
+            </div>
+
+            <div id="slide-3" class="slide-container">
+                <h2 class="text-3xl font-bold mb-8">Slide 3</h2>
+                <p class="text-gray-400">Contenido del slide 3</p>
+            </div>
+
+            <div id="slide-4" class="slide-container">
+                <h2 class="text-3xl font-bold mb-8">Slide 4</h2>
+                <p class="text-gray-400">Contenido del slide 4</p>
+            </div>
+
+            <div id="slide-5" class="slide-container">
+                <h2 class="text-3xl font-bold mb-8">Slide 5</h2>
+                <p class="text-gray-400">Contenido del slide 5</p>
+            </div>
+
+            <div id="slide-6" class="slide-container">
+                <h2 class="text-3xl font-bold mb-8">Slide 6</h2>
+                <p class="text-gray-400">Contenido del slide 6</p>
+            </div>
+
+            <div id="slide-7" class="slide-container">
+                <h2 class="text-3xl font-bold mb-8">Slide 7</h2>
+                <p class="text-gray-400">Contenido del slide 7</p>
+            </div>
+
+            <div id="slide-8" class="slide-container">
+                <h2 class="text-3xl font-bold mb-8">Slide 8</h2>
+                <p class="text-gray-400">Contenido del slide 8</p>
+            </div>
+
+            <div id="slide-9" class="slide-container">
+                <h2 class="text-3xl font-bold mb-8">Slide 9</h2>
+                <p class="text-gray-400">Contenido del slide 9</p>
+            </div>
+        </main>
+
+        <!-- Navigation -->
+        <footer class="bg-gray-800 border-t border-gray-700 p-3 flex-shrink-0">
+            <div class="max-w-7xl mx-auto flex justify-between items-center">
+                <button id="btn-anterior" class="px-4 py-1 text-sm bg-indigo-600 hover:bg-indigo-700 rounded-lg transition font-semibold">
+                    ← Anterior
+                </button>
+                <div class="flex gap-2" id="slide-dots">
+                    <!-- Dots generados por JavaScript -->
+                </div>
+                <button id="btn-siguiente" class="px-4 py-1 text-sm bg-indigo-600 hover:bg-indigo-700 rounded-lg transition font-semibold">
+                    Siguiente →
+                </button>
+            </div>
+        </footer>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script src="js/dashboard-slides.js"></script>
+</body>
+</html>
