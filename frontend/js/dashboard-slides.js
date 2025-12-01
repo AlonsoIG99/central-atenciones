@@ -353,6 +353,9 @@ async function cargarGraficos() {
     await crearGraficoTipos(datos);
     actualizarTotal(datos);
     
+    // Cargar gráfico del slide 3
+    await crearGraficoMacrozonasTipos(datos);
+    
     // Cargar datos para slide 2
     cargarDatosSlide2(datos);
   }
@@ -370,6 +373,29 @@ async function cargarDatosSlide2(datos) {
     selectCliente.appendChild(option);
   });
 
+  // Poblar select de tipo de atención (nivel 1 del JSON)
+  const tiposAtencion = new Set();
+  datos.forEach(d => {
+    try {
+      const desc = JSON.parse(d.descripcion_incidencia || '{}');
+      for (const tipo in desc) {
+        if (desc[tipo] && typeof desc[tipo] === 'object') {
+          tiposAtencion.add(tipo);
+        }
+      }
+    } catch (e) {
+      // Ignorar errores
+    }
+  });
+  
+  const selectTipoAtencion = document.getElementById('filtro-tipo-atencion');
+  Array.from(tiposAtencion).forEach(tipo => {
+    const option = document.createElement('option');
+    option.value = tipo;
+    option.textContent = tipo;
+    selectTipoAtencion.appendChild(option);
+  });
+
   // Poblar select de jurisdicción
   const jurisdicciones = [...new Set(datos.map(d => d.jurisdiccion).filter(Boolean))];
   const selectJurisdiccion = document.getElementById('filtro-jurisdiccion');
@@ -382,23 +408,37 @@ async function cargarDatosSlide2(datos) {
 
   // Crear gráfico inicial
   crearGraficoDetalleSlide2(datos);
+  
+  // Mostrar total inicial de incidencias
+  document.getElementById('total-incidencias-slide2').textContent = datos.length;
+  
+  // Cargar tabla de jurisdicciones
+  actualizarTablaJurisdicciones(datos);
 }
 
 // Crear gráfico de detalle del slide 2 (segundo nivel del JSON)
 async function crearGraficoDetalleSlide2(datos) {
   const detalleMap = {};
+  const tipoAtencionFiltro = document.getElementById('filtro-tipo-atencion').value;
 
   datos.forEach(d => {
     try {
       const desc = JSON.parse(d.descripcion_incidencia || '{}');
       
-      // Extraer segundo nivel del JSON
-      for (const tipo in desc) {
-        if (desc[tipo] && typeof desc[tipo] === 'object') {
-          // desc[tipo] es un objeto con detalles
-          for (const detalle in desc[tipo]) {
-            const key = `${tipo} - ${detalle}`;
-            detalleMap[key] = (detalleMap[key] || 0) + 1;
+      // Si hay filtro de tipo de atención, solo procesar ese tipo
+      if (tipoAtencionFiltro) {
+        if (desc[tipoAtencionFiltro] && typeof desc[tipoAtencionFiltro] === 'object') {
+          for (const detalle in desc[tipoAtencionFiltro]) {
+            detalleMap[detalle] = (detalleMap[detalle] || 0) + 1;
+          }
+        }
+      } else {
+        // Si no hay filtro, procesar todos los tipos
+        for (const tipo in desc) {
+          if (desc[tipo] && typeof desc[tipo] === 'object') {
+            for (const detalle in desc[tipo]) {
+              detalleMap[detalle] = (detalleMap[detalle] || 0) + 1;
+            }
           }
         }
       }
@@ -414,6 +454,7 @@ async function crearGraficoDetalleSlide2(datos) {
     '#8b5cf6', '#ef4444', '#f97316', '#14b8a6', '#3b82f6'
   ];
 
+  // Crear gráfico de barras horizontal
   const ctx = document.getElementById('chart-detalle-tipos');
   if (!ctx) return;
 
@@ -454,6 +495,11 @@ async function crearGraficoDetalleSlide2(datos) {
           }
         }
       },
+      layout: {
+        padding: {
+          right: 40
+        }
+      },
       scales: {
         x: {
           ticks: {
@@ -477,11 +523,70 @@ async function crearGraficoDetalleSlide2(datos) {
       }
     }
   });
+
+  // Crear gráfico de dona
+  const ctxDona = document.getElementById('chart-detalle-dona');
+  if (!ctxDona) return;
+
+  if (charts['detalle-dona']) {
+    charts['detalle-dona'].destroy();
+  }
+
+  charts['detalle-dona'] = new Chart(ctxDona, {
+    type: 'doughnut',
+    data: {
+      labels: labels,
+      datasets: [{
+        data: values,
+        backgroundColor: colores.slice(0, labels.length),
+        borderColor: '#1f2937',
+        borderWidth: 2
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          position: 'right',
+          labels: {
+            color: '#e5e7eb',
+            font: { size: 10 },
+            padding: 15,
+            boxWidth: 12
+          }
+        },
+        datalabels: {
+          color: '#ffffff',
+          font: {
+            size: 10,
+            weight: 'bold'
+          },
+          formatter: (value, ctx) => {
+            const total = ctx.dataset.data.reduce((a, b) => a + b, 0);
+            const percentage = ((value / total) * 100).toFixed(1);
+            return `${value}\n${percentage}%`;
+          },
+          anchor: 'center',
+          align: 'center'
+        }
+      },
+      layout: {
+        padding: {
+          top: 10,
+          bottom: 10,
+          left: 10,
+          right: 20
+        }
+      }
+    }
+  });
 }
 
 // Filtrar datos del slide 2
 async function aplicarFiltroSlide2() {
   const cliente = document.getElementById('filtro-cliente').value;
+  const tipoAtencion = document.getElementById('filtro-tipo-atencion').value;
   const jurisdiccion = document.getElementById('filtro-jurisdiccion').value;
   const fechaInicio = document.getElementById('filtro-fecha-inicio').value;
   const fechaFin = document.getElementById('filtro-fecha-fin').value;
@@ -492,6 +597,16 @@ async function aplicarFiltroSlide2() {
   if (cliente) {
     datos = datos.filter(d => d.cliente === cliente);
   }
+  if (tipoAtencion) {
+    datos = datos.filter(d => {
+      try {
+        const desc = JSON.parse(d.descripcion_incidencia || '{}');
+        return desc[tipoAtencion] && typeof desc[tipoAtencion] === 'object';
+      } catch (e) {
+        return false;
+      }
+    });
+  }
   if (jurisdiccion) {
     datos = datos.filter(d => d.jurisdiccion === jurisdiccion);
   }
@@ -501,10 +616,15 @@ async function aplicarFiltroSlide2() {
 
   if (datos.length === 0) {
     alert('No hay datos para los filtros seleccionados');
+    document.getElementById('total-incidencias-slide2').textContent = '0';
     return;
   }
 
+  // Actualizar total de incidencias
+  document.getElementById('total-incidencias-slide2').textContent = datos.length;
+
   await crearGraficoDetalleSlide2(datos);
+  actualizarTablaJurisdicciones(datos);
 }
 
 // Filtrar datos por rango de fechas
@@ -520,9 +640,158 @@ function filtrarPorFechas(datos, fechaInicio, fechaFin) {
   });
 }
 
+// Actualizar tabla de jurisdicciones
+function actualizarTablaJurisdicciones(datos) {
+  const jurisdiccionMap = {};
+  
+  datos.forEach(d => {
+    if (d.jurisdiccion) {
+      jurisdiccionMap[d.jurisdiccion] = (jurisdiccionMap[d.jurisdiccion] || 0) + 1;
+    }
+  });
+  
+  const tbody = document.getElementById('tabla-jurisdicciones');
+  tbody.innerHTML = '';
+  
+  // Ordenar por cantidad descendente
+  const sorted = Object.entries(jurisdiccionMap).sort((a, b) => b[1] - a[1]);
+  
+  if (sorted.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="2" class="text-center px-2 py-2 text-gray-400">No hay datos</td></tr>';
+    return;
+  }
+  
+  sorted.forEach(([jurisdiccion, cantidad]) => {
+    const row = document.createElement('tr');
+    row.className = 'border-b border-gray-700 hover:bg-gray-700 transition';
+    row.innerHTML = `
+      <td class="text-left px-2 py-2">${jurisdiccion}</td>
+      <td class="text-right px-2 py-2 font-semibold text-indigo-400">${cantidad}</td>
+    `;
+    tbody.appendChild(row);
+  });
+}
+
 // Actualizar el total de incidencias
 function actualizarTotal(datos) {
   document.getElementById('total-incidencias').textContent = datos.length.toLocaleString('es-ES');
+}
+
+// Crear gráfico de macrozonas con tipos de atención (slide 3)
+async function crearGraficoMacrozonasTipos(datos) {
+  const ctx = document.getElementById('chart-macrozonas-tipos');
+  if (!ctx) return;
+
+  // Agrupar por macrozona y tipo de atención (nivel 2)
+  const macrozonaMap = {};
+  
+  datos.forEach(d => {
+    if (!d.macrozona) return;
+    if (!macrozonaMap[d.macrozona]) {
+      macrozonaMap[d.macrozona] = {};
+    }
+    
+    try {
+      const desc = JSON.parse(d.descripcion_incidencia || '{}');
+      // Obtener todos los detalles (nivel 2) de todos los tipos
+      for (const tipo in desc) {
+        if (desc[tipo] && typeof desc[tipo] === 'object') {
+          for (const detalle in desc[tipo]) {
+            macrozonaMap[d.macrozona][detalle] = (macrozonaMap[d.macrozona][detalle] || 0) + 1;
+          }
+        }
+      }
+    } catch (e) {
+      // Ignorar errores de parseo
+    }
+  });
+
+  // Obtener todos los detalles únicos
+  const allDetalles = new Set();
+  Object.values(macrozonaMap).forEach(detalles => {
+    Object.keys(detalles).forEach(d => allDetalles.add(d));
+  });
+  
+  const detallesArray = Array.from(allDetalles).sort();
+  const macrozonas = Object.keys(macrozonaMap).sort();
+
+  // Crear datasets para cada detalle
+  const colores = [
+    '#6366f1', '#ec4899', '#f59e0b', '#10b981', '#06b6d4',
+    '#8b5cf6', '#ef4444', '#f97316', '#14b8a6', '#3b82f6',
+    '#a855f7', '#d946ef', '#0d9488', '#2563eb', '#dc2626',
+    '#ea580c', '#7c3aed', '#4f46e5', '#0891b2', '#059669'
+  ];
+
+  const datasets = detallesArray.map((detalle, index) => ({
+    label: detalle,
+    data: macrozonas.map(macrozona => macrozonaMap[macrozona][detalle] || 0),
+    backgroundColor: colores[index % colores.length],
+    borderColor: colores[index % colores.length],
+    borderWidth: 1
+  }));
+
+  if (charts['macrozonas-tipos']) {
+    charts['macrozonas-tipos'].destroy();
+  }
+
+  charts['macrozonas-tipos'] = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: macrozonas,
+      datasets: datasets
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      indexAxis: 'x',
+      plugins: {
+        legend: {
+          position: 'top',
+          labels: {
+            color: '#e5e7eb',
+            font: { size: 10 },
+            padding: 10,
+            boxWidth: 10
+          }
+        },
+        datalabels: {
+          color: '#ffffff',
+          anchor: 'end',
+          align: 'top',
+          font: {
+            size: 9,
+            weight: 'bold'
+          },
+          formatter: (value) => {
+            return value > 0 ? value : '';
+          }
+        }
+      },
+      scales: {
+        x: {
+          stacked: true,
+          ticks: {
+            color: '#e5e7eb',
+            font: { size: 11 }
+          },
+          grid: {
+            color: '#374151'
+          }
+        },
+        y: {
+          stacked: true,
+          ticks: {
+            color: '#e5e7eb',
+            font: { size: 11 }
+          },
+          grid: {
+            color: '#374151'
+          }
+        }
+      }
+    }
+  });
 }
 
 // Manejar el filtro
