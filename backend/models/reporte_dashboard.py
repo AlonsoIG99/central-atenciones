@@ -2,16 +2,16 @@ from mongoengine import Document, StringField, DateTimeField, DictField
 from datetime import datetime
 
 class ReporteDashboard(Document):
-    """Modelo de Reporte Dashboard - unión de datos de incidencias, trabajadores y asignados"""
+    """Modelo de Reporte Dashboard - unión de datos de atenciones, trabajadores y asignados"""
     
-    # Campos de Incidencia
-    incidencia_id = StringField(required=True)
+    # Campos de Atención
+    atencion_id = StringField(required=True)
     dni = StringField(required=True, index=True)
-    titulo_incidencia = StringField()
-    descripcion_incidencia = StringField()
-    estado_incidencia = StringField()
-    fecha_creacion_incidencia = DateTimeField()
-    fecha_cierre_incidencia = DateTimeField(null=True)
+    titulo_atencion = StringField()
+    descripcion_atencion = StringField()
+    estado_atencion = StringField()
+    fecha_creacion_atencion = DateTimeField()
+    fecha_cierre_atencion = DateTimeField(null=True)
     dias_abierta = StringField(null=True)
     
     # Información del usuario que registró
@@ -45,13 +45,13 @@ class ReporteDashboard(Document):
         """Convierte el documento a diccionario"""
         return {
             'id': str(self.id),
-            'incidencia_id': self.incidencia_id,
+            'atencion_id': self.atencion_id,
             'dni': self.dni,
-            'titulo_incidencia': self.titulo_incidencia,
-            'descripcion_incidencia': self.descripcion_incidencia,
-            'estado_incidencia': self.estado_incidencia,
-            'fecha_creacion_incidencia': self.fecha_creacion_incidencia.isoformat() if self.fecha_creacion_incidencia else None,
-            'fecha_cierre_incidencia': self.fecha_cierre_incidencia.isoformat() if self.fecha_cierre_incidencia else None,
+            'titulo_atencion': self.titulo_atencion,
+            'descripcion_atencion': self.descripcion_atencion,
+            'estado_atencion': self.estado_atencion,
+            'fecha_creacion_atencion': self.fecha_creacion_atencion.isoformat() if self.fecha_creacion_atencion else None,
+            'fecha_cierre_atencion': self.fecha_cierre_atencion.isoformat() if self.fecha_cierre_atencion else None,
             'dias_abierta': self.dias_abierta,
             'usuario_nombre': self.usuario_nombre,
             'usuario_area': self.usuario_area,

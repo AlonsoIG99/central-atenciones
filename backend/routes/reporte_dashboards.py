@@ -11,33 +11,33 @@ router = APIRouter(prefix="/reporte-dashboards", tags=["reporte-dashboards"])
 
 @router.post("/generar", response_model=dict)
 def generar_reporte_dashboard():
-    """Genera el reporte dashboard uniendo datos de incidencias, trabajadores y asignados"""
+    """Genera el reporte dashboard uniendo datos de atenciones, trabajadores y asignados"""
     try:
-        # Obtener todas las incidencias
-        incidencias = Incidencia.objects.all()
+        # Obtener todas las atenciones
+        atenciones = Incidencia.objects.all()
         
         registros_generados = 0
         
-        for incidencia in incidencias:
+        for atencion in atenciones:
             try:
                 # Obtener datos del usuario que registró
                 usuario_nombre = "Desconocido"
                 usuario_area = "No disponible"
                 
-                if incidencia.usuario_id:
-                    usuario = Usuario.objects(id=incidencia.usuario_id).first()
+                if atencion.usuario_id:
+                    usuario = Usuario.objects(id=atencion.usuario_id).first()
                     if usuario:
                         usuario_nombre = usuario.nombre
                         usuario_area = usuario.area or "No disponible"
                 
                 # Obtener datos del trabajador por DNI
-                trabajador = Trabajador.objects(dni=incidencia.dni).first()
+                trabajador = Trabajador.objects(dni=atencion.dni).first()
                 nombre_completo_trabajador = trabajador.nombre_completo if trabajador else None
                 fecha_ingreso_trabajador = trabajador.fecha_ingreso if trabajador else None
                 fecha_cese_trabajador = trabajador.fecha_cese if trabajador else None
                 
                 # Obtener datos del asignado por DNI
-                asignado = Asignado.objects(dni=incidencia.dni).first()
+                asignado = Asignado.objects(dni=atencion.dni).first()
                 tipo_compania = asignado.tipo_compania if asignado else None
                 cliente = asignado.cliente if asignado else None
                 zona = asignado.zona if asignado else None
@@ -48,17 +48,17 @@ def generar_reporte_dashboard():
                 sector = asignado.sector if asignado else None
                 
                 # Crear o actualizar registro en reporte_dashboards
-                reporte = ReporteDashboard.objects(incidencia_id=str(incidencia.id)).first()
+                reporte = ReporteDashboard.objects(atencion_id=str(atencion.id)).first()
                 
                 if reporte:
                     # Actualizar registro existente
-                    reporte.dni = incidencia.dni
-                    reporte.titulo_incidencia = incidencia.titulo
-                    reporte.descripcion_incidencia = incidencia.descripcion
-                    reporte.estado_incidencia = incidencia.estado
-                    reporte.fecha_creacion_incidencia = incidencia.fecha_creacion
-                    reporte.fecha_cierre_incidencia = incidencia.fecha_cierre
-                    reporte.dias_abierta = incidencia.dias_abierta
+                    reporte.dni = atencion.dni
+                    reporte.titulo_atencion = atencion.titulo
+                    reporte.descripcion_atencion = atencion.descripcion
+                    reporte.estado_atencion = atencion.estado
+                    reporte.fecha_creacion_atencion = atencion.fecha_creacion
+                    reporte.fecha_cierre_atencion = atencion.fecha_cierre
+                    reporte.dias_abierta = atencion.dias_abierta
                     reporte.usuario_nombre = usuario_nombre
                     reporte.usuario_area = usuario_area
                     reporte.nombre_completo_trabajador = nombre_completo_trabajador
@@ -76,14 +76,14 @@ def generar_reporte_dashboard():
                 else:
                     # Crear nuevo registro
                     reporte = ReporteDashboard(
-                        incidencia_id=str(incidencia.id),
-                        dni=incidencia.dni,
-                        titulo_incidencia=incidencia.titulo,
-                        descripcion_incidencia=incidencia.descripcion,
-                        estado_incidencia=incidencia.estado,
-                        fecha_creacion_incidencia=incidencia.fecha_creacion,
-                        fecha_cierre_incidencia=incidencia.fecha_cierre,
-                        dias_abierta=incidencia.dias_abierta,
+                        atencion_id=str(atencion.id),
+                        dni=atencion.dni,
+                        titulo_atencion=atencion.titulo,
+                        descripcion_atencion=atencion.descripcion,
+                        estado_atencion=atencion.estado,
+                        fecha_creacion_atencion=atencion.fecha_creacion,
+                        fecha_cierre_atencion=atencion.fecha_cierre,
+                        dias_abierta=atencion.dias_abierta,
                         usuario_nombre=usuario_nombre,
                         usuario_area=usuario_area,
                         nombre_completo_trabajador=nombre_completo_trabajador,

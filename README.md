@@ -1,6 +1,6 @@
-# ✅ Central de Atención - Sistema de Gestión de Incidencias
+# ✅ Central de Atención - Sistema de Gestión de Atenciones
 
-Proyecto de gestión de incidencias con **FastAPI**, **SQLite** y **Vanilla JavaScript**.
+Proyecto de gestión de atenciones con **FastAPI**, **SQLite** y **Vanilla JavaScript**.
 
 **Estado:** ✨ Completamente funcional y listo para usar
 
@@ -130,7 +130,7 @@ proyecto-central-atencion/
     └── js/
         ├── api.js             # API calls
         ├── usuarios.js        # Users logic
-        ├── incidencias.js     # Incidents + autocomplete
+        ├── incidencias.js     # Atenciones + autocomplete
         ├── reportes.js        # Reports logic
         └── script.js          # Main logic
 ```
@@ -151,13 +151,13 @@ proyecto-central-atencion/
 - `PUT /usuarios/{id}` - Actualizar usuario
 - `DELETE /usuarios/{id}` - Eliminar usuario
 
-### Incidencias
+### Atenciones
 
-- `GET /incidencias/` - Listar incidencias
-- `GET /incidencias/{id}` - Obtener incidencia
-- `POST /incidencias/` - Crear incidencia
-- `PUT /incidencias/{id}` - Actualizar incidencia
-- `DELETE /incidencias/{id}` - Eliminar incidencia
+- `GET /atenciones/` - Listar atenciones
+- `GET /atenciones/{id}` - Obtener atención
+- `POST /atenciones/` - Crear atención
+- `PUT /atenciones/{id}` - Actualizar atención
+- `DELETE /atenciones/{id}` - Eliminar atención
 
 ### Trabajadores (Para Autocompletado)
 
@@ -196,15 +196,15 @@ proyecto-central-atencion/
 
 - ✅ Crear usuarios
 - ✅ Ver todos los usuarios
-- ✅ Crear incidencias
-- ✅ Ver todas las incidencias
+- ✅ Crear atenciones
+- ✅ Ver todas las atenciones
 - ✅ Gestionar trabajadores
 
 ### Gestor
 
 - ❌ Crear usuarios
-- ✅ Crear incidencias
-- ✅ Ver sus incidencias
+- ✅ Crear atenciones
+- ✅ Ver sus atenciones
 - ✅ Ver reportes
 
 ---

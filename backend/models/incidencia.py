@@ -2,7 +2,7 @@ from mongoengine import Document, StringField, DateTimeField
 from datetime import datetime
 
 class Incidencia(Document):
-    """Modelo de Incidencia para MongoDB"""
+    """Modelo de Atención para MongoDB"""
     
     dni = StringField(required=True, index=True)
     titulo = StringField(required=True, index=True)
@@ -15,7 +15,7 @@ class Incidencia(Document):
     dias_abierta = StringField(null=True)  # Se calcula cuando se cierra
     
     meta = {
-        'collection': 'incidencias',
+        'collection': 'atenciones',
         'indexes': ['dni', 'estado', 'fecha_creacion']
     }
     

@@ -3,72 +3,72 @@ from backend.models.incidencia import Incidencia
 from backend.models.usuario import Usuario
 from backend.schemas.incidencia import IncidenciaCreate, IncidenciaUpdate, IncidenciaResponse
 
-router = APIRouter(prefix="/incidencias", tags=["incidencias"])
+router = APIRouter(prefix="/atenciones", tags=["atenciones"])
 
 @router.get("/", response_model=list[IncidenciaResponse])
-def obtener_incidencias():
-    """Obtener todas las incidencias"""
-    incidencias = Incidencia.objects.all()
+def obtener_atenciones():
+    """Obtener todas las atenciones"""
+    atenciones = Incidencia.objects.all()
     
     resultado = []
-    for incidencia in incidencias:
+    for atencion in atenciones:
         # Buscar el usuario
         usuario_nombre = "Desconocido"
         
-        if incidencia.usuario_id:
+        if atencion.usuario_id:
             try:
-                usuario = Usuario.objects(id=incidencia.usuario_id).first()
+                usuario = Usuario.objects(id=atencion.usuario_id).first()
                 if usuario:
                     usuario_nombre = usuario.nombre
             except:
                 pass
         
         data = {
-            "id": str(incidencia.id),
-            "dni": incidencia.dni,
-            "titulo": incidencia.titulo,
-            "descripcion": incidencia.descripcion,
-            "estado": incidencia.estado,
-            "usuario_id": incidencia.usuario_id,
-            "fecha_creacion": incidencia.fecha_creacion,
-            "fecha_actualizacion": incidencia.fecha_actualizacion,
-            "fecha_cierre": incidencia.fecha_cierre,
-            "dias_abierta": incidencia.dias_abierta,
+            "id": str(atencion.id),
+            "dni": atencion.dni,
+            "titulo": atencion.titulo,
+            "descripcion": atencion.descripcion,
+            "estado": atencion.estado,
+            "usuario_id": atencion.usuario_id,
+            "fecha_creacion": atencion.fecha_creacion,
+            "fecha_actualizacion": atencion.fecha_actualizacion,
+            "fecha_cierre": atencion.fecha_cierre,
+            "dias_abierta": atencion.dias_abierta,
             "usuario_nombre": usuario_nombre
         }
         resultado.append(IncidenciaResponse(**data))
     
     return resultado
 
-@router.get("/{incidencia_id}", response_model=IncidenciaResponse)
-def obtener_incidencia(incidencia_id: str):
-    """Obtener incidencia por ID"""
+@router.get("/{atencion_id}", response_model=IncidenciaResponse)
+def obtener_atencion(atencion_id: str):
+    """Obtener atención por ID"""
     try:
-        incidencia = Incidencia.objects(id=incidencia_id).first()
-        if not incidencia:
-            raise HTTPException(status_code=404, detail="Incidencia no encontrada")
+        atencion = Incidencia.objects(id=atencion_id).first()
+        if not atencion:
+            raise HTTPException(status_code=404, detail="Atención no encontrada")
         
         usuario_nombre = "Desconocido"
         
-        if incidencia.usuario_id:
+        if atencion.usuario_id:
             try:
-                usuario = Usuario.objects(id=incidencia.usuario_id).first()
+                usuario = Usuario.objects(id=atencion.usuario_id).first()
                 if usuario:
                     usuario_nombre = usuario.nombre
             except:
                 pass
         
         data = {
-            "id": str(incidencia.id),
-            "dni": incidencia.dni,
-            "titulo": incidencia.titulo,
-            "descripcion": incidencia.descripcion,
-            "estado": incidencia.estado,
-            "usuario_id": incidencia.usuario_id,
-            "fecha_creacion": incidencia.fecha_creacion,
-            "fecha_actualizacion": incidencia.fecha_actualizacion,
-            "fecha_cierre": incidencia.fecha_cierre,
-            "dias_abierta": incidencia.dias_abierta,
+            "id": str(atencion.id),
+            "dni": atencion.dni,
+            "titulo": atencion.titulo,
+            "descripcion": atencion.descripcion,
+            "estado": atencion.estado,
+            "usuario_id": atencion.usuario_id,
+            "fecha_creacion": atencion.fecha_creacion,
+            "fecha_actualizacion": atencion.fecha_actualizacion,
+            "fecha_cierre": atencion.fecha_cierre,
+            "dias_abierta": atencion.dias_abierta,
             "usuario_nombre": usuario_nombre
         }
         return IncidenciaResponse(**data)
@@ -76,96 +76,96 @@ def obtener_incidencia(incidencia_id: str):
         raise HTTPException(status_code=400, detail=f"Error: {str(e)}")
 
 @router.post("/", response_model=IncidenciaResponse)
-def crear_incidencia(incidencia: IncidenciaCreate):
-    """Crear nueva incidencia"""
+def crear_atencion(atencion: IncidenciaCreate):
+    """Crear nueva atención"""
     try:
-        db_incidencia = Incidencia(**incidencia.dict())
-        db_incidencia.save()
+        db_atencion = Incidencia(**atencion.dict())
+        db_atencion.save()
         
         usuario_nombre = "Desconocido"
-        if db_incidencia.usuario_id:
+        if db_atencion.usuario_id:
             try:
-                usuario = Usuario.objects(id=db_incidencia.usuario_id).first()
+                usuario = Usuario.objects(id=db_atencion.usuario_id).first()
                 if usuario:
                     usuario_nombre = usuario.nombre
             except:
                 pass
         
         data = {
-            "id": str(db_incidencia.id),
-            "dni": db_incidencia.dni,
-            "titulo": db_incidencia.titulo,
-            "descripcion": db_incidencia.descripcion,
-            "estado": db_incidencia.estado,
-            "usuario_id": db_incidencia.usuario_id,
-            "fecha_creacion": db_incidencia.fecha_creacion,
-            "fecha_actualizacion": db_incidencia.fecha_actualizacion,
-            "fecha_cierre": db_incidencia.fecha_cierre,
-            "dias_abierta": db_incidencia.dias_abierta,
+            "id": str(db_atencion.id),
+            "dni": db_atencion.dni,
+            "titulo": db_atencion.titulo,
+            "descripcion": db_atencion.descripcion,
+            "estado": db_atencion.estado,
+            "usuario_id": db_atencion.usuario_id,
+            "fecha_creacion": db_atencion.fecha_creacion,
+            "fecha_actualizacion": db_atencion.fecha_actualizacion,
+            "fecha_cierre": db_atencion.fecha_cierre,
+            "dias_abierta": db_atencion.dias_abierta,
             "usuario_nombre": usuario_nombre
         }
         return IncidenciaResponse(**data)
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Error: {str(e)}")
 
-@router.put("/{incidencia_id}", response_model=IncidenciaResponse)
-def actualizar_incidencia(incidencia_id: str, incidencia: IncidenciaUpdate):
-    """Actualizar incidencia"""
+@router.put("/{atencion_id}", response_model=IncidenciaResponse)
+def actualizar_atencion(atencion_id: str, atencion: IncidenciaUpdate):
+    """Actualizar atención"""
     try:
         from datetime import datetime
         
-        db_incidencia = Incidencia.objects(id=incidencia_id).first()
-        if not db_incidencia:
-            raise HTTPException(status_code=404, detail="Incidencia no encontrada")
+        db_atencion = Incidencia.objects(id=atencion_id).first()
+        if not db_atencion:
+            raise HTTPException(status_code=404, detail="Atención no encontrada")
         
         # Si se cambia a cerrada, calcular dias_abierta
-        if incidencia.estado == "cerrada" and db_incidencia.estado != "cerrada":
-            db_incidencia.fecha_cierre = datetime.utcnow()
-            dias = (db_incidencia.fecha_cierre - db_incidencia.fecha_creacion).days
-            db_incidencia.dias_abierta = str(dias)
+        if atencion.estado == "cerrada" and db_atencion.estado != "cerrada":
+            db_atencion.fecha_cierre = datetime.utcnow()
+            dias = (db_atencion.fecha_cierre - db_atencion.fecha_creacion).days
+            db_atencion.dias_abierta = str(dias)
         
-        for key, value in incidencia.dict(exclude_unset=True).items():
+        for key, value in atencion.dict(exclude_unset=True).items():
             if value is not None:
-                setattr(db_incidencia, key, value)
+                setattr(db_atencion, key, value)
         
-        db_incidencia.fecha_actualizacion = datetime.utcnow()
-        db_incidencia.save()
+        db_atencion.fecha_actualizacion = datetime.utcnow()
+        db_atencion.save()
         
         usuario_nombre = "Desconocido"
-        if db_incidencia.usuario_id:
+        if db_atencion.usuario_id:
             try:
-                usuario = Usuario.objects(id=db_incidencia.usuario_id).first()
+                usuario = Usuario.objects(id=db_atencion.usuario_id).first()
                 if usuario:
                     usuario_nombre = usuario.nombre
             except:
                 pass
         
         data = {
-            "id": str(db_incidencia.id),
-            "dni": db_incidencia.dni,
-            "titulo": db_incidencia.titulo,
-            "descripcion": db_incidencia.descripcion,
-            "estado": db_incidencia.estado,
-            "usuario_id": db_incidencia.usuario_id,
-            "fecha_creacion": db_incidencia.fecha_creacion,
-            "fecha_actualizacion": db_incidencia.fecha_actualizacion,
-            "fecha_cierre": db_incidencia.fecha_cierre,
-            "dias_abierta": db_incidencia.dias_abierta,
+            "id": str(db_atencion.id),
+            "dni": db_atencion.dni,
+            "titulo": db_atencion.titulo,
+            "descripcion": db_atencion.descripcion,
+            "estado": db_atencion.estado,
+            "usuario_id": db_atencion.usuario_id,
+            "fecha_creacion": db_atencion.fecha_creacion,
+            "fecha_actualizacion": db_atencion.fecha_actualizacion,
+            "fecha_cierre": db_atencion.fecha_cierre,
+            "dias_abierta": db_atencion.dias_abierta,
             "usuario_nombre": usuario_nombre
         }
         return IncidenciaResponse(**data)
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Error: {str(e)}")
 
-@router.delete("/{incidencia_id}")
-def eliminar_incidencia(incidencia_id: str):
-    """Eliminar incidencia"""
+@router.delete("/{atencion_id}")
+def eliminar_atencion(atencion_id: str):
+    """Eliminar atención"""
     try:
-        db_incidencia = Incidencia.objects(id=incidencia_id).first()
-        if not db_incidencia:
-            raise HTTPException(status_code=404, detail="Incidencia no encontrada")
+        db_atencion = Incidencia.objects(id=atencion_id).first()
+        if not db_atencion:
+            raise HTTPException(status_code=404, detail="Atención no encontrada")
         
-        db_incidencia.delete()
-        return {"mensaje": "Incidencia eliminada"}
+        db_atencion.delete()
+        return {"mensaje": "Atención eliminada"}
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Error: {str(e)}")
