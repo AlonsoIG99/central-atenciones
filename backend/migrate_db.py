@@ -19,8 +19,14 @@ def migrate():
     """Ejecuta la migración de MongoDB"""
     
     # Configuración de conexión
-    MONGO_URL = "mongodb://nexus.liderman.net.pe:27017/central_db"
+    MONGO_USER = "root"
+    MONGO_PASSWORD = "Jdg27aCQqOzR"
+    MONGO_HOST = "nexus.liderman.net.pe"
+    MONGO_PORT = 27017
     DB_NAME = "central_db"
+    
+    # Construir URL con autenticación
+    MONGO_URL = f"mongodb://{MONGO_USER}:{MONGO_PASSWORD}@{MONGO_HOST}:{MONGO_PORT}/{DB_NAME}?authSource=admin"
     
     try:
         print("🔄 Conectando a MongoDB...")
@@ -47,32 +53,39 @@ def migrate():
         print("2️⃣  Actualizando campos en 'reporte_dashboards'...")
         
         if 'reporte_dashboards' in db.list_collection_names():
+            # Primera pasada: copiar datos
             result = db.reporte_dashboards.update_many(
-                {},
+                {'incidencia_id': {'$exists': True}},
                 [
                     {
                         '$set': {
                             'atencion_id': '$incidencia_id',
-                            'titulo_atencion': '$titulo_incidencia',
-                            'descripcion_atencion': '$descripcion_incidencia',
-                            'estado_atencion': '$estado_incidencia',
+                            'titulo_atencion': {'$cond': [{'$eq': ['$titulo_incidencia', None]}, '', '$titulo_incidencia']},
+                            'descripcion_atencion': {'$cond': [{'$eq': ['$descripcion_incidencia', None]}, '', '$descripcion_incidencia']},
+                            'estado_atencion': {'$cond': [{'$eq': ['$estado_incidencia', None]}, '', '$estado_incidencia']},
                             'fecha_creacion_atencion': '$fecha_creacion_incidencia',
                             'fecha_cierre_atencion': '$fecha_cierre_incidencia'
-                        }
-                    },
-                    {
-                        '$unset': {
-                            'incidencia_id': '',
-                            'titulo_incidencia': '',
-                            'descripcion_incidencia': '',
-                            'estado_incidencia': '',
-                            'fecha_creacion_incidencia': '',
-                            'fecha_cierre_incidencia': ''
                         }
                     }
                 ]
             )
-            print(f"   ✅ {result.modified_count} documentos actualizados\n")
+            
+            # Segunda pasada: eliminar campos antiguos
+            result2 = db.reporte_dashboards.update_many(
+                {},
+                {
+                    '$unset': {
+                        'incidencia_id': '',
+                        'titulo_incidencia': '',
+                        'descripcion_incidencia': '',
+                        'estado_incidencia': '',
+                        'fecha_creacion_incidencia': '',
+                        'fecha_cierre_incidencia': ''
+                    }
+                }
+            )
+            print(f"   ✅ {result.modified_count} documentos actualizados")
+            print(f"   ✅ {result2.modified_count} documentos limpiados\n")
         else:
             print("   ⚠️  Colección 'reporte_dashboards' no encontrada\n")
         

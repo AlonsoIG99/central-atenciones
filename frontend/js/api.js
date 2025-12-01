@@ -93,64 +93,64 @@ async function eliminarUsuario(id) {
     }
 }
 
-// Funciones para Incidencias
-async function obtenerIncidencias() {
+// Funciones para Atenciones
+async function obtenerAtenciones() {
     try {
-        const response = await fetch(`${API_URL}/incidencias`, {
+        const response = await fetch(`${API_URL}/atenciones`, {
             headers: obtenerHeaders()
         });
-        if (!response.ok) throw new Error('Error al obtener incidencias');
+        if (!response.ok) throw new Error('Error al obtener atenciones');
         return await response.json();
     } catch (error) {
         console.error('Error:', error);
-        mostrarError('Error al obtener incidencias');
+        mostrarError('Error al obtener atenciones');
         return [];
     }
 }
 
-async function crearIncidencia(incidencia) {
+async function crearAtencion(atencion) {
     try {
-        const response = await fetch(`${API_URL}/incidencias`, {
+        const response = await fetch(`${API_URL}/atenciones`, {
             method: 'POST',
             headers: obtenerHeaders(),
-            body: JSON.stringify(incidencia)
+            body: JSON.stringify(atencion)
         });
-        if (!response.ok) throw new Error('Error al crear incidencia');
+        if (!response.ok) throw new Error('Error al crear atención');
         return await response.json();
     } catch (error) {
         console.error('Error:', error);
-        mostrarError('Error al crear incidencia');
+        mostrarError('Error al crear atención');
         return null;
     }
 }
 
-async function actualizarIncidencia(id, incidencia) {
+async function actualizarAtencion(id, atencion) {
     try {
-        const response = await fetch(`${API_URL}/incidencias/${id}`, {
+        const response = await fetch(`${API_URL}/atenciones/${id}`, {
             method: 'PUT',
             headers: obtenerHeaders(),
-            body: JSON.stringify(incidencia)
+            body: JSON.stringify(atencion)
         });
-        if (!response.ok) throw new Error('Error al actualizar incidencia');
+        if (!response.ok) throw new Error('Error al actualizar atención');
         return await response.json();
     } catch (error) {
         console.error('Error:', error);
-        mostrarError('Error al actualizar incidencia');
+        mostrarError('Error al actualizar atención');
         return null;
     }
 }
 
-async function eliminarIncidencia(id) {
+async function eliminarAtencion(id) {
     try {
-        const response = await fetch(`${API_URL}/incidencias/${id}`, {
+        const response = await fetch(`${API_URL}/atenciones/${id}`, {
             method: 'DELETE',
             headers: obtenerHeaders()
         });
-        if (!response.ok) throw new Error('Error al eliminar incidencia');
+        if (!response.ok) throw new Error('Error al eliminar atención');
         return await response.json();
     } catch (error) {
         console.error('Error:', error);
-        mostrarError('Error al eliminar incidencia');
+        mostrarError('Error al eliminar atención');
         return null;
     }
 }
