@@ -53,6 +53,7 @@ def generar_reporte_dashboard():
                 if reporte:
                     # Actualizar registro existente
                     reporte.dni = atencion.dni
+                    reporte.canal = atencion.canal if hasattr(atencion, 'canal') else None
                     reporte.titulo_atencion = atencion.titulo
                     reporte.descripcion_atencion = atencion.descripcion
                     reporte.estado_atencion = atencion.estado
@@ -78,6 +79,7 @@ def generar_reporte_dashboard():
                     reporte = ReporteDashboard(
                         atencion_id=str(atencion.id),
                         dni=atencion.dni,
+                        canal=atencion.canal if hasattr(atencion, 'canal') else None,
                         titulo_atencion=atencion.titulo,
                         descripcion_atencion=atencion.descripcion,
                         estado_atencion=atencion.estado,
@@ -124,6 +126,7 @@ def obtener_ultimos_registros(cantidad: int = 5):
                 "id": str(reporte.id),
                 "atencion_id": reporte.atencion_id,
                 "dni": reporte.dni,
+                "canal": reporte.canal if hasattr(reporte, 'canal') else None,
                 "titulo_atencion": reporte.titulo_atencion,
                 "descripcion_atencion": reporte.descripcion_atencion,
                 "estado_atencion": reporte.estado_atencion,
@@ -163,6 +166,7 @@ def obtener_todos_reportes():
                 "id": str(reporte.id),
                 "atencion_id": reporte.atencion_id,
                 "dni": reporte.dni,
+                "canal": reporte.canal if hasattr(reporte, 'canal') else None,
                 "titulo_atencion": reporte.titulo_atencion,
                 "descripcion_atencion": reporte.descripcion_atencion,
                 "estado_atencion": reporte.estado_atencion,

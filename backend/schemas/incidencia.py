@@ -6,6 +6,7 @@ class IncidenciaBase(BaseModel):
     dni: str  # DNI del trabajador
     titulo: str
     descripcion: str
+    canal: str = "llamada_telefonica"
     estado: str = "abierta"
     usuario_id: Optional[str] = None
 
@@ -16,6 +17,7 @@ class IncidenciaUpdate(BaseModel):
     dni: Optional[str] = None
     titulo: Optional[str] = None
     descripcion: Optional[str] = None
+    canal: Optional[str] = None
     estado: Optional[str] = None
 
 class IncidenciaResponse(IncidenciaBase):
@@ -25,6 +27,7 @@ class IncidenciaResponse(IncidenciaBase):
     fecha_cierre: Optional[datetime] = None
     dias_abierta: Optional[str] = None
     usuario_nombre: Optional[str] = "Desconocido"
+    canal: Optional[str] = "llamada_telefonica"
     
     class Config:
         from_attributes = True

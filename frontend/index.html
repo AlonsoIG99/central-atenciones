@@ -255,13 +255,22 @@ Pública,María García,23456789,2021-03-20,Cliente B,Zona B,Lider 2,Jefe 2,Macr
                                 <div id="trabajadores-resultados" class="absolute top-full left-0 right-0 mt-2 bg-white border border-blue-300 rounded-lg shadow-xl z-50 max-h-48 overflow-y-auto hidden"></div>
                             </div>
                             <div>
-                                <label class="block text-gray-700 font-medium mb-2">Estado</label>
-                                <select id="atencion-estado" class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600">
-                                    <option value="abierta">Abierta</option>
-                                    <option value="en-progreso">En Progreso</option>
-                                    <option value="cerrada">Cerrada</option>
+                                <label class="block text-gray-700 font-medium mb-2">Canal de Atención</label>
+                                <select id="atencion-canal" class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600">
+                                    <option value="llamada_telefonica">Llamada telefónica</option>
+                                    <option value="whatsapp">WhatsApp</option>
+                                    <option value="presencial">Presencial</option>
+                                    <option value="correo">Correo</option>
                                 </select>
                             </div>
+                        </div>
+                        <div class="mb-4">
+                            <label class="block text-gray-700 font-medium mb-2">Estado</label>
+                            <select id="atencion-estado" class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600">
+                                <option value="abierta">Abierta</option>
+                                <option value="en-progreso">En Progreso</option>
+                                <option value="cerrada">Cerrada</option>
+                            </select>
                         </div>
 
                         <!-- Esquema de atenciones dinámico aquí -->

@@ -4,6 +4,7 @@ from datetime import datetime
 
 class ReporteDashboardBase(BaseModel):
     dni: str
+    canal: Optional[str] = None
     titulo_atencion: Optional[str] = None
     descripcion_atencion: Optional[str] = None
     estado_atencion: Optional[str] = None

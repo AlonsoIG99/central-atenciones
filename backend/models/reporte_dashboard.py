@@ -7,6 +7,7 @@ class ReporteDashboard(Document):
     # Campos de Atención
     atencion_id = StringField(required=True)
     dni = StringField(required=True, index=True)
+    canal = StringField(null=True)
     titulo_atencion = StringField()
     descripcion_atencion = StringField()
     estado_atencion = StringField()
@@ -47,6 +48,7 @@ class ReporteDashboard(Document):
             'id': str(self.id),
             'atencion_id': self.atencion_id,
             'dni': self.dni,
+            'canal': self.canal,
             'titulo_atencion': self.titulo_atencion,
             'descripcion_atencion': self.descripcion_atencion,
             'estado_atencion': self.estado_atencion,

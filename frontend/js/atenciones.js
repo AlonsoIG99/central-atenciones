@@ -297,6 +297,7 @@ formAtencion.addEventListener('submit', async (e) => {
   
   const atencion = {
     dni: document.getElementById('atencion-dni').value,
+    canal: document.getElementById('atencion-canal').value,
     titulo: Object.keys(schemaData)[0] || 'Atencion sin título',
     descripcion: JSON.stringify(schemaData),
     usuario_id: usuarioId,

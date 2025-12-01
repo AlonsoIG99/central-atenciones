@@ -7,6 +7,7 @@ class Incidencia(Document):
     dni = StringField(required=True, index=True)
     titulo = StringField(required=True, index=True)
     descripcion = StringField(required=True)
+    canal = StringField(default="llamada_telefonica", choices=["llamada_telefonica", "whatsapp", "presencial", "correo"])
     estado = StringField(default="abierta", choices=["abierta", "en_proceso", "cerrada"])
     usuario_id = StringField(null=True)
     fecha_creacion = DateTimeField(default=datetime.utcnow)
@@ -16,7 +17,7 @@ class Incidencia(Document):
     
     meta = {
         'collection': 'atenciones',
-        'indexes': ['dni', 'estado', 'fecha_creacion']
+        'indexes': ['dni', 'estado', 'fecha_creacion', 'canal']
     }
     
     def to_dict(self):
@@ -26,6 +27,7 @@ class Incidencia(Document):
             'dni': self.dni,
             'titulo': self.titulo,
             'descripcion': self.descripcion,
+            'canal': self.canal,
             'estado': self.estado,
             'usuario_id': self.usuario_id,
             'fecha_creacion': self.fecha_creacion.isoformat() if self.fecha_creacion else None,
