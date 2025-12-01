@@ -6,6 +6,7 @@
     <title>Dashboard de Incidencias - Slides</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
     <link rel="stylesheet" href="style.css">
     <style>
         * {
@@ -21,15 +22,12 @@
         .min-h-screen {
             height: 100vh;
         }
-        #slide-1 {
-            display: block;
-        }
         .slide-container {
-            display: none;
+            display: none !important;
             animation: fadeIn 0.5s ease-in;
         }
         .slide-container.active {
-            display: block;
+            display: flex !important;
         }
         @keyframes fadeIn {
             from { opacity: 0; }
@@ -38,82 +36,147 @@
     </style>
 </head>
 <body class="bg-gray-900 text-white">
-    <div class="min-h-screen flex flex-col h-screen w-screen">
+    <div class="flex flex-col h-screen w-screen overflow-hidden">
         <!-- Main Content -->
-        <main class="flex-1 w-full h-full p-4 overflow-hidden">
+        <main class="flex-1 w-full overflow-hidden flex flex-col">
             <!-- Slide 1: Gráficos principales -->
-            <div id="slide-1" class="slide-container active">
-                <div class="flex justify-between items-center mb-3">
+            <div id="slide-1" class="slide-container active h-full overflow-hidden flex flex-col">
+                <div class="flex justify-between items-center mb-2 flex-shrink-0">
                     <h2 class="text-2xl font-bold">Análisis de Atenciones</h2>
                     <button id="btn-cerrar" class="px-4 py-1 text-sm bg-red-600 hover:bg-red-700 rounded-lg transition font-semibold">
                         Cerrar
                     </button>
                 </div>
-                
-                <div class="grid grid-cols-2 gap-3">
-                    <!-- Gráfico Pie: Atenciones por Macrozona -->
-                    <div class="bg-gray-800 rounded-lg p-3 border border-gray-700" style="height: 350px;">
-                        <h3 class="text-sm font-semibold mb-2 text-left">Atenciones por Macrozona</h3>
-                        <div style="position: relative; width: 100%; height: calc(100% - 24px);">
-                            <canvas id="chart-macrozona"></canvas>
-                        </div>
-                    </div>
 
-                    <!-- Gráfico Barras: Atenciones por Razón Social -->
-                    <div class="bg-gray-800 rounded-lg p-3 border border-gray-700" style="height: 350px;">
-                        <h3 class="text-sm font-semibold mb-2">Atenciones por Razón Social</h3>
-                        <div style="position: relative; width: 100%; height: calc(100% - 24px);">
-                            <canvas id="chart-compania"></canvas>
+                <!-- Filtros y Total -->
+                <div class="bg-gray-800 rounded-lg p-2 border border-gray-700 mb-2 flex justify-between items-center flex-shrink-0">
+                    <div class="flex gap-3 items-center">
+                        <div class="flex flex-col gap-1">
+                            <label class="text-xs font-semibold text-gray-300">Fecha Inicio</label>
+                            <input type="date" id="fecha-inicio" class="px-2 py-1 rounded bg-gray-700 text-white text-xs border border-gray-600" />
                         </div>
+                        <div class="flex flex-col gap-1">
+                            <label class="text-xs font-semibold text-gray-300">Fecha Fin</label>
+                            <input type="date" id="fecha-fin" class="px-2 py-1 rounded bg-gray-700 text-white text-xs border border-gray-600" />
+                        </div>
+                        <button id="btn-filtrar" class="px-2 py-1 bg-indigo-600 hover:bg-indigo-700 rounded-lg text-xs font-semibold transition mt-4">
+                            Filtrar
+                        </button>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-xs text-gray-400">Total de Incidencias</p>
+                        <p id="total-incidencias" class="text-xl font-bold text-indigo-400">0</p>
                     </div>
                 </div>
+                
+                <div class="flex-1 flex flex-col gap-2 overflow-hidden">
+                    <!-- Top Row: 2 Charts in Grid -->
+                    <div class="grid grid-cols-2 gap-2 flex-1 overflow-hidden">
+                        <!-- Gráfico Pie: Atenciones por Macrozona -->
+                        <div class="bg-gray-800 rounded-lg p-2 border border-gray-700 flex flex-col overflow-hidden">
+                            <h3 class="text-xs font-semibold mb-1 flex-shrink-0">Atenciones por Macrozona</h3>
+                            <div style="flex: 1; display: flex; align-items: center; justify-content: center; min-width: 0; padding: 0 20px; overflow: hidden;">
+                                <canvas id="chart-macrozona"></canvas>
+                            </div>
+                        </div>
 
-                <!-- Gráfico Barras Horizontal: Tipos de Atenciones -->
-                <div class="bg-gray-800 rounded-lg p-3 border border-gray-700 mt-3" style="height: 250px;">
-                    <h3 class="text-sm font-semibold mb-2">Suma de Tipos de Atenciones</h3>
-                    <div style="position: relative; width: 100%; height: calc(100% - 24px);">
-                        <canvas id="chart-tipos"></canvas>
+                        <!-- Gráfico Barras: Atenciones por Razón Social -->
+                        <div class="bg-gray-800 rounded-lg p-2 border border-gray-700 flex flex-col overflow-hidden">
+                            <h3 class="text-xs font-semibold mb-1 flex-shrink-0">Atenciones por Razón Social</h3>
+                            <div style="flex: 1; display: flex; align-items: center; justify-content: center; min-width: 0; padding: 0 20px; overflow: hidden;">
+                                <canvas id="chart-compania"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Bottom Row: Horizontal Bar Chart -->
+                    <div class="bg-gray-800 rounded-lg p-2 border border-gray-700 flex-1 flex flex-col overflow-hidden">
+                        <h3 class="text-xs font-semibold mb-1 flex-shrink-0">Suma de Tipos de Atenciones</h3>
+                        <div style="flex: 1; position: relative; width: 100%; overflow: hidden;">
+                            <canvas id="chart-tipos"></canvas>
+                        </div>
                     </div>
                 </div>
             </div>
 
             <!-- Slides 2-9: Placeholder -->
-            <div id="slide-2" class="slide-container">
-                <h2 class="text-3xl font-bold mb-8">Slide 2</h2>
-                <p class="text-gray-400">Contenido del slide 2</p>
+            <div id="slide-2" class="slide-container h-full overflow-hidden flex flex-col">
+                <div class="flex justify-between items-center mb-2 flex-shrink-0">
+                    <h2 class="text-2xl font-bold">Análisis Detallado de Atenciones</h2>
+                    <button id="btn-cerrar" class="px-4 py-1 text-sm bg-red-600 hover:bg-red-700 rounded-lg transition font-semibold">
+                        Cerrar
+                    </button>
+                </div>
+
+                <!-- Filtros -->
+                <div class="bg-gray-800 rounded-lg p-2 border border-gray-700 mb-2 flex gap-4 items-end flex-shrink-0">
+                    <div class="flex flex-col gap-1">
+                        <label class="text-xs font-semibold text-gray-300">Cliente</label>
+                        <select id="filtro-cliente" class="px-2 py-1 rounded bg-gray-700 text-white text-xs border border-gray-600">
+                            <option value="">Todos</option>
+                        </select>
+                    </div>
+                    <div class="flex flex-col gap-1">
+                        <label class="text-xs font-semibold text-gray-300">Jurisdicción</label>
+                        <select id="filtro-jurisdiccion" class="px-2 py-1 rounded bg-gray-700 text-white text-xs border border-gray-600">
+                            <option value="">Todos</option>
+                        </select>
+                    </div>
+                    <div class="flex flex-col gap-1">
+                        <label class="text-xs font-semibold text-gray-300">Fecha Inicio</label>
+                        <input type="date" id="filtro-fecha-inicio" class="px-2 py-1 rounded bg-gray-700 text-white text-xs border border-gray-600" />
+                    </div>
+                    <div class="flex flex-col gap-1">
+                        <label class="text-xs font-semibold text-gray-300">Fecha Fin</label>
+                        <input type="date" id="filtro-fecha-fin" class="px-2 py-1 rounded bg-gray-700 text-white text-xs border border-gray-600" />
+                    </div>
+                    <button id="btn-filtrar-slide2" class="px-2 py-1 bg-indigo-600 hover:bg-indigo-700 rounded-lg text-xs font-semibold transition">
+                        Filtrar
+                    </button>
+                </div>
+
+                <!-- Gráfico -->
+                <div class="flex-1 flex flex-col gap-2 overflow-hidden">
+                    <div class="bg-gray-800 rounded-lg p-2 border border-gray-700 flex-1 flex flex-col overflow-hidden">
+                        <h3 class="text-xs font-semibold mb-1 flex-shrink-0">Detalle de Tipos de Atenciones</h3>
+                        <div style="flex: 1; position: relative; width: 100%; overflow: hidden;">
+                            <canvas id="chart-detalle-tipos"></canvas>
+                        </div>
+                    </div>
+                </div>
             </div>
 
-            <div id="slide-3" class="slide-container">
+            <div id="slide-3" class="slide-container h-full overflow-hidden flex flex-col">
                 <h2 class="text-3xl font-bold mb-8">Slide 3</h2>
                 <p class="text-gray-400">Contenido del slide 3</p>
             </div>
 
-            <div id="slide-4" class="slide-container">
+            <div id="slide-4" class="slide-container h-full overflow-hidden flex flex-col">
                 <h2 class="text-3xl font-bold mb-8">Slide 4</h2>
                 <p class="text-gray-400">Contenido del slide 4</p>
             </div>
 
-            <div id="slide-5" class="slide-container">
+            <div id="slide-5" class="slide-container h-full overflow-hidden flex flex-col">
                 <h2 class="text-3xl font-bold mb-8">Slide 5</h2>
                 <p class="text-gray-400">Contenido del slide 5</p>
             </div>
 
-            <div id="slide-6" class="slide-container">
+            <div id="slide-6" class="slide-container h-full overflow-hidden flex flex-col">
                 <h2 class="text-3xl font-bold mb-8">Slide 6</h2>
                 <p class="text-gray-400">Contenido del slide 6</p>
             </div>
 
-            <div id="slide-7" class="slide-container">
+            <div id="slide-7" class="slide-container h-full overflow-hidden flex flex-col">
                 <h2 class="text-3xl font-bold mb-8">Slide 7</h2>
                 <p class="text-gray-400">Contenido del slide 7</p>
             </div>
 
-            <div id="slide-8" class="slide-container">
+            <div id="slide-8" class="slide-container h-full overflow-hidden flex flex-col">
                 <h2 class="text-3xl font-bold mb-8">Slide 8</h2>
                 <p class="text-gray-400">Contenido del slide 8</p>
             </div>
 
-            <div id="slide-9" class="slide-container">
+            <div id="slide-9" class="slide-container h-full overflow-hidden flex flex-col">
                 <h2 class="text-3xl font-bold mb-8">Slide 9</h2>
                 <p class="text-gray-400">Contenido del slide 9</p>
             </div>
@@ -121,15 +184,15 @@
 
         <!-- Navigation -->
         <footer class="bg-gray-800 border-t border-gray-700 p-3 flex-shrink-0">
-            <div class="max-w-7xl mx-auto flex justify-between items-center">
-                <button id="btn-anterior" class="px-4 py-1 text-sm bg-indigo-600 hover:bg-indigo-700 rounded-lg transition font-semibold">
-                    ← Anterior
+            <div class="max-w-7xl mx-auto flex justify-center items-center gap-4">
+                <button id="btn-anterior" class="px-3 py-2 text-lg bg-indigo-600 hover:bg-indigo-700 rounded transition font-semibold flex items-center justify-center w-10 h-10">
+                    ←
                 </button>
                 <div class="flex gap-2" id="slide-dots">
                     <!-- Dots generados por JavaScript -->
                 </div>
-                <button id="btn-siguiente" class="px-4 py-1 text-sm bg-indigo-600 hover:bg-indigo-700 rounded-lg transition font-semibold">
-                    Siguiente →
+                <button id="btn-siguiente" class="px-3 py-2 text-lg bg-indigo-600 hover:bg-indigo-700 rounded transition font-semibold flex items-center justify-center w-10 h-10">
+                    →
                 </button>
             </div>
         </footer>

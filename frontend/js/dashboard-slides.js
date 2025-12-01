@@ -2,6 +2,9 @@ let currentSlide = 1;
 const totalSlides = 9;
 let charts = {};
 
+// Registrar el plugin de datalabels
+Chart.register(ChartDataLabels);
+
 // Obtener todos los datos del dashboard
 async function obtenerDatosDashboard() {
   try {
@@ -117,26 +120,48 @@ async function crearGraficoMacrozona(datos) {
     },
     options: {
       responsive: true,
-      maintainAspectRatio: true,
+      maintainAspectRatio: false,
       plugins: {
         legend: {
           position: 'right',
           labels: {
             color: '#e5e7eb',
-            font: { size: 12 },
-            padding: 15
+            font: { size: 11 },
+            padding: 25,
+            boxWidth: 14
           }
+        },
+        datalabels: {
+          color: '#ffffff',
+          font: {
+            size: 11,
+            weight: 'bold'
+          },
+          formatter: (value, ctx) => {
+            const total = ctx.dataset.data.reduce((a, b) => a + b, 0);
+            const percentage = ((value / total) * 100).toFixed(1);
+            return `${value} (${percentage}%)`;
+          },
+          anchor: 'center',
+          align: 'center'
         }
       },
       layout: {
         padding: {
-          left: 10,
-          right: 10,
           top: 10,
-          bottom: 10
+          bottom: 10,
+          left: 10,
+          right: 50
         }
       }
-    }
+    },
+    plugins: [{
+      id: 'textCenter',
+      beforeDatasetsDraw(chart) {
+        const {ctx, chartArea: {left, top, width, height}} = chart;
+        ctx.save();
+      }
+    }]
   });
 }
 
@@ -178,12 +203,29 @@ async function crearGraficoCompania(datos) {
     options: {
       indexAxis: 'x',
       responsive: true,
-      maintainAspectRatio: true,
+      maintainAspectRatio: false,
       plugins: {
         legend: {
           labels: {
             color: '#e5e7eb'
           }
+        },
+        datalabels: {
+          color: '#ffffff',
+          anchor: 'end',
+          align: 'top',
+          font: {
+            size: 11,
+            weight: 'bold'
+          }
+        }
+      },
+      layout: {
+        padding: {
+          top: 10,
+          bottom: 10,
+          left: 10,
+          right: 10
         }
       },
       scales: {
@@ -220,13 +262,15 @@ async function crearGraficoTipos(datos) {
   datos.forEach(d => {
     try {
       const desc = JSON.parse(d.descripcion_incidencia || '{}');
-      Object.keys(desc).forEach(key => {
-        if (key in tiposMap) {
+      
+      // Contar cada tipo que esté en true
+      for (const key in tiposMap) {
+        if (desc[key]) {
           tiposMap[key]++;
         }
-      });
+      }
     } catch (e) {
-      tiposMap['Otros/Soporte']++;
+      // Si hay error al parsear, no contar nada
     }
   });
 
@@ -263,6 +307,15 @@ async function crearGraficoTipos(datos) {
           labels: {
             color: '#e5e7eb'
           }
+        },
+        datalabels: {
+          color: '#ffffff',
+          anchor: 'end',
+          align: 'right',
+          font: {
+            size: 11,
+            weight: 'bold'
+          }
         }
       },
       scales: {
@@ -290,7 +343,7 @@ async function crearGraficoTipos(datos) {
   });
 }
 
-// Cargar y crear todos los gráficos
+// Cargar y crear todos los gráficos del slide 1
 async function cargarGraficos() {
   const datos = await obtenerDatosDashboard();
   
@@ -298,7 +351,202 @@ async function cargarGraficos() {
     await crearGraficoMacrozona(datos);
     await crearGraficoCompania(datos);
     await crearGraficoTipos(datos);
+    actualizarTotal(datos);
+    
+    // Cargar datos para slide 2
+    cargarDatosSlide2(datos);
   }
+}
+
+// Cargar datos y opciones para slide 2
+async function cargarDatosSlide2(datos) {
+  // Poblar select de cliente
+  const clientes = [...new Set(datos.map(d => d.cliente).filter(Boolean))];
+  const selectCliente = document.getElementById('filtro-cliente');
+  clientes.forEach(cliente => {
+    const option = document.createElement('option');
+    option.value = cliente;
+    option.textContent = cliente;
+    selectCliente.appendChild(option);
+  });
+
+  // Poblar select de jurisdicción
+  const jurisdicciones = [...new Set(datos.map(d => d.jurisdiccion).filter(Boolean))];
+  const selectJurisdiccion = document.getElementById('filtro-jurisdiccion');
+  jurisdicciones.forEach(jurisdiccion => {
+    const option = document.createElement('option');
+    option.value = jurisdiccion;
+    option.textContent = jurisdiccion;
+    selectJurisdiccion.appendChild(option);
+  });
+
+  // Crear gráfico inicial
+  crearGraficoDetalleSlide2(datos);
+}
+
+// Crear gráfico de detalle del slide 2 (segundo nivel del JSON)
+async function crearGraficoDetalleSlide2(datos) {
+  const detalleMap = {};
+
+  datos.forEach(d => {
+    try {
+      const desc = JSON.parse(d.descripcion_incidencia || '{}');
+      
+      // Extraer segundo nivel del JSON
+      for (const tipo in desc) {
+        if (desc[tipo] && typeof desc[tipo] === 'object') {
+          // desc[tipo] es un objeto con detalles
+          for (const detalle in desc[tipo]) {
+            const key = `${tipo} - ${detalle}`;
+            detalleMap[key] = (detalleMap[key] || 0) + 1;
+          }
+        }
+      }
+    } catch (e) {
+      // Ignorar errores de parseo
+    }
+  });
+
+  const labels = Object.keys(detalleMap);
+  const values = Object.values(detalleMap);
+  const colores = [
+    '#6366f1', '#ec4899', '#f59e0b', '#10b981', '#06b6d4',
+    '#8b5cf6', '#ef4444', '#f97316', '#14b8a6', '#3b82f6'
+  ];
+
+  const ctx = document.getElementById('chart-detalle-tipos');
+  if (!ctx) return;
+
+  if (charts['detalle-tipos']) {
+    charts['detalle-tipos'].destroy();
+  }
+
+  charts['detalle-tipos'] = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: labels,
+      datasets: [{
+        label: 'Cantidad',
+        data: values,
+        backgroundColor: colores.slice(0, labels.length),
+        borderColor: '#1f2937',
+        borderWidth: 1
+      }]
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          display: true,
+          labels: {
+            color: '#e5e7eb'
+          }
+        },
+        datalabels: {
+          color: '#ffffff',
+          anchor: 'end',
+          align: 'right',
+          font: {
+            size: 11,
+            weight: 'bold'
+          }
+        }
+      },
+      scales: {
+        x: {
+          ticks: {
+            color: '#e5e7eb'
+          },
+          grid: {
+            color: '#374151'
+          }
+        },
+        y: {
+          ticks: {
+            color: '#e5e7eb',
+            font: {
+              size: 12
+            }
+          },
+          grid: {
+            color: '#374151'
+          }
+        }
+      }
+    }
+  });
+}
+
+// Filtrar datos del slide 2
+async function aplicarFiltroSlide2() {
+  const cliente = document.getElementById('filtro-cliente').value;
+  const jurisdiccion = document.getElementById('filtro-jurisdiccion').value;
+  const fechaInicio = document.getElementById('filtro-fecha-inicio').value;
+  const fechaFin = document.getElementById('filtro-fecha-fin').value;
+
+  let datos = await obtenerDatosDashboard();
+
+  // Aplicar filtros
+  if (cliente) {
+    datos = datos.filter(d => d.cliente === cliente);
+  }
+  if (jurisdiccion) {
+    datos = datos.filter(d => d.jurisdiccion === jurisdiccion);
+  }
+  if (fechaInicio && fechaFin) {
+    datos = filtrarPorFechas(datos, fechaInicio, fechaFin);
+  }
+
+  if (datos.length === 0) {
+    alert('No hay datos para los filtros seleccionados');
+    return;
+  }
+
+  await crearGraficoDetalleSlide2(datos);
+}
+
+// Filtrar datos por rango de fechas
+function filtrarPorFechas(datos, fechaInicio, fechaFin) {
+  const inicio = new Date(fechaInicio);
+  const fin = new Date(fechaFin);
+  fin.setHours(23, 59, 59, 999); // Incluir todo el último día
+  
+  return datos.filter(d => {
+    if (!d.fecha_creacion_incidencia) return false;
+    const fecha = new Date(d.fecha_creacion_incidencia);
+    return fecha >= inicio && fecha <= fin;
+  });
+}
+
+// Actualizar el total de incidencias
+function actualizarTotal(datos) {
+  document.getElementById('total-incidencias').textContent = datos.length.toLocaleString('es-ES');
+}
+
+// Manejar el filtro
+async function aplicarFiltro() {
+  const fechaInicio = document.getElementById('fecha-inicio').value;
+  const fechaFin = document.getElementById('fecha-fin').value;
+  
+  if (!fechaInicio || !fechaFin) {
+    alert('Por favor completa ambas fechas');
+    return;
+  }
+  
+  const todos = await obtenerDatosDashboard();
+  const datos = filtrarPorFechas(todos, fechaInicio, fechaFin);
+  
+  if (datos.length === 0) {
+    alert('No hay datos para el rango de fechas seleccionado');
+    return;
+  }
+  
+  await crearGraficoMacrozona(datos);
+  await crearGraficoCompania(datos);
+  await crearGraficoTipos(datos);
+  actualizarTotal(datos);
 }
 
 // Event Listeners
@@ -325,6 +573,16 @@ document.addEventListener('DOMContentLoaded', () => {
   // Botón cerrar
   document.getElementById('btn-cerrar').addEventListener('click', () => {
     window.close();
+  });
+
+  // Botón filtrar slide 1
+  document.getElementById('btn-filtrar').addEventListener('click', () => {
+    aplicarFiltro();
+  });
+
+  // Botón filtrar slide 2
+  document.getElementById('btn-filtrar-slide2').addEventListener('click', () => {
+    aplicarFiltroSlide2();
   });
 
   // Navegación con flechas del teclado
