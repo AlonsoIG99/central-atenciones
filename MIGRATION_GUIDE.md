@@ -5,9 +5,11 @@ Este documento explica cómo migrar la base de datos MongoDB de "incidencias" a 
 ## 📋 ¿Qué se cambia?
 
 ### Colecciones:
+
 - ❌ `incidencias` → ✅ `atenciones`
 
 ### Campos en `reporte_dashboards`:
+
 - `incidencia_id` → `atencion_id`
 - `titulo_incidencia` → `titulo_atencion`
 - `descripcion_incidencia` → `descripcion_atencion`

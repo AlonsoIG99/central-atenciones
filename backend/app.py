@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 from pathlib import Path
 import os
 import sys
@@ -30,7 +31,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Incluir rutas
+# Incluir rutas de API
 app.include_router(auth.router)
 app.include_router(usuarios.router)
 app.include_router(trabajadores.router)
@@ -38,9 +39,38 @@ app.include_router(incidencias.router)
 app.include_router(asignados.router)
 app.include_router(reporte_dashboards.router)
 
+# Servir archivos estáticos del frontend
+# Esto debe ir DESPUÉS de incluir los routers de API
+frontend_path = Path(__file__).parent.parent / "frontend"
+
+# Ruta para archivos estáticos (js, css, etc)
+app.mount("/js", StaticFiles(directory=str(frontend_path / "js"), html=False), name="js")
+
+# Servir archivos CSS y otros estáticos desde raíz del frontend
+@app.get("/style.css")
+async def style_css():
+    return FileResponse(str(frontend_path / "style.css"))
+
+# Rutas para archivos HTML
 @app.get("/")
-def root():
-    return {"mensaje": "Bienvenido a la API de Central de Atención"}
+async def root():
+    return FileResponse(str(frontend_path / "login.html"))
+
+@app.get("/login.html")
+async def login():
+    return FileResponse(str(frontend_path / "login.html"))
+
+@app.get("/index.html")
+async def index():
+    return FileResponse(str(frontend_path / "index.html"))
+
+@app.get("/dashboard.html")
+async def dashboard():
+    return FileResponse(str(frontend_path / "dashboard.html"))
+
+@app.get("/dashboard-slides.html")
+async def dashboard_slides():
+    return FileResponse(str(frontend_path / "dashboard-slides.html"))
 
 if __name__ == "__main__":
     import uvicorn

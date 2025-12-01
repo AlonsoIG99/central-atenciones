@@ -4,7 +4,7 @@ document.addEventListener('DOMContentLoaded', () => {
   
   const userId = localStorage.getItem('user_id');
   const rolActual = localStorage.getItem('rol');
-  const userIdField = document.getElementById('incidencia-usuario_id');
+  const userIdField = document.getElementById('atencion-usuario_id');
   if (userIdField) {
     userIdField.value = userId;
   }
@@ -18,18 +18,18 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   
   // Mostrar la sección de incidencias por defecto
-  mostrarSeccion('incidencias');
+  mostrarSeccion('atenciones');
 });
 
 // Elementos del DOM
 const btnUsuarios = document.getElementById('btn-usuarios');
 const btnAsignados = document.getElementById('btn-asignados');
-const btnIncidencias = document.getElementById('btn-incidencias');
+const btnIncidencias = document.getElementById('btn-atenciones');
 const btnReportes = document.getElementById('btn-reportes');
 const btnLogout = document.getElementById('btn-logout');
 const usuariosSection = document.getElementById('usuarios-section');
 const asignadosSection = document.getElementById('asignados-section');
-const incidenciasSection = document.getElementById('incidencias-section');
+const incidenciasSection = document.getElementById('atenciones-section');
 const reportesSection = document.getElementById('reportes-section');
 
 // Navegación entre secciones
@@ -42,7 +42,7 @@ btnAsignados.addEventListener('click', () => {
 });
 
 btnIncidencias.addEventListener('click', () => {
-  mostrarSeccion('incidencias');
+  mostrarSeccion('atenciones');
 });
 
 btnReportes.addEventListener('click', () => {
@@ -78,7 +78,7 @@ function mostrarSeccion(seccion) {
   } else if (seccion === 'asignados') {
     asignadosSection.classList.add('active');
     btnAsignados.classList.add('active');
-  } else if (seccion === 'incidencias') {
+  } else if (seccion === 'atenciones') {
     incidenciasSection.classList.add('active');
     btnIncidencias.classList.add('active');
   } else if (seccion === 'reportes') {

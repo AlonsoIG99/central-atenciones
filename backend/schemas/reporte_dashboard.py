@@ -4,9 +4,9 @@ from datetime import datetime
 
 class ReporteDashboardBase(BaseModel):
     dni: str
-    titulo_incidencia: Optional[str] = None
-    descripcion_incidencia: Optional[str] = None
-    estado_incidencia: Optional[str] = None
+    titulo_atencion: Optional[str] = None
+    descripcion_atencion: Optional[str] = None
+    estado_atencion: Optional[str] = None
     usuario_nombre: Optional[str] = None
     usuario_area: Optional[str] = None
     nombre_completo_trabajador: Optional[str] = None
@@ -23,9 +23,9 @@ class ReporteDashboardBase(BaseModel):
 
 class ReporteDashboardResponse(ReporteDashboardBase):
     id: str
-    incidencia_id: str
-    fecha_creacion_incidencia: Optional[datetime] = None
-    fecha_cierre_incidencia: Optional[datetime] = None
+    atencion_id: str
+    fecha_creacion_atencion: Optional[datetime] = None
+    fecha_cierre_atencion: Optional[datetime] = None
     dias_abierta: Optional[str] = None
     fecha_generacion: datetime
     

@@ -37,36 +37,36 @@ if (btnLimpiarBusqueda) {
 
 // Cargar reportes
 async function cargarReportes() {
-  const incidencias = await obtenerIncidencias();
+  const atenciones = await obtenerAtenciones();
   const userId = localStorage.getItem('user_id');
   const rol = localStorage.getItem('rol');
   const dniSearch = buscarDniInput ? buscarDniInput.value.toLowerCase().trim() : '';
   const fechaDesde = fechaDesdeInput ? fechaDesdeInput.value : '';
   const fechaHasta = fechaHastaInput ? fechaHastaInput.value : '';
   
-  // Filtrar: gestores ven solo sus incidencias, admins ven todas
-  let incidenciasFiltered = rol === 'administrador' 
-    ? incidencias 
-    : incidencias.filter(inc => inc.usuario_id == userId);
+  // Filtrar: gestores ven solo sus atenciones, admins ven todas
+  let atencionesFiltradas = rol === 'administrador' 
+    ? atenciones 
+    : atenciones.filter(att => att.usuario_id == userId);
   
   // Filtrar por DNI si hay búsqueda
   if (dniSearch) {
-    incidenciasFiltered = incidenciasFiltered.filter(inc => 
-      inc.dni.toLowerCase().includes(dniSearch)
+    atencionesFiltradas = atencionesFiltradas.filter(att => 
+      att.dni.toLowerCase().includes(dniSearch)
     );
   }
   
   // Filtrar por rango de fechas si se especifican
   if (fechaDesde || fechaHasta) {
-    incidenciasFiltered = incidenciasFiltered.filter(inc => {
-      const fechaInc = new Date(inc.fecha_creacion).toISOString().split('T')[0];
+    atencionesFiltradas = atencionesFiltradas.filter(att => {
+      const fechaAtt = new Date(att.fecha_creacion).toISOString().split('T')[0];
       
       if (fechaDesde && fechaHasta) {
-        return fechaInc >= fechaDesde && fechaInc <= fechaHasta;
+        return fechaAtt >= fechaDesde && fechaAtt <= fechaHasta;
       } else if (fechaDesde) {
-        return fechaInc >= fechaDesde;
+        return fechaAtt >= fechaDesde;
       } else if (fechaHasta) {
-        return fechaInc <= fechaHasta;
+        return fechaAtt <= fechaHasta;
       }
       return true;
     });
@@ -74,10 +74,10 @@ async function cargarReportes() {
   
   reportContainer.innerHTML = '';
   
-  if (incidenciasFiltered.length === 0) {
-    let mensaje = 'No hay incidencias registradas';
+  if (atencionesFiltradas.length === 0) {
+    let mensaje = 'No hay atenciones registradas';
     if (dniSearch) {
-      mensaje = `No hay incidencias con DNI: ${dniSearch}`;
+      mensaje = `No hay atenciones con DNI: ${dniSearch}`;
     }
     if (fechaDesde || fechaHasta) {
       mensaje += ' en el rango de fechas seleccionado';
@@ -86,7 +86,7 @@ async function cargarReportes() {
     return;
   }
   
-  incidenciasFiltered.forEach((incidencia) => {
+  atencionesFiltradas.forEach((atencion) => {
     const card = document.createElement('div');
     card.className = "bg-white shadow-md rounded-xl p-5 cursor-pointer hover:shadow-lg transition";
     
@@ -95,10 +95,10 @@ async function cargarReportes() {
     
     const headerContent = document.createElement('div');
     headerContent.innerHTML = `
-      <p class="text-lg font-semibold text-gray-800">DNI: ${incidencia.dni}</p>
-      <p class="text-sm text-gray-500">Usuario: <span class="font-medium">${incidencia.usuario_nombre || 'Desconocido'}</span></p>
-      <p class="text-sm text-gray-500">Fecha: ${new Date(incidencia.fecha_creacion).toLocaleDateString('es-ES')}</p>
-      <p class="text-sm text-gray-600">Estado: <span class="font-medium estado-badge">${incidencia.estado}</span>${incidencia.dias_abierta ? ` - <span class="text-orange-600 font-semibold">${incidencia.dias_abierta} días abierta</span>` : ''}</p>
+      <p class="text-lg font-semibold text-gray-800">DNI: ${atencion.dni}</p>
+      <p class="text-sm text-gray-500">Usuario: <span class="font-medium">${atencion.usuario_nombre || 'Desconocido'}</span></p>
+      <p class="text-sm text-gray-500">Fecha: ${new Date(atencion.fecha_creacion).toLocaleDateString('es-ES')}</p>
+      <p class="text-sm text-gray-600">Estado: <span class="font-medium estado-badge">${atencion.estado}</span>${atencion.dias_abierta ? ` - <span class="text-orange-600 font-semibold">${atencion.dias_abierta} días abierta</span>` : ''}</p>
     `;
     
     const actions = document.createElement('div');
@@ -114,11 +114,11 @@ async function cargarReportes() {
     editBtn.textContent = 'Editar';
     editBtn.type = 'button';
     
-    // Deshabilitar botón si la incidencia está cerrada
-    if (incidencia.estado === 'cerrada') {
+    // Deshabilitar botón si la atención está cerrada
+    if (atencion.estado === 'cerrada') {
       editBtn.disabled = true;
       editBtn.className = "px-3 py-1 bg-gray-400 text-white text-sm rounded cursor-not-allowed";
-      editBtn.title = "No se puede editar una incidencia cerrada";
+      editBtn.title = "No se puede editar una atención cerrada";
     }
     
     actions.appendChild(toggleBtn);
@@ -133,7 +133,7 @@ async function cargarReportes() {
     
     // Renderizar JSON de forma jerárquica
     try {
-      const data = JSON.parse(incidencia.descripcion || '{}');
+      const data = JSON.parse(atencion.descripcion || '{}');
       
       function renderNested(obj, level = 0) {
         const ul = document.createElement('ul');
@@ -201,7 +201,7 @@ async function cargarReportes() {
     // Evento para botón Editar
     editBtn.addEventListener('click', (e) => {
       e.stopPropagation();
-      mostrarModalEditarEstado(incidencia);
+      mostrarModalEditarEstado(atencion);
     });
     
     reportContainer.appendChild(card);
@@ -209,10 +209,10 @@ async function cargarReportes() {
 }
 
 // Modal para editar estado
-function mostrarModalEditarEstado(incidencia) {
+function mostrarModalEditarEstado(atencion) {
   // No permitir editar si está cerrada
-  if (incidencia.estado === 'cerrada') {
-    mostrarError('No se puede editar una incidencia que ya está cerrada');
+  if (atencion.estado === 'cerrada') {
+    mostrarError('No se puede editar una atención que ya está cerrada');
     return;
   }
   
@@ -224,7 +224,7 @@ function mostrarModalEditarEstado(incidencia) {
   
   content.innerHTML = `
     <h2 class="text-xl font-bold text-gray-800 mb-4">Actualizar Estado</h2>
-    <p class="text-sm text-gray-600 mb-4">DNI: ${incidencia.dni}</p>
+    <p class="text-sm text-gray-600 mb-4">DNI: ${atencion.dni}</p>
     
     <select id="nuevoEstado" class="w-full px-4 py-2 border border-gray-300 rounded-lg mb-4 focus:outline-none focus:ring-2 focus:ring-blue-600">
       <option value="">-- Seleccionar estado --</option>
@@ -248,7 +248,7 @@ function mostrarModalEditarEstado(incidencia) {
   
   // Establecer estado actual
   const selectEstado = document.getElementById('nuevoEstado');
-  selectEstado.value = incidencia.estado;
+  selectEstado.value = atencion.estado;
   
   // Evento guardar
   document.getElementById('btnGuardarEstado').addEventListener('click', async () => {
@@ -261,7 +261,7 @@ function mostrarModalEditarEstado(incidencia) {
     
     try {
       const headers = obtenerHeaders();
-      const response = await fetch(`http://127.0.0.1:8000/atenciones/${incidencia.id}`, {
+      const response = await fetch(`http://127.0.0.1:8000/atenciones/${atencion.id}`, {
         method: 'PUT',
         headers,
         body: JSON.stringify({

@@ -244,16 +244,19 @@ Pública,María García,23456789,2021-03-20,Cliente B,Zona B,Lider 2,Jefe 2,Macr
                 <section id="atenciones-section" class="section">
                     <h2 class="text-2xl font-bold text-gray-800 mb-6 pb-3 border-b-4 border-blue-600">Crear Atención</h2>
                     
-                    <form id="atenciones-form" class="bg-white shadow-md rounded-xl p-6 space-y-4">
+                    <form id="atencion-form" class="bg-white shadow-md rounded-xl p-6 space-y-4">
+                        <!-- Campo oculto para usuario_id -->
+                        <input type="hidden" id="atencion-usuario_id">
+                        
                         <div class="grid grid-cols-2 gap-4 mb-4">
                             <div class="relative">
                                 <label class="block text-gray-700 font-medium mb-2">DNI Trabajador</label>
-                                <input type="text" id="atenciones-dni" placeholder="DNI (8 dígitos)" maxlength="8" pattern="[0-9]*" inputmode="numeric" required class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600">
+                                <input type="text" id="atencion-dni" placeholder="DNI (8 dígitos)" maxlength="8" pattern="[0-9]*" inputmode="numeric" required class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600">
                                 <div id="trabajadores-resultados" class="absolute top-full left-0 right-0 mt-2 bg-white border border-blue-300 rounded-lg shadow-xl z-50 max-h-48 overflow-y-auto hidden"></div>
                             </div>
                             <div>
                                 <label class="block text-gray-700 font-medium mb-2">Estado</label>
-                                <select id="atenciones-estado" class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600">
+                                <select id="atencion-estado" class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600">
                                     <option value="abierta">Abierta</option>
                                     <option value="en-progreso">En Progreso</option>
                                     <option value="cerrada">Cerrada</option>
@@ -262,7 +265,7 @@ Pública,María García,23456789,2021-03-20,Cliente B,Zona B,Lider 2,Jefe 2,Macr
                         </div>
 
                         <!-- Esquema de atenciones dinámico aquí -->
-                        <div id="atenciones-schema-container" class="space-y-2 mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200"></div>
+                        <div id="atencion-schema-container" class="space-y-2 mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200"></div>
 
                         <div class="flex justify-end gap-4">
                             <button type="reset" class="px-6 py-2 bg-gray-400 text-white rounded-lg hover:bg-gray-500 transition">Limpiar</button>

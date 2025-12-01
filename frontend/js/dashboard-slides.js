@@ -41,7 +41,10 @@ function mostrarSlide(numero) {
   }
 
   // Actualizar número de slide
-  document.getElementById('slide-number').textContent = numero;
+  const slideNumberEl = document.getElementById('slide-number');
+  if (slideNumberEl) {
+    slideNumberEl.textContent = numero;
+  }
 
   // Actualizar dots
   document.querySelectorAll('.slide-dot').forEach((dot, index) => {
@@ -261,7 +264,7 @@ async function crearGraficoTipos(datos) {
 
   datos.forEach(d => {
     try {
-      const desc = JSON.parse(d.descripcion_incidencia || '{}');
+      const desc = JSON.parse(d.descripcion_atencion || '{}');
       
       // Contar cada tipo que esté en true
       for (const key in tiposMap) {
@@ -377,7 +380,7 @@ async function cargarDatosSlide2(datos) {
   const tiposAtencion = new Set();
   datos.forEach(d => {
     try {
-      const desc = JSON.parse(d.descripcion_incidencia || '{}');
+      const desc = JSON.parse(d.descripcion_atencion || '{}');
       for (const tipo in desc) {
         if (desc[tipo] && typeof desc[tipo] === 'object') {
           tiposAtencion.add(tipo);
@@ -410,7 +413,7 @@ async function cargarDatosSlide2(datos) {
   crearGraficoDetalleSlide2(datos);
   
   // Mostrar total inicial de incidencias
-  document.getElementById('total-incidencias-slide2').textContent = datos.length;
+  document.getElementById('total-atenciones-slide2').textContent = datos.length;
   
   // Cargar tabla de jurisdicciones
   actualizarTablaJurisdicciones(datos);
@@ -423,7 +426,7 @@ async function crearGraficoDetalleSlide2(datos) {
 
   datos.forEach(d => {
     try {
-      const desc = JSON.parse(d.descripcion_incidencia || '{}');
+      const desc = JSON.parse(d.descripcion_atencion || '{}');
       
       // Si hay filtro de tipo de atención, solo procesar ese tipo
       if (tipoAtencionFiltro) {
@@ -600,7 +603,7 @@ async function aplicarFiltroSlide2() {
   if (tipoAtencion) {
     datos = datos.filter(d => {
       try {
-        const desc = JSON.parse(d.descripcion_incidencia || '{}');
+        const desc = JSON.parse(d.descripcion_atencion || '{}');
         return desc[tipoAtencion] && typeof desc[tipoAtencion] === 'object';
       } catch (e) {
         return false;
@@ -616,12 +619,12 @@ async function aplicarFiltroSlide2() {
 
   if (datos.length === 0) {
     alert('No hay datos para los filtros seleccionados');
-    document.getElementById('total-incidencias-slide2').textContent = '0';
+    document.getElementById('total-atenciones-slide2').textContent = '0';
     return;
   }
 
   // Actualizar total de incidencias
-  document.getElementById('total-incidencias-slide2').textContent = datos.length;
+  document.getElementById('total-atenciones-slide2').textContent = datos.length;
 
   await crearGraficoDetalleSlide2(datos);
   actualizarTablaJurisdicciones(datos);
@@ -634,8 +637,8 @@ function filtrarPorFechas(datos, fechaInicio, fechaFin) {
   fin.setHours(23, 59, 59, 999); // Incluir todo el último día
   
   return datos.filter(d => {
-    if (!d.fecha_creacion_incidencia) return false;
-    const fecha = new Date(d.fecha_creacion_incidencia);
+    if (!d.fecha_creacion_atencion) return false;
+    const fecha = new Date(d.fecha_creacion_atencion);
     return fecha >= inicio && fecha <= fin;
   });
 }
@@ -674,7 +677,7 @@ function actualizarTablaJurisdicciones(datos) {
 
 // Actualizar el total de incidencias
 function actualizarTotal(datos) {
-  document.getElementById('total-incidencias').textContent = datos.length.toLocaleString('es-ES');
+  document.getElementById('total-atenciones').textContent = datos.length.toLocaleString('es-ES');
 }
 
 // Crear gráfico de macrozonas con tipos de atención (slide 3)
@@ -692,7 +695,7 @@ async function crearGraficoMacrozonasTipos(datos) {
     }
     
     try {
-      const desc = JSON.parse(d.descripcion_incidencia || '{}');
+      const desc = JSON.parse(d.descripcion_atencion || '{}');
       // Obtener todos los detalles (nivel 2) de todos los tipos
       for (const tipo in desc) {
         if (desc[tipo] && typeof desc[tipo] === 'object') {
@@ -820,6 +823,12 @@ async function aplicarFiltro() {
 
 // Event Listeners
 document.addEventListener('DOMContentLoaded', () => {
+  // Inicializar el total de slides
+  const totalSlidesEl = document.getElementById('total-slides');
+  if (totalSlidesEl) {
+    totalSlidesEl.textContent = totalSlides;
+  }
+  
   // Crear dots de navegación
   crearDots();
 

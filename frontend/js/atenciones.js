@@ -308,7 +308,7 @@ formAtencion.addEventListener('submit', async (e) => {
     mostrarExito('Atencion creada exitosamente');
     formAtencion.reset();
     // Contraer el esquema: desmarcar todos los checkboxes y ocultar elementos anidados
-    const allCheckboxes = document.querySelectorAll('#atencions-schema-container input[type="checkbox"]');
+    const allCheckboxes = document.querySelectorAll('#atencion-schema-container input[type="checkbox"]');
     allCheckboxes.forEach(checkbox => {
       checkbox.checked = false;
       const nested = checkbox.parentElement.querySelector('.nested');
@@ -335,7 +335,7 @@ async function eliminarInc(id) {
 
 // Renderizar el esquema al cargar
 document.addEventListener('DOMContentLoaded', () => {
-  const container = document.getElementById('atencions-schema-container');
+  const container = document.getElementById('atencion-schema-container');
   if (container) {
     renderAtencionSchema(atencionSchema, container);
   }

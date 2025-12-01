@@ -7,14 +7,17 @@ Como la base de datos requiere autenticación y no tenemos las credenciales conf
 ### Pasos:
 
 1. **Abre MongoDB Compass**
+
    - Descarga desde: https://www.mongodb.com/products/tools/compass
    - O usa tu instalación local
 
 2. **Conéctate a la BD**
+
    - URI: `mongodb://nexus.liderman.net.pe:27017/central_db`
    - Si pide credenciales, usa tu usuario/contraseña
 
 3. **Renombra la colección**
+
    - Click derecho en `incidencias` → "Rename Collection"
    - Nuevo nombre: `atenciones`
    - Click "Rename"
@@ -27,32 +30,32 @@ Como la base de datos requiere autenticación y no tenemos las credenciales conf
 ```javascript
 [
   {
-    "$set": {
-      "atencion_id": "$incidencia_id",
-      "titulo_atencion": "$titulo_incidencia",
-      "descripcion_atencion": "$descripcion_incidencia",
-      "estado_atencion": "$estado_incidencia",
-      "fecha_creacion_atencion": "$fecha_creacion_incidencia",
-      "fecha_cierre_atencion": "$fecha_cierre_incidencia"
-    }
+    $set: {
+      atencion_id: "$incidencia_id",
+      titulo_atencion: "$titulo_incidencia",
+      descripcion_atencion: "$descripcion_incidencia",
+      estado_atencion: "$estado_incidencia",
+      fecha_creacion_atencion: "$fecha_creacion_incidencia",
+      fecha_cierre_atencion: "$fecha_cierre_incidencia",
+    },
   },
   {
-    "$unset": [
+    $unset: [
       "incidencia_id",
       "titulo_incidencia",
       "descripcion_incidencia",
       "estado_incidencia",
       "fecha_creacion_incidencia",
-      "fecha_cierre_incidencia"
-    ]
+      "fecha_cierre_incidencia",
+    ],
   },
   {
-    "$merge": {
-      "into": "reporte_dashboards",
-      "whenMatched": "replace"
-    }
-  }
-]
+    $merge: {
+      into: "reporte_dashboards",
+      whenMatched: "replace",
+    },
+  },
+];
 ```
 
 5. Click en "Execute Aggregation"
@@ -66,16 +69,19 @@ Como la base de datos requiere autenticación y no tenemos las credenciales conf
 1. **Edita `migrate_db.py`**
 
 Reemplaza esta línea:
+
 ```python
 MONGO_URL = "mongodb://nexus.liderman.net.pe:27017/central_db"
 ```
 
 Con:
+
 ```python
 MONGO_URL = "mongodb://usuario:contraseña@nexus.liderman.net.pe:27017/central_db?authSource=admin"
 ```
 
 2. **Ejecuta el script**
+
 ```bash
 cd backend
 python migrate_db.py

@@ -102,7 +102,7 @@ def generar_reporte_dashboard():
                 
                 registros_generados += 1
             except Exception as e:
-                print(f"Error procesando incidencia {incidencia.id}: {str(e)}")
+                print(f"Error procesando atencion {atencion.id}: {str(e)}")
                 continue
         
         return {
@@ -122,13 +122,13 @@ def obtener_ultimos_registros(cantidad: int = 5):
         for reporte in reportes:
             data = {
                 "id": str(reporte.id),
-                "incidencia_id": reporte.incidencia_id,
+                "atencion_id": reporte.atencion_id,
                 "dni": reporte.dni,
-                "titulo_incidencia": reporte.titulo_incidencia,
-                "descripcion_incidencia": reporte.descripcion_incidencia,
-                "estado_incidencia": reporte.estado_incidencia,
-                "fecha_creacion_incidencia": reporte.fecha_creacion_incidencia,
-                "fecha_cierre_incidencia": reporte.fecha_cierre_incidencia,
+                "titulo_atencion": reporte.titulo_atencion,
+                "descripcion_atencion": reporte.descripcion_atencion,
+                "estado_atencion": reporte.estado_atencion,
+                "fecha_creacion_atencion": reporte.fecha_creacion_atencion,
+                "fecha_cierre_atencion": reporte.fecha_cierre_atencion,
                 "dias_abierta": reporte.dias_abierta,
                 "usuario_nombre": reporte.usuario_nombre,
                 "usuario_area": reporte.usuario_area,
@@ -161,13 +161,13 @@ def obtener_todos_reportes():
         for reporte in reportes:
             data = {
                 "id": str(reporte.id),
-                "incidencia_id": reporte.incidencia_id,
+                "atencion_id": reporte.atencion_id,
                 "dni": reporte.dni,
-                "titulo_incidencia": reporte.titulo_incidencia,
-                "descripcion_incidencia": reporte.descripcion_incidencia,
-                "estado_incidencia": reporte.estado_incidencia,
-                "fecha_creacion_incidencia": reporte.fecha_creacion_incidencia,
-                "fecha_cierre_incidencia": reporte.fecha_cierre_incidencia,
+                "titulo_atencion": reporte.titulo_atencion,
+                "descripcion_atencion": reporte.descripcion_atencion,
+                "estado_atencion": reporte.estado_atencion,
+                "fecha_creacion_atencion": reporte.fecha_creacion_atencion,
+                "fecha_cierre_atencion": reporte.fecha_cierre_atencion,
                 "dias_abierta": reporte.dias_abierta,
                 "usuario_nombre": reporte.usuario_nombre,
                 "usuario_area": reporte.usuario_area,

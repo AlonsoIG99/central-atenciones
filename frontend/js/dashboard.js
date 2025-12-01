@@ -127,13 +127,13 @@ function mostrarUltimosRegistrosDashboard(registros) {
     
     tr.innerHTML = `
       <td class="border border-gray-300 px-3 py-2 text-sm font-semibold text-blue-600">${registro.dni}</td>
-      <td class="border border-gray-300 px-3 py-2 text-sm">${registro.titulo_incidencia || '-'}</td>
+      <td class="border border-gray-300 px-3 py-2 text-sm">${registro.titulo_atencion || '-'}</td>
       <td class="border border-gray-300 px-3 py-2 text-sm">
         <span class="px-2 py-1 rounded text-white text-xs font-semibold ${
-          registro.estado_incidencia === 'cerrada' ? 'bg-red-500' :
-          registro.estado_incidencia === 'en_proceso' ? 'bg-yellow-500' :
+          registro.estado_atencion === 'cerrada' ? 'bg-red-500' :
+          registro.estado_atencion === 'en_proceso' ? 'bg-yellow-500' :
           'bg-green-500'
-        }">${registro.estado_incidencia}</span>
+        }">${registro.estado_atencion}</span>
       </td>
       <td class="border border-gray-300 px-3 py-2 text-sm">${registro.usuario_nombre || '-'}</td>
       <td class="border border-gray-300 px-3 py-2 text-sm">${registro.usuario_area || '-'}</td>
@@ -169,8 +169,8 @@ async function generarVisualizacionDashboard() {
     
     reportes.forEach(reporte => {
       try {
-        // Parsear el JSON de descripcion_incidencia
-        const descripcion = JSON.parse(reporte.descripcion_incidencia || '{}');
+        // Parsear el JSON de descripcion_atencion
+        const descripcion = JSON.parse(reporte.descripcion_atencion || '{}');
         
         // Obtener todas las claves del objeto JSON y contar cada una
         const tiposIncidencia = Object.keys(descripcion);
