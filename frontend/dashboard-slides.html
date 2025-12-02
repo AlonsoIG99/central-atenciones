@@ -434,13 +434,89 @@
             </div>
 
             <div id="slide-8" class="slide-container h-full overflow-hidden flex flex-col">
-                <h2 class="text-3xl font-bold mb-8">Slide 8</h2>
-                <p class="text-gray-400">Contenido del slide 8</p>
-            </div>
+                <div class="flex justify-between items-center mb-2 flex-shrink-0">
+                    <h2 class="text-2xl font-bold">Préstamos por Macrozona</h2>
+                    <button id="btn-cerrar" class="px-4 py-1 text-sm bg-red-600 hover:bg-red-700 rounded-lg transition font-semibold">
+                        Cerrar
+                    </button>
+                </div>
 
-            <div id="slide-9" class="slide-container h-full overflow-hidden flex flex-col">
-                <h2 class="text-3xl font-bold mb-8">Slide 9</h2>
-                <p class="text-gray-400">Contenido del slide 9</p>
+                <!-- Total y Filtros -->
+                <div class="bg-gray-800 rounded-lg p-2 border border-gray-700 mb-2 flex justify-between items-center flex-shrink-0">
+                    <!-- Filtros de Fecha -->
+                    <div class="flex gap-2 items-center">
+                        <label class="text-xs text-gray-400">Desde:</label>
+                        <input type="date" id="fecha-desde-slide8" class="px-2 py-1 text-xs bg-gray-700 border border-gray-600 rounded">
+                        <label class="text-xs text-gray-400">Hasta:</label>
+                        <input type="date" id="fecha-hasta-slide8" class="px-2 py-1 text-xs bg-gray-700 border border-gray-600 rounded">
+                        <button id="btn-aplicar-filtro-slide8" class="px-3 py-1 text-xs bg-indigo-600 hover:bg-indigo-700 rounded transition font-semibold">
+                            Aplicar
+                        </button>
+                        <button id="btn-limpiar-filtro-slide8" class="px-3 py-1 text-xs bg-gray-600 hover:bg-gray-700 rounded transition font-semibold">
+                            Limpiar
+                        </button>
+                    </div>
+                    
+                    <!-- Estadísticas -->
+                    <div class="flex gap-4 text-right">
+                        <div>
+                            <p class="text-xs text-gray-400">Total Solicitudes</p>
+                            <p id="total-solicitudes-slide8" class="text-xl font-bold text-yellow-400">0</p>
+                        </div>
+                        <div>
+                            <p class="text-xs text-gray-400">Préstamos Aprobados</p>
+                            <p id="total-prestamos-slide8" class="text-xl font-bold text-green-400">0</p>
+                        </div>
+                        <div>
+                            <p class="text-xs text-gray-400">Promedio Aprobados (S/)</p>
+                            <p id="promedio-prestamos-slide8" class="text-xl font-bold text-indigo-400">0</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Contenedor con Grid: Gráficos a la izquierda, Tabla a la derecha -->
+                <div class="flex-1 grid grid-cols-2 gap-2 overflow-hidden">
+                    <!-- Columna Izquierda: Gráficos -->
+                    <div class="flex flex-col gap-2 overflow-hidden">
+                        <!-- Gráfico de Barras Horizontal - Cantidad -->
+                        <div class="flex-1 bg-gray-800 rounded-lg p-4 border border-gray-700 flex flex-col overflow-hidden">
+                            <h3 class="text-xs font-semibold mb-2 flex-shrink-0">Cantidad de Préstamos/Apoyo Económico por Macrozona</h3>
+                            <div style="flex: 1; position: relative; width: 100%; overflow: hidden;">
+                                <canvas id="chart-prestamos-macrozona"></canvas>
+                            </div>
+                        </div>
+
+                        <!-- Gráfico de Barras Horizontal - Montos -->
+                        <div class="flex-1 bg-gray-800 rounded-lg p-4 border border-gray-700 flex flex-col overflow-hidden">
+                            <h3 class="text-xs font-semibold mb-2 flex-shrink-0">Suma de Montos Aprobados por Macrozona (S/)</h3>
+                            <div style="flex: 1; position: relative; width: 100%; overflow: hidden;">
+                                <canvas id="chart-montos-prestamos-macrozona"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Columna Derecha: Tabla -->
+                    <div class="flex flex-col overflow-hidden">
+                        <div class="flex-1 bg-gray-800 rounded-lg p-4 border border-gray-700 flex flex-col overflow-hidden">
+                            <h3 class="text-xs font-semibold mb-2 flex-shrink-0">Suma de Montos de Préstamos Aprobados Registrados por Usuario (S/)</h3>
+                            <div class="flex-1 overflow-auto">
+                                <table class="w-full text-sm text-left">
+                                    <thead class="text-xs uppercase bg-gray-700 sticky top-0">
+                                        <tr>
+                                            <th class="px-4 py-2">#</th>
+                                            <th class="px-4 py-2">Usuario</th>
+                                            <th class="px-4 py-2 text-right">Cantidad</th>
+                                            <th class="px-4 py-2 text-right">Monto Total (S/)</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="tabla-montos-usuario">
+                                        <!-- Filas generadas por JavaScript -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </main>
 

@@ -1,5 +1,5 @@
 let currentSlide = 1;
-const totalSlides = 9;
+const totalSlides = 8;
 let charts = {};
 
 // Registrar el plugin de datalabels
@@ -123,6 +123,22 @@ function mostrarSlide(numero) {
       obtenerDatosDashboard().then(datos => {
         if (datos.length > 0) {
           crearGraficoAtencionesPorMes(datos);
+        }
+      });
+    }, 100);
+  }
+
+  // Redibujar gráficos del slide 8
+  if (numero === 8) {
+    setTimeout(() => {
+      if (charts['prestamos-macrozona']) charts['prestamos-macrozona'].destroy();
+      if (charts['montos-prestamos-macrozona']) charts['montos-prestamos-macrozona'].destroy();
+      
+      obtenerDatosDashboard().then(datos => {
+        if (datos.length > 0) {
+          crearGraficoPrestamosPorMacrozona(datos);
+          crearGraficoMontosPorMacrozona(datos);
+          crearTablaMontosPorUsuario(datos);
         }
       });
     }, 100);
@@ -431,6 +447,12 @@ async function cargarGraficos() {
     // Cargar gráfico del slide 7
     await crearGraficoAtencionesPorMes(datos);
     actualizarTotalSlide7(datos);
+    
+    // Cargar gráficos del slide 8
+    await crearGraficoPrestamosPorMacrozona(datos);
+    await crearGraficoMontosPorMacrozona(datos);
+    await crearTablaMontosPorUsuario(datos);
+    actualizarEstadisticasSlide8(datos);
     
     // Cargar datos para slide 2
     cargarDatosSlide2(datos);
@@ -1675,6 +1697,585 @@ async function limpiarFiltrosSlide7() {
   actualizarTotalSlide7(todos);
 }
 
+// Crear gráfico de barras horizontal: Préstamos por Macrozona (slide 8)
+async function crearGraficoPrestamosPorMacrozona(datos) {
+  const ctx = document.getElementById('chart-prestamos-macrozona');
+  if (!ctx) return;
+
+  // Filtrar solo atenciones que tienen "Apoyo Económico/Préstamo"
+  const prestamosPorMacrozona = {};
+  
+  datos.forEach(d => {
+    if (d.descripcion_atencion) {
+      try {
+        const desc = JSON.parse(d.descripcion_atencion);
+        
+        // Buscar si existe "Apoyo Económico/Préstamo" en cualquier nivel del JSON
+        let tienePrestamo = false;
+        
+        // Buscar en todos los niveles del objeto
+        const buscarPrestamo = (obj) => {
+          for (const key in obj) {
+            if (key.includes('Préstamo') || key.includes('Prestamo') || key.includes('Apoyo Económico')) {
+              return true;
+            }
+            if (typeof obj[key] === 'object' && obj[key] !== null) {
+              if (buscarPrestamo(obj[key])) {
+                return true;
+              }
+            }
+          }
+          return false;
+        };
+        
+        tienePrestamo = buscarPrestamo(desc);
+        
+        if (tienePrestamo) {
+          const macrozona = d.macrozona || 'Sin Macrozona';
+          prestamosPorMacrozona[macrozona] = (prestamosPorMacrozona[macrozona] || 0) + 1;
+        }
+      } catch (e) {
+        // Ignorar errores de parseo
+      }
+    }
+  });
+
+  // Ordenar por cantidad descendente
+  const macrozonasordenadas = Object.entries(prestamosPorMacrozona)
+    .sort((a, b) => b[1] - a[1]);
+
+  const labels = macrozonasordenadas.map(m => m[0]);
+  const values = macrozonasordenadas.map(m => m[1]);
+
+  // Generar colores degradados
+  const colores = values.map((_, index) => {
+    const intensity = 1 - (index / values.length) * 0.5;
+    return `rgba(236, 72, 153, ${intensity})`; // Rosa/magenta
+  });
+
+  if (charts['prestamos-macrozona']) {
+    charts['prestamos-macrozona'].destroy();
+  }
+
+  charts['prestamos-macrozona'] = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: labels,
+      datasets: [{
+        label: 'Cantidad de Préstamos',
+        data: values,
+        backgroundColor: colores,
+        borderColor: colores.map(c => c.replace(/[\d.]+\)$/g, '1)')),
+        borderWidth: 1
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      indexAxis: 'y',
+      plugins: {
+        legend: {
+          display: false
+        },
+        datalabels: {
+          color: '#ffffff',
+          anchor: 'end',
+          align: 'right',
+          offset: 5,
+          font: {
+            size: 11,
+            weight: 'bold'
+          },
+          formatter: (value) => {
+            return value > 0 ? value : '';
+          }
+        },
+        tooltip: {
+          backgroundColor: 'rgba(17, 24, 39, 0.9)',
+          titleColor: '#e5e7eb',
+          bodyColor: '#e5e7eb',
+          borderColor: '#ec4899',
+          borderWidth: 1,
+          padding: 12,
+          callbacks: {
+            label: function(context) {
+              return `Préstamos: ${context.parsed.x}`;
+            }
+          }
+        }
+      },
+      scales: {
+        x: {
+          beginAtZero: true,
+          ticks: {
+            color: '#e5e7eb',
+            font: { size: 11 },
+            precision: 0
+          },
+          grid: {
+            color: '#374151'
+          }
+        },
+        y: {
+          ticks: {
+            color: '#e5e7eb',
+            font: { size: 10 },
+            autoSkip: false
+          },
+          grid: {
+            color: '#374151',
+            display: false
+          }
+        }
+      }
+    }
+  });
+}
+
+// Crear gráfico de barras horizontal: Montos de Préstamos por Macrozona (slide 8)
+async function crearGraficoMontosPorMacrozona(datos) {
+  const ctx = document.getElementById('chart-montos-prestamos-macrozona');
+  if (!ctx) return;
+
+  // Sumar montos de préstamos por macrozona
+  const montosPorMacrozona = {};
+  
+  datos.forEach(d => {
+    if (d.descripcion_atencion) {
+      try {
+        const desc = JSON.parse(d.descripcion_atencion);
+        
+        // Buscar "Apoyo económico/Préstamo" -> "Aprobado" -> "valor"
+        let monto = 0;
+        
+        for (const key in desc) {
+          if (key.includes('Préstamo') || key.includes('Prestamo') || key.includes('Apoyo económico') || key.includes('Apoyo Económico')) {
+            if (desc[key] && typeof desc[key] === 'object') {
+              // Buscar dentro de "Aprobado"
+              if (desc[key]['Aprobado'] && typeof desc[key]['Aprobado'] === 'object') {
+                if (desc[key]['Aprobado']['valor']) {
+                  const valor = parseFloat(desc[key]['Aprobado']['valor']);
+                  if (!isNaN(valor) && valor > 0) {
+                    monto = valor;
+                    break;
+                  }
+                }
+              }
+            }
+          }
+        }
+        
+        if (monto > 0) {
+          const macrozona = d.macrozona || 'Sin Macrozona';
+          montosPorMacrozona[macrozona] = (montosPorMacrozona[macrozona] || 0) + monto;
+        }
+      } catch (e) {
+        // Ignorar errores de parseo
+      }
+    }
+  });
+
+  // Ordenar por monto descendente
+  const macrozonasordenadas = Object.entries(montosPorMacrozona)
+    .sort((a, b) => b[1] - a[1]);
+
+  const labels = macrozonasordenadas.map(m => m[0]);
+  const values = macrozonasordenadas.map(m => m[1]);
+
+  // Generar colores degradados (azul/cyan)
+  const colores = values.map((_, index) => {
+    const intensity = 1 - (index / values.length) * 0.5;
+    return `rgba(59, 130, 246, ${intensity})`; // Azul
+  });
+
+  if (charts['montos-prestamos-macrozona']) {
+    charts['montos-prestamos-macrozona'].destroy();
+  }
+
+  charts['montos-prestamos-macrozona'] = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: labels,
+      datasets: [{
+        label: 'Monto Total (S/)',
+        data: values,
+        backgroundColor: colores,
+        borderColor: colores.map(c => c.replace(/[\d.]+\)$/g, '1)')),
+        borderWidth: 1
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      indexAxis: 'y',
+      plugins: {
+        legend: {
+          display: false
+        },
+        datalabels: {
+          color: '#ffffff',
+          anchor: 'end',
+          align: 'right',
+          offset: 5,
+          font: {
+            size: 11,
+            weight: 'bold'
+          },
+          formatter: (value) => {
+            return value > 0 ? `S/ ${value.toLocaleString('es-PE', {minimumFractionDigits: 2, maximumFractionDigits: 2})}` : '';
+          }
+        },
+        tooltip: {
+          backgroundColor: 'rgba(17, 24, 39, 0.9)',
+          titleColor: '#e5e7eb',
+          bodyColor: '#e5e7eb',
+          borderColor: '#3b82f6',
+          borderWidth: 1,
+          padding: 12,
+          callbacks: {
+            label: function(context) {
+              return `Monto: S/ ${context.parsed.x.toLocaleString('es-PE', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+            }
+          }
+        }
+      },
+      scales: {
+        x: {
+          beginAtZero: true,
+          ticks: {
+            color: '#e5e7eb',
+            font: { size: 11 },
+            callback: function(value) {
+              return 'S/ ' + value.toLocaleString('es-PE');
+            }
+          },
+          grid: {
+            color: '#374151'
+          }
+        },
+        y: {
+          ticks: {
+            color: '#e5e7eb',
+            font: { size: 10 },
+            autoSkip: false
+          },
+          grid: {
+            color: '#374151',
+            display: false
+          }
+        }
+      }
+    }
+  });
+}
+
+// Crear gráfico de barras horizontal: Montos de Préstamos por Usuario (slide 8)
+async function crearGraficoMontosPorUsuario(datos) {
+  const ctx = document.getElementById('chart-montos-prestamos-usuario');
+  if (!ctx) return;
+
+  // Sumar montos de préstamos por usuario
+  const montosPorUsuario = {};
+  
+  datos.forEach(d => {
+    if (d.descripcion_atencion && d.usuario_nombre) {
+      try {
+        const desc = JSON.parse(d.descripcion_atencion);
+        
+        // Buscar "Apoyo económico/Préstamo" -> "Aprobado" -> "valor"
+        let monto = 0;
+        
+        for (const key in desc) {
+          if (key.includes('Préstamo') || key.includes('Prestamo') || key.includes('Apoyo económico') || key.includes('Apoyo Económico')) {
+            if (desc[key] && typeof desc[key] === 'object') {
+              // Buscar dentro de "Aprobado"
+              if (desc[key]['Aprobado'] && typeof desc[key]['Aprobado'] === 'object') {
+                if (desc[key]['Aprobado']['valor']) {
+                  const valor = parseFloat(desc[key]['Aprobado']['valor']);
+                  if (!isNaN(valor) && valor > 0) {
+                    monto = valor;
+                    break;
+                  }
+                }
+              }
+            }
+          }
+        }
+        
+        if (monto > 0) {
+          const usuario = d.usuario_nombre || 'Sin Usuario';
+          montosPorUsuario[usuario] = (montosPorUsuario[usuario] || 0) + monto;
+        }
+      } catch (e) {
+        // Ignorar errores de parseo
+      }
+    }
+  });
+
+  // Ordenar por monto descendente
+  const usuariosOrdenados = Object.entries(montosPorUsuario)
+    .sort((a, b) => b[1] - a[1]);
+
+  const labels = usuariosOrdenados.map(u => u[0]);
+  const values = usuariosOrdenados.map(u => u[1]);
+
+  // Generar colores degradados (verde)
+  const colores = values.map((_, index) => {
+    const intensity = 1 - (index / values.length) * 0.5;
+    return `rgba(16, 185, 129, ${intensity})`; // Verde
+  });
+
+  if (charts['montos-prestamos-usuario']) {
+    charts['montos-prestamos-usuario'].destroy();
+  }
+
+  charts['montos-prestamos-usuario'] = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: labels,
+      datasets: [{
+        label: 'Monto Total (S/)',
+        data: values,
+        backgroundColor: colores,
+        borderColor: colores.map(c => c.replace(/[\d.]+\)$/g, '1)')),
+        borderWidth: 1
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      indexAxis: 'y',
+      plugins: {
+        legend: {
+          display: false
+        },
+        datalabels: {
+          color: '#ffffff',
+          anchor: 'end',
+          align: 'right',
+          offset: 5,
+          font: {
+            size: 11,
+            weight: 'bold'
+          },
+          formatter: (value) => {
+            return value > 0 ? `S/ ${value.toLocaleString('es-PE', {minimumFractionDigits: 2, maximumFractionDigits: 2})}` : '';
+          }
+        },
+        tooltip: {
+          backgroundColor: 'rgba(17, 24, 39, 0.9)',
+          titleColor: '#e5e7eb',
+          bodyColor: '#e5e7eb',
+          borderColor: '#10b981',
+          borderWidth: 1,
+          padding: 12,
+          callbacks: {
+            label: function(context) {
+              return `Monto: S/ ${context.parsed.x.toLocaleString('es-PE', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+            }
+          }
+        }
+      },
+      scales: {
+        x: {
+          beginAtZero: true,
+          ticks: {
+            color: '#e5e7eb',
+            font: { size: 11 },
+            callback: function(value) {
+              return 'S/ ' + value.toLocaleString('es-PE');
+            }
+          },
+          grid: {
+            color: '#374151'
+          }
+        },
+        y: {
+          ticks: {
+            color: '#e5e7eb',
+            font: { size: 10 },
+            autoSkip: false
+          },
+          grid: {
+            color: '#374151',
+            display: false
+          }
+        }
+      }
+    }
+  });
+}
+
+// Crear tabla: Montos de Préstamos por Usuario (slide 8)
+async function crearTablaMontosPorUsuario(datos) {
+  const tbody = document.getElementById('tabla-montos-usuario');
+  if (!tbody) return;
+
+  // Sumar montos y cantidad de préstamos por usuario
+  const datosPorUsuario = {};
+  
+  datos.forEach(d => {
+    if (d.descripcion_atencion && d.usuario_nombre) {
+      try {
+        const desc = JSON.parse(d.descripcion_atencion);
+        
+        // Buscar "Apoyo económico/Préstamo" -> "Aprobado" -> "valor"
+        let monto = 0;
+        
+        for (const key in desc) {
+          if (key.includes('Préstamo') || key.includes('Prestamo') || key.includes('Apoyo económico') || key.includes('Apoyo Económico')) {
+            if (desc[key] && typeof desc[key] === 'object') {
+              // Buscar dentro de "Aprobado"
+              if (desc[key]['Aprobado'] && typeof desc[key]['Aprobado'] === 'object') {
+                if (desc[key]['Aprobado']['valor']) {
+                  const valor = parseFloat(desc[key]['Aprobado']['valor']);
+                  if (!isNaN(valor) && valor > 0) {
+                    monto = valor;
+                    break;
+                  }
+                }
+              }
+            }
+          }
+        }
+        
+        if (monto > 0) {
+          const usuario = d.usuario_nombre || 'Sin Usuario';
+          if (!datosPorUsuario[usuario]) {
+            datosPorUsuario[usuario] = { cantidad: 0, monto: 0 };
+          }
+          datosPorUsuario[usuario].cantidad++;
+          datosPorUsuario[usuario].monto += monto;
+        }
+      } catch (e) {
+        // Ignorar errores de parseo
+      }
+    }
+  });
+
+  // Ordenar por monto descendente
+  const usuariosOrdenados = Object.entries(datosPorUsuario)
+    .sort((a, b) => b[1].monto - a[1].monto);
+
+  // Limpiar tabla
+  tbody.innerHTML = '';
+
+  // Generar filas
+  usuariosOrdenados.forEach((item, index) => {
+    const [usuario, data] = item;
+    const fila = document.createElement('tr');
+    fila.className = 'border-b border-gray-700 hover:bg-gray-700';
+    fila.innerHTML = `
+      <td class="px-4 py-2 text-gray-400">${index + 1}</td>
+      <td class="px-4 py-2">${usuario}</td>
+      <td class="px-4 py-2 text-right text-indigo-400 font-semibold">${data.cantidad}</td>
+      <td class="px-4 py-2 text-right text-green-400 font-bold">S/ ${data.monto.toLocaleString('es-PE', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+    `;
+    tbody.appendChild(fila);
+  });
+
+  // Si no hay datos, mostrar mensaje
+  if (usuariosOrdenados.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="4" class="px-4 py-8 text-center text-gray-400">No hay datos disponibles</td></tr>';
+  }
+}
+
+// Actualizar estadísticas del slide 8
+function actualizarEstadisticasSlide8(datos) {
+  // Contar total de solicitudes de préstamos (aprobados y no aprobados)
+  let totalSolicitudes = 0;
+  let totalAprobados = 0;
+  let sumaMontos = 0;
+  
+  datos.forEach(d => {
+    if (d.descripcion_atencion) {
+      try {
+        const desc = JSON.parse(d.descripcion_atencion);
+        
+        // Buscar si existe "Apoyo económico/Préstamo" o "Apoyo Económico/Préstamo"
+        for (const key in desc) {
+          if (key.includes('Préstamo') || key.includes('Prestamo') || key.includes('Apoyo económico') || key.includes('Apoyo Económico')) {
+            totalSolicitudes++;
+            
+            // Verificar si está aprobado y obtener el monto
+            if (desc[key] && typeof desc[key] === 'object') {
+              if (desc[key]['Aprobado'] && typeof desc[key]['Aprobado'] === 'object') {
+                totalAprobados++;
+                
+                if (desc[key]['Aprobado']['valor']) {
+                  const valor = parseFloat(desc[key]['Aprobado']['valor']);
+                  if (!isNaN(valor) && valor > 0) {
+                    sumaMontos += valor;
+                  }
+                }
+              }
+            }
+            break;
+          }
+        }
+      } catch (e) {
+        // Ignorar errores
+      }
+    }
+  });
+  
+  const promedio = totalAprobados > 0 ? sumaMontos / totalAprobados : 0;
+  
+  // Actualizar elementos HTML
+  const totalSolicitudesEl = document.getElementById('total-solicitudes-slide8');
+  const totalAprobadosEl = document.getElementById('total-prestamos-slide8');
+  const promedioEl = document.getElementById('promedio-prestamos-slide8');
+  
+  if (totalSolicitudesEl) {
+    totalSolicitudesEl.textContent = totalSolicitudes.toLocaleString('es-ES');
+  }
+  if (totalAprobadosEl) {
+    totalAprobadosEl.textContent = totalAprobados.toLocaleString('es-ES');
+  }
+  if (promedioEl) {
+    promedioEl.textContent = `S/ ${promedio.toLocaleString('es-PE', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+  }
+}
+
+// Aplicar filtros del slide 8
+async function aplicarFiltroSlide8() {
+  const fechaDesde = document.getElementById('fecha-desde-slide8').value;
+  const fechaHasta = document.getElementById('fecha-hasta-slide8').value;
+  
+  if (!fechaDesde || !fechaHasta) {
+    alert('Por favor completa ambas fechas');
+    return;
+  }
+  
+  const todos = await obtenerDatosDashboard();
+  const datosFiltrados = filtrarPorFechas(todos, fechaDesde, fechaHasta);
+  
+  if (datosFiltrados.length === 0) {
+    alert('No hay datos para el rango de fechas seleccionado');
+    return;
+  }
+  
+  // Actualizar gráficos y tabla
+  await crearGraficoPrestamosPorMacrozona(datosFiltrados);
+  await crearGraficoMontosPorMacrozona(datosFiltrados);
+  await crearTablaMontosPorUsuario(datosFiltrados);
+  actualizarEstadisticasSlide8(datosFiltrados);
+}
+
+// Limpiar filtros del slide 8
+async function limpiarFiltroSlide8() {
+  document.getElementById('fecha-desde-slide8').value = '';
+  document.getElementById('fecha-hasta-slide8').value = '';
+  
+  const todos = await obtenerDatosDashboard();
+  
+  // Actualizar gráficos y tabla
+  await crearGraficoPrestamosPorMacrozona(todos);
+  await crearGraficoMontosPorMacrozona(todos);
+  await crearTablaMontosPorUsuario(todos);
+  actualizarEstadisticasSlide8(todos);
+}
+
 // Actualizar total de atenciones en slide 3
 function actualizarTotalSlide3(datos) {
   const totalEl = document.getElementById('total-atenciones-slide3');
@@ -1830,6 +2431,16 @@ document.addEventListener('DOMContentLoaded', () => {
   // Botón limpiar slide 7
   document.getElementById('btn-limpiar-slide7').addEventListener('click', () => {
     limpiarFiltrosSlide7();
+  });
+
+  // Botón aplicar filtro slide 8
+  document.getElementById('btn-aplicar-filtro-slide8').addEventListener('click', () => {
+    aplicarFiltroSlide8();
+  });
+
+  // Botón limpiar filtro slide 8
+  document.getElementById('btn-limpiar-filtro-slide8').addEventListener('click', () => {
+    limpiarFiltroSlide8();
   });
 
   // Navegación con flechas del teclado
