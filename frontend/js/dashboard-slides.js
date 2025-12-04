@@ -348,9 +348,21 @@ async function crearGraficoTipos(datos) {
     }
   });
 
-  const labels = Object.keys(tiposMap);
-  const values = Object.values(tiposMap);
-  const colores = ['#10b981', '#ef4444', '#3b82f6', '#8b5cf6'];
+  // Ordenar por cantidad de mayor a menor
+  const tiposOrdenados = Object.entries(tiposMap)
+    .sort((a, b) => b[1] - a[1]);
+
+  const labels = tiposOrdenados.map(t => t[0]);
+  const values = tiposOrdenados.map(t => t[1]);
+  
+  // Asignar colores según el tipo
+  const coloresMap = {
+    'Pago correcto': '#10b981',
+    'Pago incorrecto': '#ef4444',
+    'Apoyo económico/Préstamo': '#3b82f6',
+    'Otros/Soporte': '#8b5cf6'
+  };
+  const colores = labels.map(label => coloresMap[label]);
 
   const ctx = document.getElementById('chart-tipos');
   if (!ctx) return;
@@ -536,7 +548,12 @@ async function crearGraficoDetalleSlide2(datos) {
       if (tipoAtencionFiltro) {
         if (desc[tipoAtencionFiltro] && typeof desc[tipoAtencionFiltro] === 'object') {
           for (const detalle in desc[tipoAtencionFiltro]) {
-            detalleMap[detalle] = (detalleMap[detalle] || 0) + 1;
+            // Agrupar "Aprobado" y "No aprobado" como "Préstamo"
+            let detalleNombre = detalle;
+            if (detalle === 'Aprobado' || detalle === 'No aprobado') {
+              detalleNombre = 'Préstamo';
+            }
+            detalleMap[detalleNombre] = (detalleMap[detalleNombre] || 0) + 1;
           }
         }
       } else {
@@ -544,7 +561,12 @@ async function crearGraficoDetalleSlide2(datos) {
         for (const tipo in desc) {
           if (desc[tipo] && typeof desc[tipo] === 'object') {
             for (const detalle in desc[tipo]) {
-              detalleMap[detalle] = (detalleMap[detalle] || 0) + 1;
+              // Agrupar "Aprobado" y "No aprobado" como "Préstamo"
+              let detalleNombre = detalle;
+              if (detalle === 'Aprobado' || detalle === 'No aprobado') {
+                detalleNombre = 'Préstamo';
+              }
+              detalleMap[detalleNombre] = (detalleMap[detalleNombre] || 0) + 1;
             }
           }
         }
@@ -554,8 +576,12 @@ async function crearGraficoDetalleSlide2(datos) {
     }
   });
 
-  const labels = Object.keys(detalleMap);
-  const values = Object.values(detalleMap);
+  // Ordenar por cantidad de mayor a menor
+  const detalleOrdenado = Object.entries(detalleMap)
+    .sort((a, b) => b[1] - a[1]);
+
+  const labels = detalleOrdenado.map(d => d[0]);
+  const values = detalleOrdenado.map(d => d[1]);
   const colores = [
     '#6366f1', '#ec4899', '#f59e0b', '#10b981', '#06b6d4',
     '#8b5cf6', '#ef4444', '#f97316', '#14b8a6', '#3b82f6'
@@ -1160,10 +1186,15 @@ async function crearGraficoAtencionesPorDia(datos) {
   const fechasOrdenadas = Object.keys(fechasMap).sort();
   const valores = fechasOrdenadas.map(f => fechasMap[f]);
   
-  // Formatear fechas para mostrar (DD/MM/YYYY)
+  // Mapeo de días de la semana
+  const diasSemana = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+  
+  // Formatear fechas para mostrar (DD/MM/YYYY - Día)
   const labels = fechasOrdenadas.map(f => {
     const [year, month, day] = f.split('-');
-    return `${day}/${month}/${year}`;
+    const fecha = new Date(year, month - 1, day);
+    const diaSemana = diasSemana[fecha.getDay()];
+    return `${day}/${month}/${year} - ${diaSemana}`;
   });
 
   if (charts['atenciones-dia']) {

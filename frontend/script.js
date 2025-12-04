@@ -15,6 +15,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const usuariosSection = document.getElementById('usuarios-section');
     if (btnUsuarios) btnUsuarios.style.display = 'none';
     if (usuariosSection) usuariosSection.style.display = 'none';
+    
+    // Ocultar Paso 1 y Paso 2 para gestores (solo administradores pueden ver)
+    const asignadosCsvContainer = document.getElementById('asignados-csv-container');
+    const dashboardReporteContainer = document.getElementById('dashboard-reporte-container');
+    if (asignadosCsvContainer) asignadosCsvContainer.style.display = 'none';
+    if (dashboardReporteContainer) dashboardReporteContainer.style.display = 'none';
   }
   
   // Mostrar la sección de incidencias por defecto

@@ -1,17 +1,43 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Header
 from backend.models.reporte_dashboard import ReporteDashboard
 from backend.models.incidencia import Incidencia
 from backend.models.trabajador import Trabajador
 from backend.models.asignado import Asignado
 from backend.models.usuario import Usuario
 from backend.schemas.reporte_dashboard import ReporteDashboardResponse
+from backend.auth import verificar_token
 from datetime import datetime
+from typing import Optional
 
 router = APIRouter(prefix="/reporte-dashboards", tags=["reporte-dashboards"])
 
 @router.post("/generar", response_model=dict)
-def generar_reporte_dashboard():
-    """Genera el reporte dashboard uniendo datos de atenciones, trabajadores y asignados"""
+def generar_reporte_dashboard(authorization: Optional[str] = Header(None)):
+    """
+    Genera el reporte dashboard uniendo datos de atenciones, trabajadores y asignados
+    Solo acceso: Administrador
+    """
+    
+    # Verificar que sea administrador
+    if not authorization:
+        raise HTTPException(status_code=401, detail="Token no proporcionado")
+    
+    # Extraer token del header (formato: Bearer <token>)
+    try:
+        scheme, token = authorization.split()
+        if scheme.lower() != "bearer":
+            raise HTTPException(status_code=401, detail="Esquema de autenticación inválido")
+    except ValueError:
+        raise HTTPException(status_code=401, detail="Formato de token inválido")
+    
+    # Verificar token
+    token_data = verificar_token(token)
+    if not token_data:
+        raise HTTPException(status_code=401, detail="Token inválido o expirado")
+    
+    if token_data.rol != "administrador":
+        raise HTTPException(status_code=403, detail="Solo administradores pueden generar reportes")
+    
     try:
         # Obtener todas las atenciones
         atenciones = Incidencia.objects.all()

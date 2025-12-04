@@ -28,3 +28,4 @@ def conectar_db():
 
 # Llamar al conectar en el inicio de la app
 conectar_db()
+    
