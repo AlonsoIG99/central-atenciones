@@ -57,8 +57,27 @@ btnReportes.addEventListener('click', () => {
 
 // Logout
 if (btnLogout) {
-  btnLogout.addEventListener('click', () => {
+  btnLogout.addEventListener('click', async () => {
+    const refreshToken = localStorage.getItem('refresh_token');
+    
+    // Intentar revocar el refresh token en el servidor
+    if (refreshToken) {
+      try {
+        await fetch(`${API_URL}/auth/logout`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ refresh_token: refreshToken })
+        });
+      } catch (error) {
+        console.error('Error al revocar token:', error);
+      }
+    }
+    
+    // Limpiar localStorage y redirigir
     localStorage.removeItem('token');
+    localStorage.removeItem('refresh_token');
     localStorage.removeItem('user_id');
     localStorage.removeItem('rol');
     localStorage.removeItem('area');

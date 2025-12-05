@@ -9,7 +9,7 @@ Chart.register(ChartDataLabels);
 async function obtenerDatosDashboard() {
   try {
     const headers = obtenerHeaders();
-    const response = await fetch('http://127.0.0.1:8000/reporte-dashboards/', {
+    const response = await fetchConAutoRefresh('http://127.0.0.1:8000/reporte-dashboards/', {
       method: 'GET',
       headers
     });
@@ -49,9 +49,11 @@ function mostrarSlide(numero) {
   // Actualizar dots
   document.querySelectorAll('.slide-dot').forEach((dot, index) => {
     if (index + 1 === numero) {
-      dot.classList.add('active');
+      dot.classList.add('active', 'bg-indigo-600');
+      dot.classList.remove('bg-gray-600');
     } else {
-      dot.classList.remove('active');
+      dot.classList.remove('active', 'bg-indigo-600');
+      dot.classList.add('bg-gray-600');
     }
   });
 

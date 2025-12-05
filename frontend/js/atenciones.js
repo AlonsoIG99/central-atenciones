@@ -133,7 +133,13 @@ const atencionSchema = {
   },
   "Apoyo económico/Préstamo": {
     children: {
-      "Aprobado": { input: "Monto aprobado" },
+      "Aprobado": { 
+        input: "Monto aprobado",
+        select: {
+          label: "Motivo",
+          options: ["Salud", "Estudios", "Otros - Excepcional"]
+        }
+      },
       "No aprobado": { input: "Motivo de no aprobación" }
     }
   },
@@ -213,7 +219,38 @@ function renderAtencionSchema(schema, container, parentLabel = '') {
       input.type = 'text';
       input.placeholder = value.input;
       input.className = 'mt-1 p-2 border border-gray-300 rounded w-full text-sm';
+      input.id = makeId(key + '-valor');
       nested.appendChild(input);
+    }
+
+    // Si tiene select, crear combobox
+    if (value && value.select) {
+      const selectWrapper = document.createElement('div');
+      selectWrapper.className = 'mt-2';
+      const selectLabel = document.createElement('label');
+      selectLabel.className = 'block text-sm text-gray-600 mb-1';
+      selectLabel.textContent = value.select.label;
+      const selectField = document.createElement('select');
+      selectField.className = 'w-full p-2 border border-gray-300 rounded text-sm';
+      selectField.id = makeId(key + '-motivo');
+      
+      // Opción por defecto
+      const defaultOption = document.createElement('option');
+      defaultOption.value = '';
+      defaultOption.textContent = 'Selecciona un motivo';
+      selectField.appendChild(defaultOption);
+      
+      // Agregar opciones
+      value.select.options.forEach(option => {
+        const opt = document.createElement('option');
+        opt.value = option;
+        opt.textContent = option;
+        selectField.appendChild(opt);
+      });
+      
+      selectWrapper.appendChild(selectLabel);
+      selectWrapper.appendChild(selectField);
+      nested.appendChild(selectWrapper);
     }
 
     if (value && value.children) {
@@ -240,6 +277,9 @@ function renderAtencionSchema(schema, container, parentLabel = '') {
                 siblingNested.querySelectorAll('input[type="text"]').forEach(input => {
                   input.value = '';
                 });
+                siblingNested.querySelectorAll('select').forEach(select => {
+                  select.value = '';
+                });
               }
             }
           });
@@ -249,6 +289,9 @@ function renderAtencionSchema(schema, container, parentLabel = '') {
         nested.querySelectorAll('input').forEach(i => {
           if (i.type === 'checkbox') i.checked = false;
           if (i.type === 'text') i.value = '';
+        });
+        nested.querySelectorAll('select').forEach(s => {
+          s.value = '';
         });
       }
     });
@@ -268,6 +311,10 @@ function collectAtencionData(schema) {
       if (nested) {
         const input = nested.querySelector(':scope > input[type="text"]');
         if (input && input.value) node['valor'] = input.value;
+        
+        // Capturar valor del select (motivo)
+        const select = nested.querySelector(':scope > div > select');
+        if (select && select.value) node['motivo'] = select.value;
       }
       if (value && value.children) {
         const childrenData = collectAtencionData(value.children);

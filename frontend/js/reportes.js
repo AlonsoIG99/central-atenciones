@@ -140,7 +140,7 @@ async function cargarReportes() {
         ul.className = `${level > 0 ? 'ml-3' : ''} space-y-1 ${level > 0 ? 'border-l border-gray-200 pl-3' : ''}`;
         
         Object.entries(obj).forEach(([key, value]) => {
-          if (key === 'valor') return;
+          if (key === 'valor' || key === 'motivo') return;
           
           const li = document.createElement('li');
           li.className = 'text-gray-700';
@@ -160,6 +160,12 @@ async function cargarReportes() {
               val.className = 'ml-5 text-sm text-gray-500';
               val.textContent = `→ Valor: ${value.valor}`;
               li.appendChild(val);
+            }
+            if (value.motivo) {
+              const mot = document.createElement('div');
+              mot.className = 'ml-5 text-sm text-gray-500';
+              mot.textContent = `• motivo: ${value.motivo}`;
+              li.appendChild(mot);
             }
             const childList = renderNested(value, level + 1);
             li.appendChild(childList);
@@ -261,7 +267,7 @@ function mostrarModalEditarEstado(atencion) {
     
     try {
       const headers = obtenerHeaders();
-      const response = await fetch(`http://127.0.0.1:8000/atenciones/${atencion.id}`, {
+      const response = await fetchConAutoRefresh(`http://127.0.0.1:8000/atenciones/${atencion.id}`, {
         method: 'PUT',
         headers,
         body: JSON.stringify({

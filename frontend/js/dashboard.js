@@ -2,7 +2,7 @@
 async function generarReporteDashboard() {
   try {
     const headers = obtenerHeaders();
-    const response = await fetch('http://127.0.0.1:8000/reporte-dashboards/generar', {
+    const response = await fetchConAutoRefresh('http://127.0.0.1:8000/reporte-dashboards/generar', {
       method: 'POST',
       headers
     });
@@ -26,7 +26,7 @@ async function generarReporteDashboard() {
 async function obtenerUltimosRegistrosDashboard(cantidad = 5) {
   try {
     const headers = obtenerHeaders();
-    const response = await fetch(`http://127.0.0.1:8000/reporte-dashboards/ultimos?cantidad=${cantidad}`, {
+    const response = await fetchConAutoRefresh(`http://127.0.0.1:8000/reporte-dashboards/ultimos?cantidad=${cantidad}`, {
       method: 'GET',
       headers
     });
@@ -50,7 +50,7 @@ async function obtenerUltimosRegistrosDashboard(cantidad = 5) {
 async function obtenerTodosDashboard() {
   try {
     const headers = obtenerHeaders();
-    const response = await fetch('http://127.0.0.1:8000/reporte-dashboards/', {
+    const response = await fetchConAutoRefresh('http://127.0.0.1:8000/reporte-dashboards/', {
       method: 'GET',
       headers
     });

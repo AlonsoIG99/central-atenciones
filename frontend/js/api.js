@@ -5,6 +5,11 @@ function obtenerToken() {
   return localStorage.getItem('token');
 }
 
+// Obtener refresh token
+function obtenerRefreshToken() {
+  return localStorage.getItem('refresh_token');
+}
+
 // Headers con token
 function obtenerHeaders() {
   const token = obtenerToken();
@@ -15,6 +20,60 @@ function obtenerHeaders() {
     headers['Authorization'] = `Bearer ${token}`;
   }
   return headers;
+}
+
+// Refrescar access token
+async function refrescarToken() {
+  const refreshToken = obtenerRefreshToken();
+  if (!refreshToken) {
+    return false;
+  }
+
+  try {
+    const response = await fetch(`${API_URL}/auth/refresh`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ refresh_token: refreshToken })
+    });
+
+    if (!response.ok) {
+      // Si el refresh token es inválido, limpiar todo y redirigir
+      localStorage.clear();
+      window.location.href = 'login.html';
+      return false;
+    }
+
+    const data = await response.json();
+    localStorage.setItem('token', data.access_token);
+    return true;
+  } catch (error) {
+    console.error('Error al refrescar token:', error);
+    localStorage.clear();
+    window.location.href = 'login.html';
+    return false;
+  }
+}
+
+// Función mejorada de fetch con auto-refresh
+async function fetchConAutoRefresh(url, options = {}) {
+  let response = await fetch(url, options);
+
+  // Si obtenemos 401, intentar refrescar el token
+  if (response.status === 401) {
+    const refreshOk = await refrescarToken();
+    if (refreshOk) {
+      // Actualizar headers con nuevo token y reintentar
+      if (!options.headers) {
+        options.headers = {};
+      }
+      options.headers['Authorization'] = `Bearer ${obtenerToken()}`;
+      response = await fetch(url, options);
+    }
+  }
+
+  return response;
 }
 
 // Verificar autenticación
@@ -30,7 +89,7 @@ function verificarAutenticacion() {
 // Funciones para Usuarios
 async function obtenerUsuarios() {
     try {
-        const response = await fetch(`${API_URL}/usuarios`, {
+        const response = await fetchConAutoRefresh(`${API_URL}/usuarios`, {
             headers: obtenerHeaders()
         });
         if (!response.ok) throw new Error('Error al obtener usuarios');
@@ -44,7 +103,7 @@ async function obtenerUsuarios() {
 
 async function crearUsuario(usuario) {
     try {
-        const response = await fetch(`${API_URL}/usuarios`, {
+        const response = await fetchConAutoRefresh(`${API_URL}/usuarios`, {
             method: 'POST',
             headers: obtenerHeaders(),
             body: JSON.stringify(usuario)
@@ -64,7 +123,7 @@ async function crearUsuario(usuario) {
 
 async function actualizarUsuario(id, usuario) {
     try {
-        const response = await fetch(`${API_URL}/usuarios/${id}`, {
+        const response = await fetchConAutoRefresh(`${API_URL}/usuarios/${id}`, {
             method: 'PUT',
             headers: obtenerHeaders(),
             body: JSON.stringify(usuario)
@@ -80,7 +139,7 @@ async function actualizarUsuario(id, usuario) {
 
 async function eliminarUsuario(id) {
     try {
-        const response = await fetch(`${API_URL}/usuarios/${id}`, {
+        const response = await fetchConAutoRefresh(`${API_URL}/usuarios/${id}`, {
             method: 'DELETE',
             headers: obtenerHeaders()
         });
@@ -96,7 +155,7 @@ async function eliminarUsuario(id) {
 // Funciones para Atenciones
 async function obtenerAtenciones() {
     try {
-        const response = await fetch(`${API_URL}/atenciones`, {
+        const response = await fetchConAutoRefresh(`${API_URL}/atenciones`, {
             headers: obtenerHeaders()
         });
         if (!response.ok) throw new Error('Error al obtener atenciones');
@@ -110,7 +169,7 @@ async function obtenerAtenciones() {
 
 async function crearAtencion(atencion) {
     try {
-        const response = await fetch(`${API_URL}/atenciones`, {
+        const response = await fetchConAutoRefresh(`${API_URL}/atenciones`, {
             method: 'POST',
             headers: obtenerHeaders(),
             body: JSON.stringify(atencion)
@@ -126,7 +185,7 @@ async function crearAtencion(atencion) {
 
 async function actualizarAtencion(id, atencion) {
     try {
-        const response = await fetch(`${API_URL}/atenciones/${id}`, {
+        const response = await fetchConAutoRefresh(`${API_URL}/atenciones/${id}`, {
             method: 'PUT',
             headers: obtenerHeaders(),
             body: JSON.stringify(atencion)
@@ -142,7 +201,7 @@ async function actualizarAtencion(id, atencion) {
 
 async function eliminarAtencion(id) {
     try {
-        const response = await fetch(`${API_URL}/atenciones/${id}`, {
+        const response = await fetchConAutoRefresh(`${API_URL}/atenciones/${id}`, {
             method: 'DELETE',
             headers: obtenerHeaders()
         });
@@ -160,7 +219,7 @@ async function buscarTrabajadorPorDni(dni) {
     try {
         if (!dni || dni.length === 0) return [];
         
-        const response = await fetch(`${API_URL}/trabajadores/buscar/${dni}`, {
+        const response = await fetchConAutoRefresh(`${API_URL}/trabajadores/buscar/${dni}`, {
             headers: obtenerHeaders()
         });
         if (!response.ok) return [];

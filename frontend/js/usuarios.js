@@ -132,7 +132,7 @@ if (csvForm) {
       formData.append('file', file);
       
       const token = localStorage.getItem('token');
-      const response = await fetch(
+      const response = await fetchConAutoRefresh(
         `${API_URL}/trabajadores/cargar-csv`,
         {
           method: 'POST',

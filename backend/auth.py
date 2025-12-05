@@ -5,11 +5,13 @@ from pydantic import BaseModel
 import hashlib
 import os
 import binascii
+import secrets
 
 # Configuración
 SECRET_KEY = "tu-clave-secreta-muy-segura-cambiar-en-produccion"
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
+REFRESH_TOKEN_EXPIRE_DAYS = 7
 
 # Para desarrollo, usamos SHA256 con salt
 class TokenData(BaseModel):
@@ -19,6 +21,7 @@ class TokenData(BaseModel):
 
 class Token(BaseModel):
     access_token: str
+    refresh_token: Optional[str] = None
     token_type: str
     user_id: str
     rol: str
@@ -72,3 +75,67 @@ def verificar_token(token: str) -> Optional[TokenData]:
         return token_data
     except JWTError:
         return None
+
+def crear_refresh_token() -> str:
+    """Genera un refresh token aleatorio seguro"""
+    return secrets.token_urlsafe(32)
+
+def guardar_refresh_token(user_id: str, refresh_token: str) -> None:
+    """Guarda un refresh token en la base de datos"""
+    from backend.models.refresh_token import RefreshToken
+    
+    expires_at = datetime.utcnow() + timedelta(days=REFRESH_TOKEN_EXPIRE_DAYS)
+    
+    # Crear nuevo refresh token
+    token_doc = RefreshToken(
+        token=refresh_token,
+        user_id=user_id,
+        expires_at=expires_at
+    )
+    token_doc.save()
+
+def verificar_refresh_token(refresh_token: str) -> Optional[str]:
+    """Verifica un refresh token y retorna el user_id si es válido"""
+    from backend.models.refresh_token import RefreshToken
+    
+    try:
+        token_doc = RefreshToken.objects(token=refresh_token).first()
+        
+        if not token_doc:
+            return None
+        
+        # Verificar si está revocado
+        if token_doc.is_revoked:
+            return None
+        
+        # Verificar si ha expirado
+        if token_doc.expires_at < datetime.utcnow():
+            return None
+        
+        return token_doc.user_id
+    except Exception:
+        return None
+
+def revocar_refresh_token(refresh_token: str) -> bool:
+    """Revoca un refresh token"""
+    from backend.models.refresh_token import RefreshToken
+    
+    try:
+        token_doc = RefreshToken.objects(token=refresh_token).first()
+        if token_doc:
+            token_doc.is_revoked = True
+            token_doc.save()
+            return True
+        return False
+    except Exception:
+        return False
+
+def revocar_todos_refresh_tokens_usuario(user_id: str) -> bool:
+    """Revoca todos los refresh tokens de un usuario"""
+    from backend.models.refresh_token import RefreshToken
+    
+    try:
+        RefreshToken.objects(user_id=user_id).update(is_revoked=True)
+        return True
+    except Exception:
+        return False
