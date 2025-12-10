@@ -159,7 +159,7 @@ async function generarVisualizacionDashboard() {
       return;
     }
     
-    // Contar por tipo de incidencia (extrayendo del JSON de descripcion)
+    // Contar por tipo de atención (extrayendo del JSON de descripcion)
     let contadores = {
       "Pago correcto": 0,
       "Pago incorrecto": 0,
@@ -173,9 +173,9 @@ async function generarVisualizacionDashboard() {
         const descripcion = JSON.parse(reporte.descripcion_atencion || '{}');
         
         // Obtener todas las claves del objeto JSON y contar cada una
-        const tiposIncidencia = Object.keys(descripcion);
+        const tiposAtencion = Object.keys(descripcion);
         
-        tiposIncidencia.forEach(tipo => {
+        tiposAtencion.forEach(tipo => {
           if (tipo === "Pago correcto") {
             contadores["Pago correcto"]++;
           } else if (tipo === "Pago incorrecto") {
@@ -194,7 +194,7 @@ async function generarVisualizacionDashboard() {
     // Calcular el total de conteos (puede ser mayor que reportes.length si hay múltiples tipos por registro)
     const total = contadores["Pago correcto"] + contadores["Pago incorrecto"] + contadores["Apoyo económico/Préstamo"] + contadores["Otros/Soporte"];
     
-    // Actualizar UI con el total de incidencias
+    // Actualizar UI con el total de atenciones
     document.getElementById('dashboard-total').textContent = total;
     
     // Actualizar barras de progreso

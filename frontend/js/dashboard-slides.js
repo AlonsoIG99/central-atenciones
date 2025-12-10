@@ -530,7 +530,7 @@ async function cargarDatosSlide2(datos) {
   // Crear gráfico inicial
   crearGraficoDetalleSlide2(datos);
   
-  // Mostrar total inicial de incidencias
+  // Mostrar total inicial de atenciones
   document.getElementById('total-atenciones-slide2').textContent = datos.length;
   
   // Cargar tabla de jurisdicciones
@@ -755,7 +755,7 @@ async function aplicarFiltroSlide2() {
     return;
   }
 
-  // Actualizar total de incidencias
+  // Actualizar total de atenciones
   document.getElementById('total-atenciones-slide2').textContent = datos.length;
 
   await crearGraficoDetalleSlide2(datos);
@@ -807,7 +807,7 @@ function actualizarTablaJurisdicciones(datos) {
   });
 }
 
-// Actualizar el total de incidencias
+// Actualizar el total de atenciones
 function actualizarTotal(datos) {
   document.getElementById('total-atenciones').textContent = datos.length.toLocaleString('es-ES');
 }
