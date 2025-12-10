@@ -4,10 +4,16 @@ const fechaDesdeInput = document.getElementById('fecha-desde');
 const fechaHastaInput = document.getElementById('fecha-hasta');
 const btnLimpiarBusqueda = document.getElementById('btn-limpiar-busqueda');
 
+// Variables de paginación
+let paginaActual = 1;
+const itemsPorPagina = 10;
+let atencionesFiltradas = [];
+
 // Validar que búsqueda de DNI solo acepte números
 if (buscarDniInput) {
   buscarDniInput.addEventListener('input', (e) => {
     e.target.value = e.target.value.replace(/[^0-9]/g, '');
+    paginaActual = 1;
     cargarReportes();
   });
 }
@@ -15,12 +21,14 @@ if (buscarDniInput) {
 // Eventos para filtros de fecha
 if (fechaDesdeInput) {
   fechaDesdeInput.addEventListener('change', () => {
+    paginaActual = 1;
     cargarReportes();
   });
 }
 
 if (fechaHastaInput) {
   fechaHastaInput.addEventListener('change', () => {
+    paginaActual = 1;
     cargarReportes();
   });
 }
@@ -31,6 +39,7 @@ if (btnLimpiarBusqueda) {
     if (buscarDniInput) buscarDniInput.value = '';
     if (fechaDesdeInput) fechaDesdeInput.value = '';
     if (fechaHastaInput) fechaHastaInput.value = '';
+    paginaActual = 1;
     cargarReportes();
   });
 }
@@ -45,7 +54,7 @@ async function cargarReportes() {
   const fechaHasta = fechaHastaInput ? fechaHastaInput.value : '';
   
   // Filtrar: gestores ven solo sus atenciones, admins ven todas
-  let atencionesFiltradas = rol === 'administrador' 
+  atencionesFiltradas = rol === 'administrador' 
     ? atenciones 
     : atenciones.filter(att => att.usuario_id == userId);
   
@@ -72,9 +81,23 @@ async function cargarReportes() {
     });
   }
   
+  // Ordenar por fecha más reciente primero
+  atencionesFiltradas.sort((a, b) => {
+    return new Date(b.fecha_creacion) - new Date(a.fecha_creacion);
+  });
+  
+  renderizarReportes();
+}
+
+// Renderizar reportes con paginación
+function renderizarReportes() {
   reportContainer.innerHTML = '';
   
   if (atencionesFiltradas.length === 0) {
+    const dniSearch = buscarDniInput ? buscarDniInput.value.toLowerCase().trim() : '';
+    const fechaDesde = fechaDesdeInput ? fechaDesdeInput.value : '';
+    const fechaHasta = fechaHastaInput ? fechaHastaInput.value : '';
+    
     let mensaje = 'No hay atenciones registradas';
     if (dniSearch) {
       mensaje = `No hay atenciones con DNI: ${dniSearch}`;
@@ -86,7 +109,13 @@ async function cargarReportes() {
     return;
   }
   
-  atencionesFiltradas.forEach((atencion) => {
+  // Calcular paginación
+  const totalPaginas = Math.ceil(atencionesFiltradas.length / itemsPorPagina);
+  const inicio = (paginaActual - 1) * itemsPorPagina;
+  const fin = inicio + itemsPorPagina;
+  const atencionesPagina = atencionesFiltradas.slice(inicio, fin);
+  
+  atencionesPagina.forEach((atencion) => {
     const card = document.createElement('div');
     card.className = "bg-white shadow-md rounded-xl p-5 cursor-pointer hover:shadow-lg transition";
     
@@ -140,7 +169,7 @@ async function cargarReportes() {
         ul.className = `${level > 0 ? 'ml-3' : ''} space-y-1 ${level > 0 ? 'border-l border-gray-200 pl-3' : ''}`;
         
         Object.entries(obj).forEach(([key, value]) => {
-          if (key === 'valor' || key === 'motivo') return;
+          if (key === 'valor' || key === 'motivo' || key === 'tiene_archivo') return;
           
           const li = document.createElement('li');
           li.className = 'text-gray-700';
@@ -196,6 +225,41 @@ async function cargarReportes() {
     
     card.appendChild(detail);
     
+    // Sección de documentos adjuntos
+    const docsSection = document.createElement('div');
+    docsSection.className = 'mt-4 pt-4 border-t border-gray-200';
+    docsSection.innerHTML = '<p class="text-sm text-gray-500"><i class="fas fa-spinner fa-spin mr-2"></i>Cargando documentos...</p>';
+    card.appendChild(docsSection);
+    
+    // Cargar documentos de forma asíncrona
+    obtenerDocumentosAtencion(atencion.id).then(documentos => {
+      if (documentos.length > 0) {
+        docsSection.innerHTML = `
+          <div class="flex items-center gap-2 mb-2">
+            <i class="fas fa-paperclip text-purple-600"></i>
+            <span class="text-sm font-semibold text-gray-700">Documentos adjuntos (${documentos.length})</span>
+          </div>
+          <div class="flex flex-wrap gap-2">
+            ${documentos.map(doc => `
+              <a href="${doc.url_descarga}" 
+                 target="_blank"
+                 class="inline-flex items-center gap-2 px-3 py-2 bg-red-50 hover:bg-red-100 text-red-700 rounded-lg text-sm transition border border-red-200"
+                 title="${doc.nombre_original}">
+                <i class="fas fa-file-pdf"></i>
+                <span class="max-w-xs truncate">${doc.nombre_original}</span>
+                <i class="fas fa-external-link-alt text-xs"></i>
+              </a>
+            `).join('')}
+          </div>
+        `;
+      } else {
+        docsSection.innerHTML = '<p class="text-sm text-gray-400 italic"><i class="fas fa-info-circle mr-1"></i>Sin documentos adjuntos</p>';
+      }
+    }).catch(err => {
+      console.error('Error al cargar documentos:', err);
+      docsSection.innerHTML = '<p class="text-sm text-red-500"><i class="fas fa-exclamation-triangle mr-1"></i>Error al cargar documentos</p>';
+    });
+    
     // Toggle al hacer clic en el botón Ver detalle
     toggleBtn.addEventListener('click', (e) => {
       e.stopPropagation();
@@ -212,6 +276,85 @@ async function cargarReportes() {
     
     reportContainer.appendChild(card);
   });
+  
+  // Agregar controles de paginación
+  if (totalPaginas > 1) {
+    const paginacionDiv = document.createElement('div');
+    paginacionDiv.className = 'flex justify-center items-center gap-2 mt-6 flex-wrap';
+    
+    // Información de página
+    const infoSpan = document.createElement('span');
+    infoSpan.className = 'text-sm text-gray-600 mr-4';
+    infoSpan.textContent = `Página ${paginaActual} de ${totalPaginas} (${atencionesFiltradas.length} registros)`;
+    paginacionDiv.appendChild(infoSpan);
+    
+    // Botón Primera
+    const btnPrimera = document.createElement('button');
+    btnPrimera.textContent = '« Primera';
+    btnPrimera.className = `px-4 py-2 rounded-lg transition ${paginaActual === 1 ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'}`;
+    btnPrimera.disabled = paginaActual === 1;
+    btnPrimera.onclick = () => {
+      paginaActual = 1;
+      renderizarReportes();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+    paginacionDiv.appendChild(btnPrimera);
+    
+    // Botón Anterior
+    const btnAnterior = document.createElement('button');
+    btnAnterior.textContent = '‹ Anterior';
+    btnAnterior.className = `px-4 py-2 rounded-lg transition ${paginaActual === 1 ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'}`;
+    btnAnterior.disabled = paginaActual === 1;
+    btnAnterior.onclick = () => {
+      paginaActual--;
+      renderizarReportes();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+    paginacionDiv.appendChild(btnAnterior);
+    
+    // Números de página (mostrar 5 páginas alrededor de la actual)
+    const rango = 2;
+    let inicio = Math.max(1, paginaActual - rango);
+    let fin = Math.min(totalPaginas, paginaActual + rango);
+    
+    for (let i = inicio; i <= fin; i++) {
+      const btnPagina = document.createElement('button');
+      btnPagina.textContent = i;
+      btnPagina.className = `w-10 h-10 rounded-lg transition ${i === paginaActual ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-bold shadow-lg' : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'}`;
+      btnPagina.onclick = () => {
+        paginaActual = i;
+        renderizarReportes();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      };
+      paginacionDiv.appendChild(btnPagina);
+    }
+    
+    // Botón Siguiente
+    const btnSiguiente = document.createElement('button');
+    btnSiguiente.textContent = 'Siguiente ›';
+    btnSiguiente.className = `px-4 py-2 rounded-lg transition ${paginaActual === totalPaginas ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'}`;
+    btnSiguiente.disabled = paginaActual === totalPaginas;
+    btnSiguiente.onclick = () => {
+      paginaActual++;
+      renderizarReportes();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+    paginacionDiv.appendChild(btnSiguiente);
+    
+    // Botón Última
+    const btnUltima = document.createElement('button');
+    btnUltima.textContent = 'Última »';
+    btnUltima.className = `px-4 py-2 rounded-lg transition ${paginaActual === totalPaginas ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'}`;
+    btnUltima.disabled = paginaActual === totalPaginas;
+    btnUltima.onclick = () => {
+      paginaActual = totalPaginas;
+      renderizarReportes();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+    paginacionDiv.appendChild(btnUltima);
+    
+    reportContainer.appendChild(paginacionDiv);
+  }
 }
 
 // Modal para editar estado

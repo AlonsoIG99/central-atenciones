@@ -230,8 +230,12 @@ document.addEventListener('DOMContentLoaded', () => {
       btnGenerarVisualizacion.disabled = true;
       btnGenerarVisualizacion.textContent = 'Abriendo...';
       
-      // Abrir dashboard con slides en una nueva pestaña
-      window.open('dashboard-slides.html', 'dashboard', 'width=1600,height=900');
+      // Abrir dashboard con slides en pantalla completa
+      const dashboardWindow = window.open('dashboard-slides.html', 'dashboard');
+      if (dashboardWindow) {
+        dashboardWindow.moveTo(0, 0);
+        dashboardWindow.resizeTo(screen.width, screen.height);
+      }
       
       btnGenerarVisualizacion.disabled = false;
       btnGenerarVisualizacion.textContent = 'Generar Dashboard';

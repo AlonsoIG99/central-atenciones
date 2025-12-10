@@ -3,46 +3,141 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Central de Atención</title>
+    <title>Central de Atenciones</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         .nested { margin-left: 1.5rem; }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        .nav-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+        }
     </style>
 </head>
-<body class="bg-gray-100">
-    <div class="flex flex-col min-h-screen p-6">
-        <div class="w-full max-w-3xl mx-auto">
-            <header class="bg-white rounded-t-xl shadow-md p-6">
-                <h1 class="text-3xl font-bold text-gray-800 mb-4 text-center">CENTRAL DE ATENCIONES</h1>
-                <nav class="flex justify-center gap-4 flex-wrap">
-                    <button id="btn-usuarios" class="nav-btn active px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">Usuarios</button>
-                    <button id="btn-atenciones" class="nav-btn px-6 py-2 bg-gray-400 text-white rounded-lg hover:bg-gray-500 transition">Atenciones</button>
-                    <button id="btn-reportes" class="nav-btn px-6 py-2 bg-gray-400 text-white rounded-lg hover:bg-gray-500 transition">Reportes</button>
-                    <button id="btn-asignados" class="nav-btn px-6 py-2 bg-gray-400 text-white rounded-lg hover:bg-gray-500 transition">Dashboard</button>
-                    <button id="btn-logout" class="nav-btn px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition">Logout</button>
+<body class="bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen">
+    <!-- Sidebar & Header -->
+    <div class="flex min-h-screen">
+        <!-- Sidebar -->
+        <aside class="w-64 bg-gradient-to-b from-gray-900 to-gray-800 text-white shadow-2xl">
+            <div class="p-6">
+                <div class="flex items-center gap-3 mb-8">
+                    <div class="w-10 h-10 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-headset text-white text-xl"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-xl font-bold">Central</h1>
+                        <p class="text-xs text-gray-400">Gestión Ejecutiva</p>
+                    </div>
+                </div>
+                
+                <nav class="space-y-2">
+                    <button id="btn-usuarios" class="nav-btn active w-full text-left px-4 py-3 rounded-lg transition flex items-center gap-3 hover:bg-gray-700">
+                        <i class="fas fa-users"></i>
+                        <span>Usuarios</span>
+                    </button>
+                    <button id="btn-atenciones" class="nav-btn w-full text-left px-4 py-3 rounded-lg transition flex items-center gap-3 hover:bg-gray-700">
+                        <i class="fas fa-clipboard-list"></i>
+                        <span>Atenciones</span>
+                    </button>
+                    <button id="btn-reportes" class="nav-btn w-full text-left px-4 py-3 rounded-lg transition flex items-center gap-3 hover:bg-gray-700">
+                        <i class="fas fa-file-alt"></i>
+                        <span>Reportes</span>
+                    </button>
+                    <button id="btn-asignados" class="nav-btn w-full text-left px-4 py-3 rounded-lg transition flex items-center gap-3 hover:bg-gray-700">
+                        <i class="fas fa-chart-line"></i>
+                        <span>Dashboard</span>
+                    </button>
                 </nav>
+                
+                <div class="mt-auto pt-8 border-t border-gray-700">
+                    <button id="btn-logout" class="w-full px-4 py-3 bg-red-600 hover:bg-red-700 rounded-lg transition flex items-center gap-3 justify-center">
+                        <i class="fas fa-sign-out-alt"></i>
+                        <span>Cerrar Sesión</span>
+                    </button>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <div class="flex-1 flex flex-col">
+            <!-- Top Bar -->
+            <header class="bg-white shadow-sm border-b border-gray-200 px-8 py-4">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h2 class="text-2xl font-bold text-gray-800" id="page-title">Gestión de Usuarios</h2>
+                        <p class="text-sm text-gray-500" id="page-subtitle">Administra usuarios del sistema</p>
+                    </div>
+                    <div class="flex items-center gap-4">
+                        <div class="text-right">
+                            <p class="text-sm font-medium text-gray-700" id="user-name">Usuario</p>
+                            <p class="text-xs text-gray-500" id="user-role">Rol</p>
+                        </div>
+                        <div class="w-10 h-10 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-full flex items-center justify-center text-white font-semibold">
+                            <i class="fas fa-user"></i>
+                        </div>
+                    </div>
+                </div>
             </header>
 
-            <main class="bg-white shadow-md rounded-b-xl p-6">
+            <main class="flex-1 p-8 overflow-y-auto">
                 <!-- Sección de Usuarios -->
                 <section id="usuarios-section" class="section active">
-                    <h2 class="text-2xl font-bold text-gray-800 mb-6 pb-3 border-b-4 border-blue-600">Gestión de Usuarios</h2>
-                    
-                    <div id="usuario-form-container" class="bg-gray-50 p-6 rounded-lg mb-8">
-                        <h3 class="text-xl font-semibold text-gray-700 mb-4">Crear Usuario</h3>
-                        <form id="usuario-form" class="space-y-4">
-                            <input type="text" id="usuario-dni" placeholder="DNI" required class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600">
-                            <input type="text" id="usuario-nombre" placeholder="Nombre" required class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600">
-                            <input type="email" id="usuario-email" placeholder="Email" required class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600">
-                            <input type="password" id="usuario-contraseña" placeholder="Contraseña" required class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600">
-                            <select id="usuario-rol" required class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600">
-                                <option value="">Selecciona un rol</option>
-                                <option value="administrador">Administrador</option>
-                                <option value="gestor">Gestor</option>
-                            </select>
-                            <input type="text" id="usuario-area" placeholder="Área" required class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600">
-                            <button type="submit" class="w-full px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-semibold">Crear Usuario</button>
+                    <!-- Card para Crear Usuario -->
+                    <div id="usuario-form-container" class="bg-white rounded-xl shadow-lg p-8 mb-6 card-hover border border-gray-200">
+                        <div class="flex items-center gap-3 mb-6">
+                            <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-user-plus text-white text-xl"></i>
+                            </div>
+                            <h3 class="text-2xl font-bold text-gray-800">Crear Nuevo Usuario</h3>
+                        </div>
+                        <form id="usuario-form" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">DNI</label>
+                                <input type="text" id="usuario-dni" placeholder="Ingrese DNI" required class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Nombre Completo</label>
+                                <input type="text" id="usuario-nombre" placeholder="Ingrese nombre" required class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                                <input type="email" id="usuario-email" placeholder="usuario@empresa.com" required class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Contraseña</label>
+                                <input type="password" id="usuario-contraseña" placeholder="••••••••" required class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Rol</label>
+                                <select id="usuario-rol" required class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition">
+                                    <option value="">Seleccionar rol</option>
+                                    <option value="administrador">👑 Administrador</option>
+                                    <option value="gestor">👤 Gestor</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Área</label>
+                                <select id="usuario-area" required class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition">
+                                    <option value="">Seleccionar área</option>
+                                    <option value="Central de Atenciones">📞 Central de Atenciones</option>
+                                    <option value="Bienestar Social">💼 Bienestar Social</option>
+                                </select>
+                            </div>
+                            <div class="md:col-span-2">
+                                <button type="submit" class="w-full px-6 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg hover:from-purple-700 hover:to-indigo-700 transition font-semibold shadow-lg hover:shadow-xl">
+                                    <i class="fas fa-plus-circle mr-2"></i>Crear Usuario
+                                </button>
+                            </div>
                         </form>
                     </div>
 
@@ -242,45 +337,76 @@ Pública,María García,23456789,2021-03-20,Cliente B,Zona B,Lider 2,Jefe 2,Macr
 
                 <!-- Sección de Atenciones -->
                 <section id="atenciones-section" class="section">
-                    <h2 class="text-2xl font-bold text-gray-800 mb-6 pb-3 border-b-4 border-blue-600">Crear Atención</h2>
-                    
-                    <form id="atencion-form" class="bg-white shadow-md rounded-xl p-6 space-y-4">
-                        <!-- Campo oculto para usuario_id -->
-                        <input type="hidden" id="atencion-usuario_id">
+                    <div class="bg-white rounded-xl shadow-lg p-8 card-hover border border-gray-200">
+                        <h2 class="text-2xl font-bold text-gray-800 mb-6">Registrar Nueva Atención</h2>
                         
-                        <div class="grid grid-cols-2 gap-4 mb-4">
-                            <div class="relative">
-                                <label class="block text-gray-700 font-medium mb-2">DNI Trabajador</label>
-                                <input type="text" id="atencion-dni" placeholder="DNI (8 dígitos)" maxlength="8" pattern="[0-9]*" inputmode="numeric" required class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600">
-                                <div id="trabajadores-resultados" class="absolute top-full left-0 right-0 mt-2 bg-white border border-blue-300 rounded-lg shadow-xl z-50 max-h-48 overflow-y-auto hidden"></div>
+                        <form id="atencion-form" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                            <!-- Campo oculto para usuario_id -->
+                            <input type="hidden" id="atencion-usuario_id">
+                            
+                            <!-- Columna Izquierda: Campos Principales -->
+                            <div class="lg:col-span-1 space-y-4">
+                                <div class="bg-gradient-to-br from-purple-50 to-indigo-50 p-6 rounded-xl border border-purple-200">
+                                    <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                                        <i class="fas fa-info-circle text-purple-600"></i>
+                                        Información Básica
+                                    </h3>
+                                    
+                                    <div class="relative mb-4">
+                                        <label class="block text-gray-700 font-medium mb-2">
+                                            <i class="fas fa-id-card text-purple-600 mr-2"></i>DNI Trabajador
+                                        </label>
+                                        <input type="text" id="atencion-dni" placeholder="DNI (8 dígitos)" maxlength="8" pattern="[0-9]*" inputmode="numeric" required class="w-full p-3 border-2 border-purple-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition">
+                                        <div id="trabajadores-resultados" class="absolute top-full left-0 right-0 mt-2 bg-white border border-purple-300 rounded-lg shadow-xl z-50 max-h-48 overflow-y-auto hidden"></div>
+                                    </div>
+                                    
+                                    <div class="mb-4">
+                                        <label class="block text-gray-700 font-medium mb-2">
+                                            <i class="fas fa-comments text-purple-600 mr-2"></i>Canal de Atención
+                                        </label>
+                                        <select id="atencion-canal" class="w-full p-3 border-2 border-purple-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition">
+                                            <option value="llamada_telefonica">📞 Llamada telefónica</option>
+                                            <option value="whatsapp">💬 WhatsApp</option>
+                                            <option value="presencial">👤 Presencial</option>
+                                            <option value="correo">📧 Correo</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <div>
+                                        <label class="block text-gray-700 font-medium mb-2">
+                                            <i class="fas fa-flag text-purple-600 mr-2"></i>Estado
+                                        </label>
+                                        <select id="atencion-estado" class="w-full p-3 border-2 border-purple-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition">
+                                            <option value="abierta">🔵 Abierta</option>
+                                            <option value="cerrada">🟢 Cerrada</option>
+                                        </select>
+                                    </div>
+                                </div>
                             </div>
-                            <div>
-                                <label class="block text-gray-700 font-medium mb-2">Canal de Atención</label>
-                                <select id="atencion-canal" class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600">
-                                    <option value="llamada_telefonica">Llamada telefónica</option>
-                                    <option value="whatsapp">WhatsApp</option>
-                                    <option value="presencial">Presencial</option>
-                                    <option value="correo">Correo</option>
-                                </select>
+                            
+                            <!-- Columna Derecha: Esquema Dinámico -->
+                            <div class="lg:col-span-2 space-y-4">
+                                <div class="bg-gray-50 p-6 rounded-xl border border-gray-200 min-h-[400px]">
+                                    <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                                        <i class="fas fa-list-check text-indigo-600"></i>
+                                        Detalle de la Atención
+                                    </h3>
+                                    
+                                    <!-- Esquema de atenciones dinámico aquí -->
+                                    <div id="atencion-schema-container" class="space-y-3"></div>
+                                </div>
+                                
+                                <div class="flex justify-end gap-4">
+                                    <button type="reset" class="px-6 py-3 bg-gray-400 text-white rounded-lg hover:bg-gray-500 transition font-semibold flex items-center gap-2">
+                                        <i class="fas fa-eraser"></i>Limpiar
+                                    </button>
+                                    <button type="submit" class="px-6 py-3 bg-gradient-to-r from-green-600 to-teal-600 text-white rounded-lg hover:from-green-700 hover:to-teal-700 transition font-semibold shadow-lg hover:shadow-xl flex items-center gap-2">
+                                        <i class="fas fa-paper-plane"></i>Registrar Atención
+                                    </button>
+                                </div>
                             </div>
-                        </div>
-                        <div class="mb-4">
-                            <label class="block text-gray-700 font-medium mb-2">Estado</label>
-                            <select id="atencion-estado" class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600">
-                                <option value="abierta">Abierta</option>
-                                <option value="en-progreso">En Progreso</option>
-                                <option value="cerrada">Cerrada</option>
-                            </select>
-                        </div>
-
-                        <!-- Esquema de atenciones dinámico aquí -->
-                        <div id="atencion-schema-container" class="space-y-2 mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200"></div>
-
-                        <div class="flex justify-end gap-4">
-                            <button type="reset" class="px-6 py-2 bg-gray-400 text-white rounded-lg hover:bg-gray-500 transition">Limpiar</button>
-                            <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-semibold">Enviar Atención</button>
-                        </div>
-                    </form>
+                        </form>
+                    </div>
                 </section>
 
                 <!-- Sección de Reportes -->

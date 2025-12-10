@@ -31,6 +31,7 @@ loginForm.addEventListener('submit', async (e) => {
     localStorage.setItem('token', data.access_token);
     localStorage.setItem('refresh_token', data.refresh_token);
     localStorage.setItem('user_id', data.user_id);
+    localStorage.setItem('nombre', data.nombre);
     localStorage.setItem('rol', data.rol);
     localStorage.setItem('area', data.area);
     
@@ -43,10 +44,16 @@ loginForm.addEventListener('submit', async (e) => {
 });
 
 function mostrarError(mensaje) {
-  errorMessage.textContent = mensaje;
-  errorMessage.classList.remove('hidden');
+  const errorMessageDiv = document.getElementById('error-message');
+  const errorText = document.getElementById('error-text');
+  if (errorText) {
+    errorText.textContent = mensaje;
+  } else {
+    errorMessageDiv.textContent = mensaje;
+  }
+  errorMessageDiv.classList.remove('hidden');
   setTimeout(() => {
-    errorMessage.classList.add('hidden');
+    errorMessageDiv.classList.add('hidden');
   }, 5000);
 }
 

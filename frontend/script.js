@@ -3,7 +3,20 @@ document.addEventListener('DOMContentLoaded', () => {
   if (!verificarAutenticacion()) return;
   
   const userId = localStorage.getItem('user_id');
+  const nombre = localStorage.getItem('nombre');
   const rolActual = localStorage.getItem('rol');
+  const area = localStorage.getItem('area');
+  
+  // Actualizar información del usuario en el header
+  const userNameEl = document.getElementById('user-name');
+  const userRoleEl = document.getElementById('user-role');
+  if (userNameEl && nombre) {
+    userNameEl.textContent = nombre;
+  }
+  if (userRoleEl && area) {
+    userRoleEl.textContent = area || (rolActual ? rolActual.charAt(0).toUpperCase() + rolActual.slice(1) : '');
+  }
+  
   const userIdField = document.getElementById('atencion-usuario_id');
   if (userIdField) {
     userIdField.value = userId;
@@ -23,8 +36,18 @@ document.addEventListener('DOMContentLoaded', () => {
     if (dashboardReporteContainer) dashboardReporteContainer.style.display = 'none';
   }
   
-  // Mostrar la sección de incidencias por defecto
-  mostrarSeccion('atenciones');
+  // Restaurar última sección visitada o mostrar por defecto
+  const ultimaSeccion = localStorage.getItem('ultima_seccion');
+  if (ultimaSeccion) {
+    mostrarSeccion(ultimaSeccion);
+  } else {
+    // Mostrar sección por defecto según rol
+    if (rolActual === 'gestor') {
+      mostrarSeccion('atenciones');
+    } else {
+      mostrarSeccion('usuarios');
+    }
+  }
 });
 
 // Elementos del DOM
@@ -79,6 +102,7 @@ if (btnLogout) {
     localStorage.removeItem('token');
     localStorage.removeItem('refresh_token');
     localStorage.removeItem('user_id');
+    localStorage.removeItem('nombre');
     localStorage.removeItem('rol');
     localStorage.removeItem('area');
     window.location.href = 'login.html';
@@ -86,6 +110,25 @@ if (btnLogout) {
 }
 
 function mostrarSeccion(seccion) {
+  // Guardar la sección actual en localStorage
+  localStorage.setItem('ultima_seccion', seccion);
+  
+  // Actualizar títulos dinámicos
+  const pageTitle = document.getElementById('page-title');
+  const pageSubtitle = document.getElementById('page-subtitle');
+  
+  const titles = {
+    usuarios: { title: 'Gestión de Usuarios', subtitle: 'Administra usuarios del sistema' },
+    atenciones: { title: 'Registro de Atenciones', subtitle: 'Gestiona las solicitudes y atenciones' },
+    reportes: { title: 'Reportes y Consultas', subtitle: 'Visualiza el historial de atenciones' },
+    asignados: { title: 'Dashboard Ejecutivo', subtitle: 'Análisis y métricas en tiempo real' }
+  };
+  
+  if (pageTitle && titles[seccion]) {
+    pageTitle.textContent = titles[seccion].title;
+    pageSubtitle.textContent = titles[seccion].subtitle;
+  }
+  
   usuariosSection.classList.remove('active');
   asignadosSection.classList.remove('active');
   incidenciasSection.classList.remove('active');

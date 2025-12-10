@@ -57,6 +57,7 @@ def login(credenciales: LoginRequest):
             "refresh_token": refresh_token,
             "token_type": "bearer",
             "user_id": str(usuario.id),
+            "nombre": usuario.nombre,
             "rol": usuario.rol,
             "area": usuario.area
         }

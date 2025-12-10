@@ -174,11 +174,15 @@ async function crearAtencion(atencion) {
             headers: obtenerHeaders(),
             body: JSON.stringify(atencion)
         });
-        if (!response.ok) throw new Error('Error al crear atención');
+        if (!response.ok) {
+            const errorData = await response.json();
+            console.error('Error del servidor:', errorData);
+            throw new Error(errorData.detail || 'Error al crear atención');
+        }
         return await response.json();
     } catch (error) {
         console.error('Error:', error);
-        mostrarError('Error al crear atención');
+        mostrarError('Error al crear atención: ' + error.message);
         return null;
     }
 }
@@ -251,5 +255,20 @@ function mostrarExito(mensaje) {
     if (main) {
         main.insertBefore(success, main.firstChild);
         setTimeout(() => success.remove(), 5000);
+    }
+}
+
+// Obtener documentos de una atención
+async function obtenerDocumentosAtencion(atencionId) {
+    try {
+        const response = await fetchConAutoRefresh(`${API_URL}/documentos/atencion/${atencionId}`, {
+            method: 'GET',
+            headers: obtenerHeaders()
+        });
+        if (!response.ok) return [];
+        return await response.json();
+    } catch (error) {
+        console.error('Error al obtener documentos:', error);
+        return [];
     }
 }

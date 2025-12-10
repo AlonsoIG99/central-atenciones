@@ -16,7 +16,8 @@ if (dniInput) {
     const dni = e.target.value.trim();
     const resultadosContainer = document.getElementById('trabajadores-resultados');
     
-    if (dni.length === 0) {
+    // Buscar solo si hay al menos 4 dígitos
+    if (dni.length < 4) {
       resultadosContainer.classList.add('hidden');
       return;
     }
@@ -138,6 +139,11 @@ const atencionSchema = {
         select: {
           label: "Motivo",
           options: ["Salud", "Estudios", "Otros - Excepcional"]
+        },
+        file: {
+          label: "Documento PDF",
+          accept: ".pdf",
+          required: true
         }
       },
       "No aprobado": { input: "Motivo de no aprobación" }
@@ -253,6 +259,27 @@ function renderAtencionSchema(schema, container, parentLabel = '') {
       nested.appendChild(selectWrapper);
     }
 
+    // Si tiene file, crear input de archivo
+    if (value && value.file) {
+      const fileWrapper = document.createElement('div');
+      fileWrapper.className = 'mt-2';
+      const fileLabel = document.createElement('label');
+      fileLabel.className = 'block text-sm text-gray-600 mb-1';
+      fileLabel.textContent = value.file.label;
+      const fileInput = document.createElement('input');
+      fileInput.type = 'file';
+      fileInput.accept = value.file.accept || '.pdf';
+      fileInput.className = 'w-full p-2 border-2 border-dashed border-purple-300 rounded text-sm cursor-pointer hover:border-purple-500 transition';
+      fileInput.id = makeId(key + '-archivo');
+      if (value.file.required) {
+        fileInput.required = true;
+      }
+      
+      fileWrapper.appendChild(fileLabel);
+      fileWrapper.appendChild(fileInput);
+      nested.appendChild(fileWrapper);
+    }
+
     if (value && value.children) {
       renderAtencionSchema(value.children, nested, key);
     }
@@ -303,6 +330,8 @@ function renderAtencionSchema(schema, container, parentLabel = '') {
 // Recopilar datos del esquema
 function collectAtencionData(schema) {
   const result = {};
+  const archivos = []; // Array para almacenar archivos
+  
   Object.entries(schema).forEach(([key, value]) => {
     const checkbox = document.getElementById(makeId(key));
     if (checkbox && checkbox.checked) {
@@ -315,24 +344,38 @@ function collectAtencionData(schema) {
         // Capturar valor del select (motivo)
         const select = nested.querySelector(':scope > div > select');
         if (select && select.value) node['motivo'] = select.value;
+        
+        // Capturar archivo
+        const fileInput = nested.querySelector(':scope > div > input[type="file"]');
+        if (fileInput && fileInput.files.length > 0) {
+          archivos.push({
+            key: key,
+            file: fileInput.files[0]
+          });
+        }
       }
       if (value && value.children) {
-        const childrenData = collectAtencionData(value.children);
+        const childrenResult = collectAtencionData(value.children);
+        const childrenData = childrenResult.data;
+        const childrenFiles = childrenResult.archivos;
         if (Object.keys(childrenData).length) Object.assign(node, childrenData);
+        if (childrenFiles.length) archivos.push(...childrenFiles);
       }
       result[key] = node;
     }
   });
-  return result;
+  
+  return { data: result, archivos: archivos };
 }
 
-// Cargar atencions
-
 // Crear atencion
-formAtencion.addEventListener('submit', async (e) => {
-  e.preventDefault();
-  
-  const schemaData = collectAtencionData(atencionSchema);
+if (formAtencion) {
+  formAtencion.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const collectedResult = collectAtencionData(atencionSchema);
+    const schemaData = collectedResult.data;
+    const archivos = collectedResult.archivos;
   
   if (Object.keys(schemaData).length === 0) {
     mostrarError('Por favor selecciona al menos una opción');
@@ -351,9 +394,29 @@ formAtencion.addEventListener('submit', async (e) => {
     estado: document.getElementById('atencion-estado').value
   };
   
+  console.log('Enviando atención:', atencion);
+  
+  // Crear la atención primero
   const resultado = await crearAtencion(atencion);
   if (resultado) {
-    mostrarExito('Atencion creada exitosamente');
+    // Si hay archivos, subirlos
+    let uploadExito = true;
+    if (archivos.length > 0) {
+      for (const archivoData of archivos) {
+        const docResult = await subirDocumento(resultado.id, archivoData.file);
+        if (!docResult) {
+          uploadExito = false;
+          // El error ya se mostró en subirDocumento
+        }
+      }
+    }
+    
+    if (uploadExito) {
+      mostrarExito('Atención creada exitosamente' + (archivos.length > 0 ? ' con documento adjunto' : ''));
+    } else {
+      mostrarError('Atención creada pero hubo un error al subir el documento');
+    }
+    
     formAtencion.reset();
     // Contraer el esquema: desmarcar todos los checkboxes y ocultar elementos anidados
     const allCheckboxes = document.querySelectorAll('#atencion-schema-container input[type="checkbox"]');
@@ -365,11 +428,46 @@ formAtencion.addEventListener('submit', async (e) => {
         nested.querySelectorAll('input').forEach(i => {
           if (i.type === 'checkbox') i.checked = false;
           if (i.type === 'text') i.value = '';
+          if (i.type === 'file') i.value = '';
         });
+        nested.querySelectorAll('select').forEach(s => s.value = '');
       }
     });
   }
-});
+  });
+}
+
+// Función para subir documento a MinIO
+async function subirDocumento(atencionId, file) {
+  try {
+    const formData = new FormData();
+    formData.append('file', file);
+    
+    const token = localStorage.getItem('token');
+    
+    // No usar fetchConAutoRefresh porque necesitamos control sobre los headers
+    const response = await fetch(`${API_URL}/documentos/${atencionId}`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`
+        // No incluir Content-Type, el navegador lo configura automáticamente con FormData
+      },
+      body: formData
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error('Error del servidor:', errorData);
+      throw new Error(errorData.detail || 'Error al subir documento');
+    }
+    
+    return await response.json();
+  } catch (error) {
+    console.error('Error al subir documento:', error);
+    mostrarError('Error al subir el documento PDF: ' + error.message);
+    return null;
+  }
+}
 
 // Eliminar atencion
 async function eliminarInc(id) {
