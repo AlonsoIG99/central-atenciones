@@ -15,6 +15,34 @@
         /* Sidebar Styling */
         .sidebar {
             background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            overflow-y: auto;
+        }
+        
+        /* Scroll suave para el sidebar */
+        .sidebar::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .sidebar::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+        }
+        
+        .sidebar::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 3px;
+        }
+        
+        .sidebar::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+        
+        /* Compensar el espacio del sidebar fijo */
+        .main-container {
+            margin-left: 256px; /* 16rem = 256px (ancho del sidebar) */
         }
         
         .nav-btn {
@@ -78,7 +106,7 @@
     <div class="flex min-h-screen">
         <!-- Sidebar -->
         <aside class="sidebar w-64 text-white shadow-2xl">
-            <div class="p-6 flex flex-col h-screen">
+            <div class="p-6">
                 <div class="flex items-center gap-3 mb-8">
                     <div class="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center">
                         <i class="fas fa-headset text-white text-xl"></i>
@@ -89,7 +117,7 @@
                     </div>
                 </div>
                 
-                <nav class="space-y-1 flex-1">
+                <nav class="space-y-1 mb-8">
                     <button id="btn-usuarios" class="nav-btn active w-full text-left px-4 py-3 rounded-lg flex items-center gap-3 text-sm">
                         <i class="fas fa-users w-5"></i>
                         <span>Usuarios</span>
@@ -127,7 +155,7 @@
         </aside>
 
         <!-- Main Content -->
-        <div class="flex-1 flex flex-col">
+        <div class="main-container flex-1 flex flex-col">
             <!-- Top Bar -->
             <header class="bg-white shadow-sm border-b border-gray-200 px-8 py-4">
                 <div class="flex items-center justify-between">
