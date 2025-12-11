@@ -1,10 +1,3 @@
-// Usar la misma detección de entorno que api.js
-const API_URL = (window.location.hostname === 'localhost' || 
-                 window.location.hostname === '127.0.0.1' ||
-                 window.location.port === '8000')
-    ? 'http://127.0.0.1:8000'
-    : 'https://attention.liderman.net.pe';
-
 const loginForm = document.getElementById('login-form');
 const errorMessage = document.getElementById('error-message');
 

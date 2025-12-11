@@ -1,12 +1,3 @@
-// Detectar automáticamente el entorno
-const API_URL = (window.location.hostname === 'localhost' || 
-                 window.location.hostname === '127.0.0.1' ||
-                 window.location.port === '8000')
-    ? 'http://127.0.0.1:8000'  // Desarrollo local
-    : 'https://attention.liderman.net.pe';  // Producción
-
-console.log('[API Dashboard] Usando backend:', API_URL);
-
 // Generar reporte dashboard
 async function generarReporteDashboard() {
   try {

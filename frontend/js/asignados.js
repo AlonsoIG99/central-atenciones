@@ -40,7 +40,7 @@ async function handleAsignadosCSVUpload(event) {
     try {
         showAsignadosResult('loading', 'Cargando asignados...');
 
-        const response = await fetchConAutoRefresh('http://127.0.0.1:8000/asignados/cargar-csv', {
+        const response = await fetchConAutoRefresh(`${API_URL}/asignados/cargar-csv`, {
             method: 'POST',
             body: formData,
             headers: {

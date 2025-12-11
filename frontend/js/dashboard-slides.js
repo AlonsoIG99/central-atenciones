@@ -9,7 +9,7 @@ Chart.register(ChartDataLabels);
 async function obtenerDatosDashboard() {
   try {
     const headers = obtenerHeaders();
-    const response = await fetchConAutoRefresh('http://127.0.0.1:8000/reporte-dashboards/', {
+    const response = await fetchConAutoRefresh(`${API_URL}/reporte-dashboards/`, {
       method: 'GET',
       headers
     });

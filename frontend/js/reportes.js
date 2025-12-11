@@ -410,7 +410,7 @@ function mostrarModalEditarEstado(atencion) {
     
     try {
       const headers = obtenerHeaders();
-      const response = await fetchConAutoRefresh(`http://127.0.0.1:8000/atenciones/${atencion.id}`, {
+      const response = await fetchConAutoRefresh(`${API_URL}/atenciones/${atencion.id}`, {
         method: 'PUT',
         headers,
         body: JSON.stringify({
