@@ -1,7 +1,8 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, HTMLResponse
+from fastapi.openapi.docs import get_swagger_ui_html
 from pathlib import Path
 import os
 import sys
@@ -25,12 +26,27 @@ from backend.minio_config import inicializar_bucket
 # Inicializar bucket de MinIO
 inicializar_bucket()
 
-app = FastAPI(title="Central de Atención")
+# Crear app sin Swagger público
+ENV = os.getenv("ENV", "development")
+app = FastAPI(
+    title="Central de Atención",
+    docs_url=None,  # Deshabilitar /docs público
+    redoc_url=None  # Deshabilitar /redoc público
+)
 
 # Configurar CORS
+# En producción, especificar dominios explícitos
+if ENV == "production":
+    origins = [
+        "https://atencion.liderman.net.pe",
+        "https://attention.liderman.net.pe",
+    ]
+else:
+    origins = ["*"]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -45,38 +61,92 @@ app.include_router(asignados.router)
 app.include_router(reporte_dashboards.router)
 app.include_router(documentos.router)
 
-# Servir archivos estáticos del frontend
-# Esto debe ir DESPUÉS de incluir los routers de API
-frontend_path = Path(__file__).parent.parent / "frontend"
+# Swagger protegido - solo accesible con token válido
+@app.get("/docs", include_in_schema=False)
+async def custom_swagger_ui_html(request: Request):
+    # Verificar token en header o cookie
+    token = request.headers.get("Authorization") or request.cookies.get("token")
+    
+    if not token:
+        raise HTTPException(status_code=401, detail="No autorizado. Inicia sesión primero.")
+    
+    # Verificar que el token sea válido
+    try:
+        from backend.auth import verificar_token
+        token_limpio = token.replace("Bearer ", "") if token.startswith("Bearer ") else token
+        usuario = verificar_token(token_limpio)
+        
+        # Solo administradores pueden ver Swagger
+        if usuario.get("rol") != "administrador":
+            raise HTTPException(status_code=403, detail="Solo administradores pueden acceder a la documentación")
+            
+    except Exception as e:
+        raise HTTPException(status_code=401, detail="Token inválido o expirado")
+    
+    return get_swagger_ui_html(
+        openapi_url="/openapi.json",
+        title=app.title + " - Documentación",
+    )
 
-# Ruta para archivos estáticos (js, css, etc)
-app.mount("/js", StaticFiles(directory=str(frontend_path / "js"), html=False), name="js")
+@app.get("/openapi.json", include_in_schema=False)
+async def get_open_api_endpoint(request: Request):
+    # Proteger también el endpoint de OpenAPI
+    token = request.headers.get("Authorization") or request.cookies.get("token")
+    
+    if not token:
+        raise HTTPException(status_code=401, detail="No autorizado")
+    
+    try:
+        from backend.auth import verificar_token
+        token_limpio = token.replace("Bearer ", "") if token.startswith("Bearer ") else token
+        usuario = verificar_token(token_limpio)
+        
+        if usuario.get("rol") != "administrador":
+            raise HTTPException(status_code=403, detail="Acceso denegado")
+            
+    except Exception as e:
+        raise HTTPException(status_code=401, detail="Token inválido")
+    
+    return app.openapi()
 
-# Servir archivos CSS y otros estáticos desde raíz del frontend
-@app.get("/style.css")
-async def style_css():
-    return FileResponse(str(frontend_path / "style.css"))
+# Servir archivos estáticos del frontend (solo en desarrollo)
+# En producción, Nginx u otro servidor web debe servir el frontend
+if ENV == "development":
+    # Esto debe ir DESPUÉS de incluir los routers de API
+    frontend_path = Path(__file__).parent.parent / "frontend"
 
-# Rutas para archivos HTML
-@app.get("/")
-async def root():
-    return FileResponse(str(frontend_path / "login.html"))
+    # Ruta para archivos estáticos (js, css, etc)
+    app.mount("/js", StaticFiles(directory=str(frontend_path / "js"), html=False), name="js")
 
-@app.get("/login.html")
-async def login():
-    return FileResponse(str(frontend_path / "login.html"))
+    # Servir archivos CSS y otros estáticos desde raíz del frontend
+    @app.get("/style.css")
+    async def style_css():
+        return FileResponse(str(frontend_path / "style.css"))
 
-@app.get("/index.html")
-async def index():
-    return FileResponse(str(frontend_path / "index.html"))
+    @app.get("/script.js")
+    async def script_js():
+        return FileResponse(str(frontend_path / "script.js"))
 
-@app.get("/dashboard.html")
-async def dashboard():
-    return FileResponse(str(frontend_path / "dashboard.html"))
+    # Rutas para archivos HTML
+    @app.get("/")
+    async def root():
+        return FileResponse(str(frontend_path / "login.html"))
 
-@app.get("/dashboard-slides.html")
-async def dashboard_slides():
-    return FileResponse(str(frontend_path / "dashboard-slides.html"))
+    @app.get("/login.html")
+    async def login():
+        return FileResponse(str(frontend_path / "login.html"))
+
+    @app.get("/index.html")
+    async def index():
+        return FileResponse(str(frontend_path / "index.html"))
+
+    @app.get("/dashboard.html")
+    async def dashboard():
+        return FileResponse(str(frontend_path / "dashboard.html"))
+
+    @app.get("/dashboard-slides.html")
+    async def dashboard_slides():
+        return FileResponse(str(frontend_path / "dashboard-slides.html"))
 
 if __name__ == "__main__":
     import uvicorn

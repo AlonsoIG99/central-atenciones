@@ -1,8 +1,17 @@
+// Detectar automáticamente el entorno
+const API_URL = (window.location.hostname === 'localhost' || 
+                 window.location.hostname === '127.0.0.1' ||
+                 window.location.port === '8000')
+    ? 'http://127.0.0.1:8000'  // Desarrollo local
+    : 'https://attention.liderman.net.pe';  // Producción
+
+console.log('[API Dashboard] Usando backend:', API_URL);
+
 // Generar reporte dashboard
 async function generarReporteDashboard() {
   try {
     const headers = obtenerHeaders();
-    const response = await fetchConAutoRefresh('http://127.0.0.1:8000/reporte-dashboards/generar', {
+    const response = await fetchConAutoRefresh(`${API_URL}/reporte-dashboards/generar`, {
       method: 'POST',
       headers
     });
@@ -26,7 +35,7 @@ async function generarReporteDashboard() {
 async function obtenerUltimosRegistrosDashboard(cantidad = 5) {
   try {
     const headers = obtenerHeaders();
-    const response = await fetchConAutoRefresh(`http://127.0.0.1:8000/reporte-dashboards/ultimos?cantidad=${cantidad}`, {
+    const response = await fetchConAutoRefresh(`${API_URL}/reporte-dashboards/ultimos?cantidad=${cantidad}`, {
       method: 'GET',
       headers
     });
@@ -50,7 +59,7 @@ async function obtenerUltimosRegistrosDashboard(cantidad = 5) {
 async function obtenerTodosDashboard() {
   try {
     const headers = obtenerHeaders();
-    const response = await fetchConAutoRefresh('http://127.0.0.1:8000/reporte-dashboards/', {
+    const response = await fetchConAutoRefresh(`${API_URL}/reporte-dashboards/`, {
       method: 'GET',
       headers
     });

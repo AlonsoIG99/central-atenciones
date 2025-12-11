@@ -271,9 +271,10 @@ function renderAtencionSchema(schema, container, parentLabel = '') {
       fileInput.accept = value.file.accept || '.pdf';
       fileInput.className = 'w-full p-2 border-2 border-dashed border-purple-300 rounded text-sm cursor-pointer hover:border-purple-500 transition';
       fileInput.id = makeId(key + '-archivo');
-      if (value.file.required) {
-        fileInput.required = true;
-      }
+      // El archivo es opcional, no requerido
+      // if (value.file.required) {
+      //   fileInput.required = true;
+      // }
       
       fileWrapper.appendChild(fileLabel);
       fileWrapper.appendChild(fileInput);

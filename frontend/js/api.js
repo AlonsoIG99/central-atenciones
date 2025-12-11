@@ -1,4 +1,11 @@
-const API_URL = 'http://127.0.0.1:8000';
+// Detectar automáticamente el entorno
+const API_URL = (window.location.hostname === 'localhost' || 
+                 window.location.hostname === '127.0.0.1' ||
+                 window.location.port === '8000')
+    ? 'https://127.0.0.1:8000'  // Desarrollo local
+    : 'https://attention.liderman.net.pe';  // Producción
+
+console.log('[API] Usando backend:', API_URL);
 
 // Obtener token del localStorage
 function obtenerToken() {
