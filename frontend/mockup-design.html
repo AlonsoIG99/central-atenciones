@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mockup - Nuevo Diseño Central de Atenciones</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        
+        /* Sidebar styling */
+        .sidebar {
+            background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+        }
+        
+        .sidebar-item {
+            transition: all 0.2s ease;
+        }
+        
+        .sidebar-item:hover {
+            background: rgba(59, 130, 246, 0.1);
+            border-left: 3px solid #3b82f6;
+        }
+        
+        .sidebar-item.active {
+            background: rgba(59, 130, 246, 0.15);
+            border-left: 3px solid #3b82f6;
+        }
+        
+        /* Table styling */
+        .table-row {
+            transition: background 0.15s ease;
+        }
+        
+        .table-row:hover {
+            background: #f8fafc;
+        }
+        
+        /* Search input */
+        .search-input {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            transition: all 0.2s ease;
+        }
+        
+        .search-input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        
+        /* Buttons */
+        .btn-primary {
+            background: #3b82f6;
+            transition: all 0.2s ease;
+        }
+        
+        .btn-primary:hover {
+            background: #2563eb;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+        
+        .btn-secondary {
+            background: white;
+            border: 1px solid #e2e8f0;
+            transition: all 0.2s ease;
+        }
+        
+        .btn-secondary:hover {
+            border-color: #cbd5e1;
+            background: #f8fafc;
+        }
+        
+        /* Icons */
+        .file-icon {
+            width: 20px;
+            height: 20px;
+            color: #3b82f6;
+        }
+        
+        /* Header */
+        .top-header {
+            background: white;
+            border-bottom: 1px solid #e2e8f0;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div class="flex min-h-screen">
+        
+        <!-- Sidebar -->
+        <aside class="sidebar w-64 text-white shadow-2xl">
+            <div class="p-6">
+                <!-- Logo -->
+                <div class="flex items-center gap-3 mb-8">
+                    <div class="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-headset text-white text-xl"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-xl font-bold">Central</h1>
+                        <p class="text-xs text-gray-400">Atenciones</p>
+                    </div>
+                </div>
+                
+                <!-- Navigation -->
+                <nav class="space-y-1">
+                    <a href="#" class="sidebar-item active flex items-center gap-3 px-4 py-3 rounded-lg text-sm">
+                        <i class="fas fa-users w-5"></i>
+                        <span>Usuarios</span>
+                    </a>
+                    <a href="#" class="sidebar-item flex items-center gap-3 px-4 py-3 rounded-lg text-sm">
+                        <i class="fas fa-clipboard-list w-5"></i>
+                        <span>Atenciones</span>
+                    </a>
+                    <a href="#" class="sidebar-item flex items-center gap-3 px-4 py-3 rounded-lg text-sm">
+                        <i class="fas fa-file-alt w-5"></i>
+                        <span>Reportes</span>
+                    </a>
+                    <a href="#" class="sidebar-item flex items-center gap-3 px-4 py-3 rounded-lg text-sm">
+                        <i class="fas fa-chart-bar w-5"></i>
+                        <span>Dashboard</span>
+                    </a>
+                    <a href="#" class="sidebar-item flex items-center gap-3 px-4 py-3 rounded-lg text-sm">
+                        <i class="fas fa-folder w-5"></i>
+                        <span>Archivos</span>
+                    </a>
+                </nav>
+                
+                <!-- User Section -->
+                <div class="mt-auto pt-8 border-t border-gray-700">
+                    <div class="flex items-center gap-3 px-4 py-3">
+                        <div class="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <div class="flex-1">
+                            <p class="text-sm font-medium">Admin User</p>
+                            <p class="text-xs text-gray-400">Administrador</p>
+                        </div>
+                    </div>
+                    <button class="w-full mt-3 px-4 py-2 bg-red-600 hover:bg-red-700 rounded-lg transition text-sm flex items-center justify-center gap-2">
+                        <i class="fas fa-sign-out-alt"></i>
+                        <span>Cerrar Sesión</span>
+                    </button>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <div class="flex-1 flex flex-col">
+            
+            <!-- Top Header -->
+            <header class="top-header px-8 py-4">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h2 class="text-2xl font-bold text-gray-900">Gestión de Usuarios</h2>
+                        <p class="text-sm text-gray-500 mt-1">Administra los usuarios del sistema</p>
+                    </div>
+                    <div class="flex items-center gap-4">
+                        <button class="p-2 hover:bg-gray-100 rounded-lg transition">
+                            <i class="fas fa-bell text-gray-600"></i>
+                        </button>
+                        <button class="p-2 hover:bg-gray-100 rounded-lg transition">
+                            <i class="fas fa-cog text-gray-600"></i>
+                        </button>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Content Area -->
+            <main class="flex-1 p-8">
+                
+                <!-- Search & Actions Bar -->
+                <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
+                    <div class="flex items-center justify-between gap-4">
+                        <div class="flex-1 relative">
+                            <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                            <input 
+                                type="text" 
+                                placeholder="Buscar usuarios por nombre, email o DNI..." 
+                                class="search-input w-full pl-10 pr-4 py-2.5 rounded-lg text-sm"
+                            >
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <button class="btn-secondary px-4 py-2.5 rounded-lg text-sm font-medium flex items-center gap-2">
+                                <i class="fas fa-filter"></i>
+                                Filtrar
+                            </button>
+                            <button class="btn-secondary px-4 py-2.5 rounded-lg text-sm font-medium flex items-center gap-2">
+                                <i class="fas fa-redo"></i>
+                                Actualizar
+                            </button>
+                            <button class="btn-primary px-4 py-2.5 rounded-lg text-sm font-medium text-white flex items-center gap-2">
+                                <i class="fas fa-plus"></i>
+                                Nuevo Usuario
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Table -->
+                <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+                    <table class="w-full">
+                        <thead class="bg-gray-50 border-b border-gray-200">
+                            <tr>
+                                <th class="px-6 py-3 text-left">
+                                    <input type="checkbox" class="rounded border-gray-300">
+                                </th>
+                                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                    Nombre
+                                </th>
+                                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                    Email
+                                </th>
+                                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                    DNI
+                                </th>
+                                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                    Rol
+                                </th>
+                                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                    Área
+                                </th>
+                                <th class="px-6 py-3 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                    Acciones
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-200">
+                            <!-- Row 1 -->
+                            <tr class="table-row">
+                                <td class="px-6 py-4">
+                                    <input type="checkbox" class="rounded border-gray-300">
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                                            <i class="fas fa-user text-blue-600 text-sm"></i>
+                                        </div>
+                                        <span class="text-sm font-medium text-gray-900">Juan Pérez</span>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 text-sm text-gray-600">juan.perez@empresa.com</td>
+                                <td class="px-6 py-4 text-sm text-gray-600">12345678</td>
+                                <td class="px-6 py-4">
+                                    <span class="px-2.5 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full">
+                                        Administrador
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 text-sm text-gray-600">TI</td>
+                                <td class="px-6 py-4 text-right">
+                                    <button class="p-2 hover:bg-gray-100 rounded-lg transition">
+                                        <i class="fas fa-edit text-gray-600"></i>
+                                    </button>
+                                    <button class="p-2 hover:bg-red-100 rounded-lg transition ml-2">
+                                        <i class="fas fa-trash text-red-600"></i>
+                                    </button>
+                                </td>
+                            </tr>
+
+                            <!-- Row 2 -->
+                            <tr class="table-row">
+                                <td class="px-6 py-4">
+                                    <input type="checkbox" class="rounded border-gray-300">
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                                            <i class="fas fa-user text-green-600 text-sm"></i>
+                                        </div>
+                                        <span class="text-sm font-medium text-gray-900">María García</span>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 text-sm text-gray-600">maria.garcia@empresa.com</td>
+                                <td class="px-6 py-4 text-sm text-gray-600">87654321</td>
+                                <td class="px-6 py-4">
+                                    <span class="px-2.5 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full">
+                                        Operador
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 text-sm text-gray-600">Atención</td>
+                                <td class="px-6 py-4 text-right">
+                                    <button class="p-2 hover:bg-gray-100 rounded-lg transition">
+                                        <i class="fas fa-edit text-gray-600"></i>
+                                    </button>
+                                    <button class="p-2 hover:bg-red-100 rounded-lg transition ml-2">
+                                        <i class="fas fa-trash text-red-600"></i>
+                                    </button>
+                                </td>
+                            </tr>
+
+                            <!-- Row 3 -->
+                            <tr class="table-row">
+                                <td class="px-6 py-4">
+                                    <input type="checkbox" class="rounded border-gray-300">
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
+                                            <i class="fas fa-user text-purple-600 text-sm"></i>
+                                        </div>
+                                        <span class="text-sm font-medium text-gray-900">Carlos López</span>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 text-sm text-gray-600">carlos.lopez@empresa.com</td>
+                                <td class="px-6 py-4 text-sm text-gray-600">11223344</td>
+                                <td class="px-6 py-4">
+                                    <span class="px-2.5 py-1 bg-purple-100 text-purple-800 text-xs font-medium rounded-full">
+                                        Supervisor
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 text-sm text-gray-600">Operaciones</td>
+                                <td class="px-6 py-4 text-right">
+                                    <button class="p-2 hover:bg-gray-100 rounded-lg transition">
+                                        <i class="fas fa-edit text-gray-600"></i>
+                                    </button>
+                                    <button class="p-2 hover:bg-red-100 rounded-lg transition ml-2">
+                                        <i class="fas fa-trash text-red-600"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <!-- Pagination -->
+                    <div class="bg-gray-50 px-6 py-4 border-t border-gray-200 flex items-center justify-between">
+                        <div class="text-sm text-gray-600">
+                            Mostrando <span class="font-medium">1-3</span> de <span class="font-medium">3</span> usuarios
+                        </div>
+                        <div class="flex gap-2">
+                            <button class="px-3 py-1.5 bg-white border border-gray-300 rounded-lg text-sm text-gray-600 hover:bg-gray-50 transition disabled:opacity-50" disabled>
+                                Anterior
+                            </button>
+                            <button class="px-3 py-1.5 bg-blue-500 text-white rounded-lg text-sm font-medium">
+                                1
+                            </button>
+                            <button class="px-3 py-1.5 bg-white border border-gray-300 rounded-lg text-sm text-gray-600 hover:bg-gray-50 transition disabled:opacity-50" disabled>
+                                Siguiente
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+            </main>
+        </div>
+    </div>
+
+    <!-- Notification Banner -->
+    <div class="fixed bottom-4 right-4 bg-white shadow-lg rounded-lg border border-gray-200 p-4 max-w-sm">
+        <div class="flex items-start gap-3">
+            <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+                <i class="fas fa-info-circle text-blue-600"></i>
+            </div>
+            <div class="flex-1">
+                <p class="text-sm font-semibold text-gray-900">Mockup - Nuevo Diseño</p>
+                <p class="text-xs text-gray-600 mt-1">Este es un preview del diseño tipo MinIO aplicado a tu plataforma</p>
+            </div>
+            <button class="text-gray-400 hover:text-gray-600">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+    </div>
+</body>
+</html>
