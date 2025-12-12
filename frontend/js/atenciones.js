@@ -374,7 +374,8 @@ if (formAtencion) {
   formAtencion.addEventListener('submit', async (e) => {
     e.preventDefault();
     
-    const collectedResult = collectAtencionData(atencionSchema);
+    const schemaToUse = getSchemaByUserArea();
+    const collectedResult = collectAtencionData(schemaToUse);
     const schemaData = collectedResult.data;
     const archivos = collectedResult.archivos;
   
@@ -480,10 +481,26 @@ async function eliminarInc(id) {
   }
 }
 
+// Función para obtener el esquema filtrado según el área del usuario
+function getSchemaByUserArea() {
+  const userArea = localStorage.getItem('area');
+  
+  // Si el usuario es de "Bienestar Social", solo mostrar préstamos
+  if (userArea === 'Bienestar Social') {
+    return {
+      "Apoyo económico/Préstamo": atencionSchema["Apoyo económico/Préstamo"]
+    };
+  }
+  
+  // Para otros usuarios (Central de Atenciones), mostrar todo el esquema
+  return atencionSchema;
+}
+
 // Renderizar el esquema al cargar
 document.addEventListener('DOMContentLoaded', () => {
   const container = document.getElementById('atencion-schema-container');
   if (container) {
-    renderAtencionSchema(atencionSchema, container);
+    const schemaToRender = getSchemaByUserArea();
+    renderAtencionSchema(schemaToRender, container);
   }
 });

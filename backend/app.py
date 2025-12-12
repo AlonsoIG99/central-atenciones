@@ -126,6 +126,10 @@ if ENV == "development":
     @app.get("/script.js")
     async def script_js():
         return FileResponse(str(frontend_path / "script.js"))
+    
+    @app.get("/favicon.svg")
+    async def favicon():
+        return FileResponse(str(frontend_path / "favicon.svg"), media_type="image/svg+xml")
 
     # Rutas para archivos HTML
     @app.get("/")

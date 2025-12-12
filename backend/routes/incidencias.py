@@ -81,6 +81,23 @@ def obtener_atencion(atencion_id: str):
 def crear_atencion(atencion: IncidenciaCreate):
     """Crear nueva atención"""
     try:
+        # Validar permisos por área
+        if atencion.usuario_id:
+            try:
+                usuario = Usuario.objects(id=atencion.usuario_id).first()
+                if usuario and usuario.area == 'Bienestar Social':
+                    # Verificar que el título de la atención sea préstamo
+                    if not atencion.titulo or "Apoyo económico/Préstamo" not in atencion.titulo:
+                        raise HTTPException(
+                            status_code=403,
+                            detail="Los usuarios del área Bienestar Social solo pueden registrar préstamos"
+                        )
+            except HTTPException:
+                raise
+            except Exception as e:
+                print(f"Error al validar permisos: {str(e)}")
+                pass
+        
         db_atencion = Incidencia(**atencion.dict())
         db_atencion.save()
         
