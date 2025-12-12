@@ -484,15 +484,18 @@ async function eliminarInc(id) {
 // Función para obtener el esquema filtrado según el área del usuario
 function getSchemaByUserArea() {
   const userArea = localStorage.getItem('area');
+  console.log('[DEBUG] Área del usuario:', userArea);
   
   // Si el usuario es de "Bienestar Social", solo mostrar préstamos
   if (userArea === 'Bienestar Social') {
+    console.log('[DEBUG] Usuario de Bienestar Social - Restringiendo a solo préstamos');
     return {
       "Apoyo económico/Préstamo": atencionSchema["Apoyo económico/Préstamo"]
     };
   }
   
   // Para otros usuarios (Central de Atenciones), mostrar todo el esquema
+  console.log('[DEBUG] Usuario con acceso completo - Mostrando todas las opciones');
   return atencionSchema;
 }
 
