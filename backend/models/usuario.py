@@ -1,5 +1,9 @@
 from mongoengine import Document, StringField, DateTimeField
-from datetime import datetime
+from datetime import datetime, timedelta
+
+def hora_peru():
+    """Retorna la hora actual de Perú (UTC-5)"""
+    return datetime.utcnow() - timedelta(hours=5)
 
 class Usuario(Document):
     """Modelo de Usuario para MongoDB"""
@@ -10,7 +14,7 @@ class Usuario(Document):
     contraseña = StringField(required=True)
     rol = StringField(default="gestor", choices=["administrador", "gestor"])
     area = StringField(required=True, index=True)
-    fecha_creacion = DateTimeField(default=datetime.utcnow)
+    fecha_creacion = DateTimeField(default=hora_peru)
     
     meta = {
         'collection': 'usuarios',

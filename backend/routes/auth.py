@@ -15,6 +15,7 @@ from backend.auth import (
     verificar_refresh_token,
     revocar_refresh_token,
     revocar_todos_refresh_tokens_usuario,
+    limpiar_tokens_expirados,
     Token
 )
 from datetime import timedelta
@@ -51,6 +52,9 @@ def login(credenciales: LoginRequest):
         # Crear y guardar refresh token
         refresh_token = crear_refresh_token()
         guardar_refresh_token(str(usuario.id), refresh_token)
+        
+        # Limpiar tokens expirados (ejecución ligera)
+        limpiar_tokens_expirados()
         
         return {
             "access_token": access_token,

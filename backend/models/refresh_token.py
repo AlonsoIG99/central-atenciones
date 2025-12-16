@@ -1,5 +1,9 @@
 from mongoengine import Document, StringField, DateTimeField, BooleanField
-from datetime import datetime
+from datetime import datetime, timedelta
+
+def hora_peru():
+    """Retorna la hora actual de Perú (UTC-5)"""
+    return datetime.utcnow() - timedelta(hours=5)
 
 class RefreshToken(Document):
     """Modelo de Refresh Token para MongoDB"""
@@ -7,7 +11,7 @@ class RefreshToken(Document):
     token = StringField(required=True, unique=True, index=True)
     user_id = StringField(required=True, index=True)
     expires_at = DateTimeField(required=True)
-    created_at = DateTimeField(default=datetime.utcnow)
+    created_at = DateTimeField(default=hora_peru)
     is_revoked = BooleanField(default=False)
     
     meta = {

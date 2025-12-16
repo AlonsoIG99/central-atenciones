@@ -84,7 +84,8 @@ def guardar_refresh_token(user_id: str, refresh_token: str) -> None:
     """Guarda un refresh token en la base de datos"""
     from backend.models.refresh_token import RefreshToken
     
-    expires_at = datetime.utcnow() + timedelta(days=REFRESH_TOKEN_EXPIRE_DAYS)
+    # Calcular expiración en hora de Perú (UTC-5)
+    expires_at = (datetime.utcnow() - timedelta(hours=5)) + timedelta(days=REFRESH_TOKEN_EXPIRE_DAYS)
     
     # Crear nuevo refresh token
     token_doc = RefreshToken(
@@ -108,8 +109,9 @@ def verificar_refresh_token(refresh_token: str) -> Optional[str]:
         if token_doc.is_revoked:
             return None
         
-        # Verificar si ha expirado
-        if token_doc.expires_at < datetime.utcnow():
+        # Verificar si ha expirado (comparar en hora de Perú)
+        hora_actual_peru = datetime.utcnow() - timedelta(hours=5)
+        if token_doc.expires_at < hora_actual_peru:
             return None
         
         return token_doc.user_id
@@ -139,3 +141,25 @@ def revocar_todos_refresh_tokens_usuario(user_id: str) -> bool:
         return True
     except Exception:
         return False
+
+def limpiar_tokens_expirados() -> int:
+    """Limpia tokens expirados y revocados de la base de datos"""
+    from backend.models.refresh_token import RefreshToken
+    
+    try:
+        # Hora actual de Perú (UTC-5)
+        hora_actual_peru = datetime.utcnow() - timedelta(hours=5)
+        
+        # Borrar tokens expirados (más de 7 días)
+        tokens_expirados = RefreshToken.objects(expires_at__lt=hora_actual_peru).delete()
+        
+        # Borrar tokens revocados con más de 30 días
+        fecha_limite = hora_actual_peru - timedelta(days=30)
+        tokens_revocados = RefreshToken.objects(is_revoked=True, created_at__lt=fecha_limite).delete()
+        
+        total_eliminados = tokens_expirados + tokens_revocados
+        print(f"[LIMPIEZA] Tokens eliminados: {total_eliminados} (expirados: {tokens_expirados}, revocados antiguos: {tokens_revocados})")
+        return total_eliminados
+    except Exception as e:
+        print(f"[ERROR] Error en limpieza de tokens: {e}")
+        return 0

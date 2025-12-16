@@ -1,5 +1,9 @@
 from mongoengine import Document, StringField, DateTimeField
-from datetime import datetime
+from datetime import datetime, timedelta
+
+def hora_peru():
+    """Retorna la hora actual de Perú (UTC-5)"""
+    return datetime.utcnow() - timedelta(hours=5)
 
 class Incidencia(Document):
     """Modelo de Atención para MongoDB"""
@@ -10,8 +14,8 @@ class Incidencia(Document):
     canal = StringField(default="llamada_telefonica", choices=["llamada_telefonica", "whatsapp", "presencial", "correo"])
     estado = StringField(default="abierta", choices=["abierta", "en_proceso", "cerrada"])
     usuario_id = StringField(null=True)
-    fecha_creacion = DateTimeField(default=datetime.utcnow)
-    fecha_actualizacion = DateTimeField(default=datetime.utcnow)
+    fecha_creacion = DateTimeField(default=hora_peru)
+    fecha_actualizacion = DateTimeField(default=hora_peru)
     fecha_cierre = DateTimeField(null=True)
     dias_abierta = StringField(null=True)  # Se calcula cuando se cierra
     
