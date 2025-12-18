@@ -128,6 +128,7 @@ function renderizarReportes() {
       <p class="text-sm text-gray-500">Usuario: <span class="font-medium">${atencion.usuario_nombre || 'Desconocido'}</span></p>
       <p class="text-sm text-gray-500">Fecha: ${new Date(atencion.fecha_creacion).toLocaleDateString('es-ES')}</p>
       <p class="text-sm text-gray-600">Estado: <span class="font-medium estado-badge">${atencion.estado}</span>${atencion.dias_abierta ? ` - <span class="text-orange-600 font-semibold">${atencion.dias_abierta} días abierta</span>` : ''}</p>
+      ${atencion.comentario ? `<p class="text-sm text-blue-600 mt-1"><i class="fas fa-comment-dots mr-1"></i><span class="font-medium">Comentario:</span> ${atencion.comentario}</p>` : ''}
     `;
     
     const actions = document.createElement('div');

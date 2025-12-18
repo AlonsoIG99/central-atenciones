@@ -392,6 +392,7 @@ if (formAtencion) {
     canal: document.getElementById('atencion-canal').value,
     titulo: Object.keys(schemaData)[0] || 'Atencion sin título',
     descripcion: JSON.stringify(schemaData),
+    comentario: document.getElementById('atencion-comentario').value || null,
     usuario_id: usuarioId,
     estado: document.getElementById('atencion-estado').value
   };

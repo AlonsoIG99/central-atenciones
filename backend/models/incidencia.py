@@ -11,6 +11,7 @@ class Incidencia(Document):
     dni = StringField(required=True, index=True)
     titulo = StringField(required=True, index=True)
     descripcion = StringField(required=True)
+    comentario = StringField(null=True)  # Comentario general adicional
     canal = StringField(default="llamada_telefonica", choices=["llamada_telefonica", "whatsapp", "presencial", "correo"])
     estado = StringField(default="abierta", choices=["abierta", "en_proceso", "cerrada"])
     usuario_id = StringField(null=True)
@@ -31,6 +32,7 @@ class Incidencia(Document):
             'dni': self.dni,
             'titulo': self.titulo,
             'descripcion': self.descripcion,
+            'comentario': self.comentario,
             'canal': self.canal,
             'estado': self.estado,
             'usuario_id': self.usuario_id,
