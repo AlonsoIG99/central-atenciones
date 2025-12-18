@@ -1,5 +1,7 @@
 const reportContainer = document.getElementById('reportContainer');
 const buscarDniInput = document.getElementById('buscar-dni');
+const buscarNombreInput = document.getElementById('buscar-nombre');
+const filtroEstadoInput = document.getElementById('filtro-estado');
 const fechaDesdeInput = document.getElementById('fecha-desde');
 const fechaHastaInput = document.getElementById('fecha-hasta');
 const btnLimpiarBusqueda = document.getElementById('btn-limpiar-busqueda');
@@ -13,6 +15,22 @@ let atencionesFiltradas = [];
 if (buscarDniInput) {
   buscarDniInput.addEventListener('input', (e) => {
     e.target.value = e.target.value.replace(/[^0-9]/g, '');
+    paginaActual = 1;
+    cargarReportes();
+  });
+}
+
+// Evento para búsqueda por nombre
+if (buscarNombreInput) {
+  buscarNombreInput.addEventListener('input', () => {
+    paginaActual = 1;
+    cargarReportes();
+  });
+}
+
+// Evento para filtro de estado
+if (filtroEstadoInput) {
+  filtroEstadoInput.addEventListener('change', () => {
     paginaActual = 1;
     cargarReportes();
   });
@@ -37,6 +55,8 @@ if (fechaHastaInput) {
 if (btnLimpiarBusqueda) {
   btnLimpiarBusqueda.addEventListener('click', () => {
     if (buscarDniInput) buscarDniInput.value = '';
+    if (buscarNombreInput) buscarNombreInput.value = '';
+    if (filtroEstadoInput) filtroEstadoInput.value = '';
     if (fechaDesdeInput) fechaDesdeInput.value = '';
     if (fechaHastaInput) fechaHastaInput.value = '';
     paginaActual = 1;
@@ -50,6 +70,8 @@ async function cargarReportes() {
   const userId = localStorage.getItem('user_id');
   const rol = localStorage.getItem('rol');
   const dniSearch = buscarDniInput ? buscarDniInput.value.toLowerCase().trim() : '';
+  const nombreSearch = buscarNombreInput ? buscarNombreInput.value.toLowerCase().trim() : '';
+  const estadoFiltro = filtroEstadoInput ? filtroEstadoInput.value : '';
   const fechaDesde = fechaDesdeInput ? fechaDesdeInput.value : '';
   const fechaHasta = fechaHastaInput ? fechaHastaInput.value : '';
   
@@ -65,10 +87,25 @@ async function cargarReportes() {
     );
   }
   
+  // Filtrar por nombre si hay búsqueda
+  if (nombreSearch) {
+    atencionesFiltradas = atencionesFiltradas.filter(att => 
+      att.nombre_trabajador && att.nombre_trabajador.toLowerCase().includes(nombreSearch)
+    );
+  }
+  
+  // Filtrar por estado si se selecciona
+  if (estadoFiltro) {
+    atencionesFiltradas = atencionesFiltradas.filter(att => 
+      att.estado === estadoFiltro
+    );
+  }
+  
   // Filtrar por rango de fechas si se especifican
   if (fechaDesde || fechaHasta) {
     atencionesFiltradas = atencionesFiltradas.filter(att => {
-      const fechaAtt = new Date(att.fecha_creacion).toISOString().split('T')[0];
+      // Extraer solo la fecha (YYYY-MM-DD) sin conversión UTC
+      const fechaAtt = att.fecha_creacion.split('T')[0];
       
       if (fechaDesde && fechaHasta) {
         return fechaAtt >= fechaDesde && fechaAtt <= fechaHasta;
@@ -125,6 +162,7 @@ function renderizarReportes() {
     const headerContent = document.createElement('div');
     headerContent.innerHTML = `
       <p class="text-lg font-semibold text-gray-800">DNI: ${atencion.dni}</p>
+      ${atencion.nombre_trabajador ? `<p class="text-sm text-purple-700 font-medium"><i class="fas fa-user mr-1"></i>${atencion.nombre_trabajador}</p>` : ''}
       <p class="text-sm text-gray-500">Usuario: <span class="font-medium">${atencion.usuario_nombre || 'Desconocido'}</span></p>
       <p class="text-sm text-gray-500">Fecha: ${new Date(atencion.fecha_creacion).toLocaleDateString('es-ES')}</p>
       <p class="text-sm text-gray-600">Estado: <span class="font-medium estado-badge">${atencion.estado}</span>${atencion.dias_abierta ? ` - <span class="text-orange-600 font-semibold">${atencion.dias_abierta} días abierta</span>` : ''}</p>

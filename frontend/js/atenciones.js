@@ -76,12 +76,15 @@ const atencionSchema = {
           "Compensación de A.F por movilidad": {},
           "Falta la contraparte": {},
           "No amortizó sobregiro": {},
+          "Retención pagos": {},
           "Rebote de abono": {},
           "Bonos": {
             children: {
               "Alimentos": {},
               "Armas": {},
-              "Referido": {}
+              "Referido": {},
+              "Refrigerante": {},
+              "Puntualidad": {}
             }
           },
           "Quincena incompleta": {},
@@ -92,7 +95,9 @@ const atencionSchema = {
               "Préstamo": {}
             }
           },
-          "CTS": { input: "Detalle" },
+          "CTS incompleto": {},
+          "Tareo correcto": {},
+          "Deuda reingresante": {},
           "Feriados": {
             children: {
               "Monto": {},
@@ -106,7 +111,8 @@ const atencionSchema = {
               "Reemplazo puesto": {},
               "Nocturna": {}
             }
-          }
+          },
+          "Servicios especiales": {}
         }
       },
       "Tareo/Vacaciones/Regularización": {
@@ -123,7 +129,7 @@ const atencionSchema = {
             children: {
               "Paternidad": {},
               "Fallecimiento": {},
-              "Subsidios": {},
+              "Subsidios/DM": {},
               "Sin goce": {},
               "Con goce": {}
             }
@@ -161,23 +167,30 @@ const atencionSchema = {
           "Cambio cuenta sueldo": {},
           "Traslado/cambio CTS": {},
           "Oncosalud": {},
-          "Cambio/exoneración fondo pensionario": {},
+          "Cambio/exoneración/validación fondo pensionario": {},
           "Certificado baja Sunat": {},
-          "Certificado renta 5ta categoría": {}
+          "Certificado renta 5ta categoría": {},
+          "Validación cuenta bancaria": {},
+          "Cambio básico/cargo": {},
+          "Pago retención judicial": {},
         }
       },
       "Soporte bienestar social": {
         children: {
           "Descanso médico/Licencias - No reportados": {},
-          "Activación A.F": {}
+          "Activación A.F": {},
+          "Retención de pagos": {}
         }
       },
       "Soporte tareo": {},
+      "Soporte operaciones": {},
+      "Soporte legal": {},
       "Soporte selección": {
         children: {
           "Bono referidos": {},
           "Licencia de armas": {},
-          "Altas a desatiempo": {}
+          "Altas a desatiempo": {},
+          "Deuda reingresante": {},
         }
       },
       "Soporte administración de personal": {
@@ -188,7 +201,8 @@ const atencionSchema = {
       },
       "Información de fechas de pago": {}
     }
-  }
+  },
+  "Canasta navideña": {}
 };
 
 // Utilidad: generar ID seguro

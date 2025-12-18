@@ -1,6 +1,7 @@
 from fastapi import APIRouter, HTTPException
 from backend.models.incidencia import Incidencia
 from backend.models.usuario import Usuario
+from backend.models.trabajador import Trabajador
 from backend.schemas.incidencia import IncidenciaCreate, IncidenciaUpdate, IncidenciaResponse
 
 router = APIRouter(prefix="/atenciones", tags=["atenciones"])
@@ -26,6 +27,7 @@ def obtener_atenciones():
         data = {
             "id": str(atencion.id),
             "dni": atencion.dni,
+            "nombre_trabajador": atencion.nombre_trabajador if hasattr(atencion, 'nombre_trabajador') else None,
             "titulo": atencion.titulo,
             "descripcion": atencion.descripcion,
             "comentario": atencion.comentario if hasattr(atencion, 'comentario') else None,
@@ -63,6 +65,7 @@ def obtener_atencion(atencion_id: str):
         data = {
             "id": str(atencion.id),
             "dni": atencion.dni,
+            "nombre_trabajador": atencion.nombre_trabajador if hasattr(atencion, 'nombre_trabajador') else None,
             "titulo": atencion.titulo,
             "descripcion": atencion.descripcion,
             "comentario": atencion.comentario if hasattr(atencion, 'comentario') else None,
@@ -100,6 +103,11 @@ def crear_atencion(atencion: IncidenciaCreate):
                 print(f"Error al validar permisos: {str(e)}")
                 pass
         
+        # Buscar el nombre del trabajador por DNI
+        trabajador = Trabajador.objects(dni=atencion.dni).first()
+        if trabajador:
+            atencion.nombre_trabajador = trabajador.nombre_completo
+        
         db_atencion = Incidencia(**atencion.dict())
         db_atencion.save()
         
@@ -115,6 +123,7 @@ def crear_atencion(atencion: IncidenciaCreate):
         data = {
             "id": str(db_atencion.id),
             "dni": db_atencion.dni,
+            "nombre_trabajador": db_atencion.nombre_trabajador,
             "titulo": db_atencion.titulo,
             "descripcion": db_atencion.descripcion,
             "comentario": db_atencion.comentario,
@@ -134,7 +143,7 @@ def crear_atencion(atencion: IncidenciaCreate):
 def actualizar_atencion(atencion_id: str, atencion: IncidenciaUpdate):
     """Actualizar atención"""
     try:
-        from datetime import datetime
+        from datetime import datetime, timedelta
         
         db_atencion = Incidencia.objects(id=atencion_id).first()
         if not db_atencion:
@@ -142,7 +151,9 @@ def actualizar_atencion(atencion_id: str, atencion: IncidenciaUpdate):
         
         # Si se cambia a cerrada, calcular dias_abierta
         if atencion.estado == "cerrada" and db_atencion.estado != "cerrada":
-            db_atencion.fecha_cierre = datetime.utcnow()
+            # Usar hora de Perú (UTC-5) para consistencia
+            hora_actual_peru = datetime.utcnow() - timedelta(hours=5)
+            db_atencion.fecha_cierre = hora_actual_peru
             dias = (db_atencion.fecha_cierre - db_atencion.fecha_creacion).days
             db_atencion.dias_abierta = str(dias)
         
@@ -150,7 +161,7 @@ def actualizar_atencion(atencion_id: str, atencion: IncidenciaUpdate):
             if value is not None:
                 setattr(db_atencion, key, value)
         
-        db_atencion.fecha_actualizacion = datetime.utcnow()
+        db_atencion.fecha_actualizacion = datetime.utcnow() - timedelta(hours=5)
         db_atencion.save()
         
         usuario_nombre = "Desconocido"
@@ -165,6 +176,7 @@ def actualizar_atencion(atencion_id: str, atencion: IncidenciaUpdate):
         data = {
             "id": str(db_atencion.id),
             "dni": db_atencion.dni,
+            "nombre_trabajador": db_atencion.nombre_trabajador if hasattr(db_atencion, 'nombre_trabajador') else None,
             "titulo": db_atencion.titulo,
             "descripcion": db_atencion.descripcion,
             "comentario": db_atencion.comentario if hasattr(db_atencion, 'comentario') else None,

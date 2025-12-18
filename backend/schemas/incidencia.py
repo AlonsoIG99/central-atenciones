@@ -4,6 +4,7 @@ from datetime import datetime
 
 class IncidenciaBase(BaseModel):
     dni: str  # DNI del trabajador
+    nombre_trabajador: Optional[str] = None  # Nombre del trabajador
     titulo: str
     descripcion: str
     comentario: Optional[str] = None
@@ -16,6 +17,7 @@ class IncidenciaCreate(IncidenciaBase):
 
 class IncidenciaUpdate(BaseModel):
     dni: Optional[str] = None
+    nombre_trabajador: Optional[str] = None
     titulo: Optional[str] = None
     descripcion: Optional[str] = None
     comentario: Optional[str] = None

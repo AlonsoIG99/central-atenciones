@@ -527,6 +527,20 @@ Pública,María García,23456789,2021-03-20,Cliente B,Zona B,Lider 2,Jefe 2,Macr
                             class="flex-1 min-w-[200px] px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
                         >
                         <input 
+                            type="text" 
+                            id="buscar-nombre" 
+                            placeholder="Buscar por nombre..." 
+                            class="flex-1 min-w-[200px] px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
+                        >
+                        <select 
+                            id="filtro-estado" 
+                            class="px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 bg-white"
+                        >
+                            <option value="">Todos los estados</option>
+                            <option value="abierta">🔵 Abierta</option>
+                            <option value="cerrada">🟢 Cerrada</option>
+                        </select>
+                        <input 
                             type="date" 
                             id="fecha-desde" 
                             class="px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"

@@ -9,6 +9,7 @@ class Incidencia(Document):
     """Modelo de Atención para MongoDB"""
     
     dni = StringField(required=True, index=True)
+    nombre_trabajador = StringField(null=True, index=True)  # Nombre del trabajador
     titulo = StringField(required=True, index=True)
     descripcion = StringField(required=True)
     comentario = StringField(null=True)  # Comentario general adicional
@@ -30,6 +31,7 @@ class Incidencia(Document):
         return {
             'id': str(self.id),
             'dni': self.dni,
+            'nombre_trabajador': self.nombre_trabajador,
             'titulo': self.titulo,
             'descripcion': self.descripcion,
             'comentario': self.comentario,
