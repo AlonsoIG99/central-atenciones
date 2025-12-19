@@ -131,6 +131,10 @@
                         <i class="fas fa-file-alt w-5"></i>
                         <span>Reportes</span>
                     </button>
+                    <button id="btn-visitas" class="nav-btn w-full text-left px-4 py-3 rounded-lg flex items-center gap-3 text-sm" style="display: none;">
+                        <i class="fas fa-route w-5"></i>
+                        <span>Visitas</span>
+                    </button>
                     <button id="btn-asignados" class="nav-btn w-full text-left px-4 py-3 rounded-lg flex items-center gap-3 text-sm">
                         <i class="fas fa-chart-bar w-5"></i>
                         <span>Dashboard</span>
@@ -473,7 +477,7 @@ Pública,María García,23456789,2021-03-20,Cliente B,Zona B,Lider 2,Jefe 2,Macr
                                             <i class="fas fa-flag text-purple-600 mr-2"></i>Estado
                                         </label>
                                         <select id="atencion-estado" class="w-full p-3 border-2 border-purple-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition">
-                                            <option value="abierta">🔵 Abierta</option>
+                                            <option value="en_proceso">🟡 En proceso</option>
                                             <option value="cerrada">🟢 Cerrada</option>
                                         </select>
                                     </div>
@@ -538,6 +542,7 @@ Pública,María García,23456789,2021-03-20,Cliente B,Zona B,Lider 2,Jefe 2,Macr
                         >
                             <option value="">Todos los estados</option>
                             <option value="abierta">🔵 Abierta</option>
+                            <option value="en_proceso">🟡 En proceso</option>
                             <option value="cerrada">🟢 Cerrada</option>
                         </select>
                         <input 
@@ -560,6 +565,136 @@ Pública,María García,23456789,2021-03-20,Cliente B,Zona B,Lider 2,Jefe 2,Macr
                     
                     <div id="reportContainer" class="space-y-4"></div>
                 </section>
+
+                <!-- Sección de Visitas (Cultura) -->
+                <section id="visitas-section" class="section">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-6 pb-3 border-b-4 border-purple-600">Gestión de Visitas</h2>
+                    
+                    <!-- Formulario de Registro de Visita -->
+                    <div class="bg-white rounded-xl shadow-lg p-8 mb-8 card-hover border border-gray-200">
+                        <h3 class="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2">
+                            <i class="fas fa-route text-purple-600"></i>
+                            Registrar Nueva Visita
+                        </h3>
+                        
+                        <form id="visita-form" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <input type="hidden" id="visita-usuario_id">
+                            
+                            <div>
+                                <label class="block text-gray-700 font-medium mb-2">
+                                    <i class="fas fa-building text-purple-600 mr-2"></i>Cliente
+                                </label>
+                                <input type="text" id="visita-cliente" placeholder="Buscar cliente..." required 
+                                    class="w-full px-4 py-3 border-2 border-purple-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                                <div id="clientes-resultados" class="absolute bg-white border border-purple-300 rounded-lg shadow-xl z-50 max-h-48 overflow-y-auto hidden mt-1"></div>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-gray-700 font-medium mb-2">
+                                    <i class="fas fa-calendar text-purple-600 mr-2"></i>Fecha de Visita
+                                </label>
+                                <input type="datetime-local" id="visita-fecha" required 
+                                    class="w-full px-4 py-3 border-2 border-purple-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                            </div>
+                            
+                            <div>
+                                <label class="block text-gray-700 font-medium mb-2">
+                                    <i class="fas fa-map-marker-alt text-purple-600 mr-2"></i>Unidad
+                                </label>
+                                <select id="visita-unidad" required 
+                                    class="w-full px-4 py-3 border-2 border-purple-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                                    <option value="">Seleccionar unidad</option>
+                                </select>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-gray-700 font-medium mb-2">
+                                    <i class="fas fa-user-tie text-purple-600 mr-2"></i>Líder Zonal
+                                </label>
+                                <select id="visita-lider" required 
+                                    class="w-full px-4 py-3 border-2 border-purple-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                                    <option value="">Seleccionar líder</option>
+                                </select>
+                            </div>
+                            
+                            <div class="md:col-span-2">
+                                <label class="block text-gray-700 font-medium mb-2">
+                                    <i class="fas fa-comment text-purple-600 mr-2"></i>Comentario (opcional)
+                                </label>
+                                <textarea id="visita-comentario" rows="3" placeholder="Observaciones de la visita..." 
+                                    class="w-full px-4 py-3 border-2 border-purple-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 resize-none"></textarea>
+                            </div>
+                            
+                            <div class="md:col-span-2 flex gap-4">
+                                <button type="submit" class="flex-1 px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition font-semibold shadow-lg">
+                                    <i class="fas fa-save mr-2"></i>Registrar Visita
+                                </button>
+                                <button type="button" id="btn-registrar-atenciones" class="flex-1 px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg transition font-semibold shadow-lg" disabled>
+                                    <i class="fas fa-plus-circle mr-2"></i>Registrar Atenciones
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                    
+                    <!-- Formulario de Atención Directa (sin visita) -->
+                    <div class="bg-gradient-to-br from-green-50 to-teal-50 rounded-xl shadow-lg p-8 mb-8 border-2 border-green-300">
+                        <h3 class="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2">
+                            <i class="fas fa-phone-alt text-green-600"></i>
+                            Registrar Atención Directa (Llamada/Oficina)
+                        </h3>
+                        
+                        <form id="atencion-directa-form" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <input type="hidden" id="atencion-directa-usuario_id">
+                            
+                            <div>
+                                <label class="block text-gray-700 font-medium mb-2">
+                                    <i class="fas fa-id-card text-green-600 mr-2"></i>DNI Trabajador
+                                </label>
+                                <input type="text" id="atencion-directa-dni" placeholder="DNI (8 dígitos)" maxlength="8" required 
+                                    class="w-full px-4 py-3 border-2 border-green-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500">
+                                <div id="trabajadores-directa-resultados" class="absolute bg-white border border-green-300 rounded-lg shadow-xl z-50 max-h-48 overflow-y-auto hidden mt-1"></div>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-gray-700 font-medium mb-2">
+                                    <i class="fas fa-share text-green-600 mr-2"></i>Derivación
+                                </label>
+                                <select id="atencion-directa-derivacion" required 
+                                    class="w-full px-4 py-3 border-2 border-green-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500">
+                                    <option value="">Seleccionar área</option>
+                                    <option value="central_atenciones">Central de Atenciones</option>
+                                    <option value="bienestar_social">Bienestar Social</option>
+                                    <option value="logistica">Logística</option>
+                                    <option value="archivo">Archivo</option>
+                                    <option value="operaciones">Operaciones</option>
+                                </select>
+                            </div>
+                            
+                            <div class="md:col-span-2">
+                                <label class="block text-gray-700 font-medium mb-2">
+                                    <i class="fas fa-comment text-green-600 mr-2"></i>Comentario
+                                </label>
+                                <textarea id="atencion-directa-comentario" rows="3" placeholder="Descripción de la atención..." required
+                                    class="w-full px-4 py-3 border-2 border-green-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 resize-none"></textarea>
+                            </div>
+                            
+                            <div class="md:col-span-2">
+                                <button type="submit" class="w-full px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg transition font-semibold shadow-lg">
+                                    <i class="fas fa-paper-plane mr-2"></i>Registrar Atención Directa
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                    
+                    <!-- Lista de Visitas -->
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                            <i class="fas fa-list text-purple-600"></i>
+                            Visitas Registradas
+                        </h3>
+                        <div id="visitas-list" class="space-y-4"></div>
+                    </div>
+                </section>
             </main>
         </div>
     </div>
@@ -569,6 +704,7 @@ Pública,María García,23456789,2021-03-20,Cliente B,Zona B,Lider 2,Jefe 2,Macr
     <script src="js/asignados.js?v=1.3"></script>
     <script src="js/dashboard.js?v=1.3"></script>
     <script src="js/atenciones.js?v=1.3"></script>
+    <script src="js/cultura.js?v=1.3"></script>
     <script src="js/reportes.js?v=1.3"></script>
     <script src="script.js?v=1.3"></script>
 </body>

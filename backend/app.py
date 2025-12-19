@@ -11,13 +11,18 @@ import sys
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from backend.database import conectar_db
-from backend.routes import usuarios, incidencias, auth, trabajadores, asignados, reporte_dashboards, documentos
+from backend.routes import usuarios, incidencias, auth, trabajadores, asignados, reporte_dashboards, documentos, cultura
 from backend.models.usuario import Usuario
 from backend.models.incidencia import Incidencia
 from backend.models.trabajador import Trabajador
 from backend.models.asignado import Asignado
 from backend.models.reporte_dashboard import ReporteDashboard
 from backend.models.documento import Documento
+from backend.models.cliente import Cliente
+from backend.models.unidad import Unidad
+from backend.models.lider import Lider
+from backend.models.visita import Visita
+from backend.models.atencion_cultura import AtencionCultura
 from backend.minio_config import inicializar_bucket
 
 # Conectar a MongoDB (se hace automáticamente en database.py)
@@ -60,6 +65,7 @@ app.include_router(incidencias.router)
 app.include_router(asignados.router)
 app.include_router(reporte_dashboards.router)
 app.include_router(documentos.router)
+app.include_router(cultura.router)
 
 # Swagger protegido - solo accesible con token válido
 @app.get("/docs", include_in_schema=False)

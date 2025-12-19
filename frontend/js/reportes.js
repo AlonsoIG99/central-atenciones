@@ -11,6 +11,16 @@ let paginaActual = 1;
 const itemsPorPagina = 10;
 let atencionesFiltradas = [];
 
+// Función para formatear el estado con emojis
+function formatearEstado(estado) {
+  const estados = {
+    'abierta': '🔵 Abierta',
+    'en_proceso': '🟡 En proceso',
+    'cerrada': '🟢 Cerrada'
+  };
+  return estados[estado] || estado;
+}
+
 // Validar que búsqueda de DNI solo acepte números
 if (buscarDniInput) {
   buscarDniInput.addEventListener('input', (e) => {
@@ -165,7 +175,7 @@ function renderizarReportes() {
       ${atencion.nombre_trabajador ? `<p class="text-sm text-purple-700 font-medium"><i class="fas fa-user mr-1"></i>${atencion.nombre_trabajador}</p>` : ''}
       <p class="text-sm text-gray-500">Usuario: <span class="font-medium">${atencion.usuario_nombre || 'Desconocido'}</span></p>
       <p class="text-sm text-gray-500">Fecha: ${new Date(atencion.fecha_creacion).toLocaleDateString('es-ES')}</p>
-      <p class="text-sm text-gray-600">Estado: <span class="font-medium estado-badge">${atencion.estado}</span>${atencion.dias_abierta ? ` - <span class="text-orange-600 font-semibold">${atencion.dias_abierta} días abierta</span>` : ''}</p>
+      <p class="text-sm text-gray-600">Estado: <span class="font-medium estado-badge">${formatearEstado(atencion.estado)}</span>${atencion.dias_abierta ? ` - <span class="text-orange-600 font-semibold">${atencion.dias_abierta} días abierta</span>` : ''}</p>
       ${atencion.comentario ? `<p class="text-sm text-blue-600 mt-1"><i class="fas fa-comment-dots mr-1"></i><span class="font-medium">Comentario:</span> ${atencion.comentario}</p>` : ''}
     `;
     
@@ -398,7 +408,7 @@ function renderizarReportes() {
 
 // Modal para editar estado
 function mostrarModalEditarEstado(atencion) {
-  // No permitir editar si está cerrada
+  // Permitir editar cualquier atención que no esté cerrada
   if (atencion.estado === 'cerrada') {
     mostrarError('No se puede editar una atención que ya está cerrada');
     return;
@@ -413,12 +423,11 @@ function mostrarModalEditarEstado(atencion) {
   content.innerHTML = `
     <h2 class="text-xl font-bold text-gray-800 mb-4">Actualizar Estado</h2>
     <p class="text-sm text-gray-600 mb-4">DNI: ${atencion.dni}</p>
+    <p class="text-sm text-gray-700 mb-4">Estado actual: <span class="font-semibold">${atencion.estado === 'en_proceso' ? 'En proceso' : atencion.estado === 'abierta' ? 'Abierta' : 'Cerrada'}</span></p>
     
     <select id="nuevoEstado" class="w-full px-4 py-2 border border-gray-300 rounded-lg mb-4 focus:outline-none focus:ring-2 focus:ring-blue-600">
       <option value="">-- Seleccionar estado --</option>
-      <option value="abierta">Abierta</option>
-      <option value="en_proceso">En progreso</option>
-      <option value="cerrada">Cerrada</option>
+      <option value="cerrada">🟢 Cerrada</option>
     </select>
     
     <div class="flex gap-2">
