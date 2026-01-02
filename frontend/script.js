@@ -38,27 +38,71 @@ document.addEventListener('DOMContentLoaded', () => {
   
   // Control de acceso a Visitas: solo usuario específico o administrador
   const btnVisitas = document.getElementById('btn-visitas');
-  const EMAIL_USUARIO_VISITAS = 'usuario.visitas@empresa.com'; // CAMBIAR POR EMAIL REAL
+  const btnAtenciones = document.getElementById('btn-atenciones');
+  const btnReportes = document.getElementById('btn-reportes');
+  const btnAsignados = document.getElementById('btn-asignados');
+  const EMAIL_USUARIO_VISITAS = 'frivas@liderman.com.pe';
   const emailUsuario = localStorage.getItem('email');
   
-  if (btnVisitas) {
-    if (rolActual === 'administrador' || emailUsuario === EMAIL_USUARIO_VISITAS) {
+  console.log('🔍 DEBUG - Email en localStorage:', emailUsuario);
+  console.log('🔍 DEBUG - Email esperado:', EMAIL_USUARIO_VISITAS);
+  console.log('🔍 DEBUG - Rol actual:', rolActual);
+  console.log('🔍 DEBUG - ¿Son iguales?:', emailUsuario === EMAIL_USUARIO_VISITAS);
+  
+  // Si es el usuario de visitas (y no es administrador), solo mostrar Visitas
+  if (emailUsuario === EMAIL_USUARIO_VISITAS && rolActual !== 'administrador') {
+    console.log('🔒 Usuario de Visitas detectado:', emailUsuario);
+    
+    // Ocultar todos los módulos excepto Visitas
+    if (btnAtenciones) {
+      btnAtenciones.style.display = 'none';
+      console.log('❌ Ocultando Atenciones');
+    }
+    if (btnReportes) {
+      btnReportes.style.display = 'none';
+      console.log('❌ Ocultando Reportes');
+    }
+    if (btnAsignados) {
+      btnAsignados.style.display = 'none';
+      console.log('❌ Ocultando Dashboard');
+    }
+    const btnUsuarios = document.getElementById('btn-usuarios');
+    if (btnUsuarios) {
+      btnUsuarios.style.display = 'none';
+      console.log('❌ Ocultando Usuarios');
+    }
+    
+    // Mostrar solo Visitas
+    if (btnVisitas) {
       btnVisitas.style.display = 'flex';
-    } else {
-      btnVisitas.style.display = 'none';
+      console.log('✅ Mostrando Visitas');
+    }
+    
+    // Mostrar sección de Visitas por defecto
+    mostrarSeccion('visitas');
+  } else {
+    // Lógica normal para otros usuarios
+    if (btnVisitas) {
+      if (rolActual === 'administrador' || emailUsuario === EMAIL_USUARIO_VISITAS) {
+        btnVisitas.style.display = 'flex';
+      } else {
+        btnVisitas.style.display = 'none';
+      }
     }
   }
   
-  // Restaurar última sección visitada o mostrar por defecto
-  const ultimaSeccion = localStorage.getItem('ultima_seccion');
-  if (ultimaSeccion) {
-    mostrarSeccion(ultimaSeccion);
-  } else {
-    // Mostrar sección por defecto según rol
-    if (rolActual === 'gestor') {
-      mostrarSeccion('atenciones');
+  // Restaurar última sección visitada o mostrar por defecto (solo si no es usuario de visitas)
+  if (emailUsuario !== EMAIL_USUARIO_VISITAS || rolActual === 'administrador') {
+    const ultimaSeccion = localStorage.getItem('ultima_seccion');
+    if (ultimaSeccion) {
+      mostrarSeccion(ultimaSeccion);
     } else {
-      mostrarSeccion('usuarios');
+      // Mostrar sección por defecto según rol
+      if (rolActual === 'gestor') {
+        mostrarSeccion('atenciones');
+      } else {
+        mostrarSeccion('usuarios');
+      }
     }
   }
 });

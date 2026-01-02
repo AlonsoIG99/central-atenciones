@@ -38,6 +38,7 @@ loginForm.addEventListener('submit', async (e) => {
     localStorage.setItem('token', data.access_token);
     localStorage.setItem('refresh_token', data.refresh_token);
     localStorage.setItem('user_id', data.user_id);
+    localStorage.setItem('email', data.email);
     localStorage.setItem('nombre', data.nombre);
     localStorage.setItem('rol', data.rol);
     localStorage.setItem('area', data.area);
