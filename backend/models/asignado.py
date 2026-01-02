@@ -14,6 +14,7 @@ class Asignado(Document):
     macrozona = StringField(null=True, index=True)
     jurisdiccion = StringField(null=True)
     sector = StringField(null=True)
+    unidad = StringField(null=True)
     estado = StringField(default="activo", choices=["activo", "inactivo"])
     
     meta = {
@@ -41,5 +42,6 @@ class Asignado(Document):
             'macrozona': self.macrozona,
             'jurisdiccion': self.jurisdiccion,
             'sector': self.sector,
+            'unidad': self.unidad,
             'estado': self.estado
         }

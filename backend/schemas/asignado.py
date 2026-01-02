@@ -13,6 +13,7 @@ class AsignadoBase(BaseModel):
     macrozona: Optional[str] = None
     jurisdiccion: Optional[str] = None
     sector: Optional[str] = None
+    unidad: Optional[str] = None
     estado: str = "activo"
 
 class AsignadoCreate(AsignadoBase):
@@ -29,6 +30,7 @@ class AsignadoUpdate(BaseModel):
     macrozona: Optional[str] = None
     jurisdiccion: Optional[str] = None
     sector: Optional[str] = None
+    unidad: Optional[str] = None
     estado: Optional[str] = None
 
 class AsignadoResponse(AsignadoBase):

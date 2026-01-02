@@ -36,6 +36,19 @@ document.addEventListener('DOMContentLoaded', () => {
     if (dashboardReporteContainer) dashboardReporteContainer.style.display = 'none';
   }
   
+  // Control de acceso a Visitas: solo usuario específico o administrador
+  const btnVisitas = document.getElementById('btn-visitas');
+  const EMAIL_USUARIO_VISITAS = 'usuario.visitas@empresa.com'; // CAMBIAR POR EMAIL REAL
+  const emailUsuario = localStorage.getItem('email');
+  
+  if (btnVisitas) {
+    if (rolActual === 'administrador' || emailUsuario === EMAIL_USUARIO_VISITAS) {
+      btnVisitas.style.display = 'flex';
+    } else {
+      btnVisitas.style.display = 'none';
+    }
+  }
+  
   // Restaurar última sección visitada o mostrar por defecto
   const ultimaSeccion = localStorage.getItem('ultima_seccion');
   if (ultimaSeccion) {
@@ -55,11 +68,13 @@ const btnUsuarios = document.getElementById('btn-usuarios');
 const btnAsignados = document.getElementById('btn-asignados');
 const btnIncidencias = document.getElementById('btn-atenciones');
 const btnReportes = document.getElementById('btn-reportes');
+const btnVisitas = document.getElementById('btn-visitas');
 const btnLogout = document.getElementById('btn-logout');
 const usuariosSection = document.getElementById('usuarios-section');
 const asignadosSection = document.getElementById('asignados-section');
 const incidenciasSection = document.getElementById('atenciones-section');
 const reportesSection = document.getElementById('reportes-section');
+const visitasSection = document.getElementById('visitas-section');
 
 // Navegación entre secciones
 btnUsuarios.addEventListener('click', () => {
@@ -77,6 +92,12 @@ btnIncidencias.addEventListener('click', () => {
 btnReportes.addEventListener('click', () => {
   mostrarSeccion('reportes');
 });
+
+if (btnVisitas) {
+  btnVisitas.addEventListener('click', () => {
+    mostrarSeccion('visitas');
+  });
+}
 
 // Logout
 if (btnLogout) {
@@ -121,7 +142,8 @@ function mostrarSeccion(seccion) {
     usuarios: { title: 'Gestión de Usuarios', subtitle: 'Administra usuarios del sistema' },
     atenciones: { title: 'Registro de Atenciones', subtitle: 'Gestiona las solicitudes y atenciones' },
     reportes: { title: 'Reportes y Consultas', subtitle: 'Visualiza el historial de atenciones' },
-    asignados: { title: 'Dashboard Ejecutivo', subtitle: 'Análisis y métricas en tiempo real' }
+    asignados: { title: 'Dashboard Ejecutivo', subtitle: 'Análisis y métricas en tiempo real' },
+    visitas: { title: 'Gestión de Visitas', subtitle: 'Registra visitas y atenciones de campo' }
   };
   
   if (pageTitle && titles[seccion]) {
@@ -133,11 +155,13 @@ function mostrarSeccion(seccion) {
   asignadosSection.classList.remove('active');
   incidenciasSection.classList.remove('active');
   reportesSection.classList.remove('active');
+  if (visitasSection) visitasSection.classList.remove('active');
   
   btnUsuarios.classList.remove('active');
   btnAsignados.classList.remove('active');
   btnIncidencias.classList.remove('active');
   btnReportes.classList.remove('active');
+  if (btnVisitas) btnVisitas.classList.remove('active');
   
   if (seccion === 'usuarios') {
     usuariosSection.classList.add('active');
@@ -153,6 +177,10 @@ function mostrarSeccion(seccion) {
     reportesSection.classList.add('active');
     btnReportes.classList.add('active');
     cargarReportes();
+  } else if (seccion === 'visitas' && visitasSection) {
+    visitasSection.classList.add('active');
+    btnVisitas.classList.add('active');
+    inicializarCultura();
   }
 }
 

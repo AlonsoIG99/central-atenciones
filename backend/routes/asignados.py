@@ -27,6 +27,7 @@ def obtener_asignados():
             "macrozona": a.macrozona,
             "jurisdiccion": a.jurisdiccion,
             "sector": a.sector,
+            "unidad": a.unidad,
             "estado": a.estado
         }
         for a in asignados
@@ -50,6 +51,7 @@ def obtener_asignados_activos():
             "macrozona": a.macrozona,
             "jurisdiccion": a.jurisdiccion,
             "sector": a.sector,
+            "unidad": a.unidad,
             "estado": a.estado
         }
         for a in asignados
@@ -73,10 +75,59 @@ def buscar_asignado_por_dni(dni: str):
             "macrozona": a.macrozona,
             "jurisdiccion": a.jurisdiccion,
             "sector": a.sector,
+            "unidad": a.unidad,
             "estado": a.estado
         }
         for a in asignados
     ]
+
+@router.get("/buscar/clientes/{texto}")
+def buscar_clientes(texto: str):
+    """Busca clientes únicos en la tabla asignados que contengan el texto proporcionado"""
+    # Buscar asignados activos que tengan cliente y que contenga el texto
+    asignados = Asignado.objects(
+        cliente__icontains=texto,
+        estado="activo",
+        cliente__ne=None
+    ).only('cliente').all()
+    
+    # Obtener lista única de clientes
+    clientes_unicos = list(set([a.cliente for a in asignados if a.cliente and a.cliente.strip()]))
+    clientes_unicos.sort()
+    
+    return {"clientes": clientes_unicos}
+
+@router.get("/buscar/lideres/{texto}")
+def buscar_lideres_zonales(texto: str):
+    """Busca líderes zonales únicos en la tabla asignados que contengan el texto proporcionado"""
+    # Buscar asignados activos que tengan lider_zonal y que contenga el texto
+    asignados = Asignado.objects(
+        lider_zonal__icontains=texto,
+        estado="activo",
+        lider_zonal__ne=None
+    ).only('lider_zonal').all()
+    
+    # Obtener lista única de líderes zonales
+    lideres_unicos = list(set([a.lider_zonal for a in asignados if a.lider_zonal and a.lider_zonal.strip()]))
+    lideres_unicos.sort()
+    
+    return {"lideres": lideres_unicos}
+
+@router.get("/buscar/unidades/{texto}")
+def buscar_unidades(texto: str):
+    """Busca unidades únicas en la tabla asignados que contengan el texto proporcionado"""
+    # Buscar asignados activos que tengan unidad y que contenga el texto
+    asignados = Asignado.objects(
+        unidad__icontains=texto,
+        estado="activo",
+        unidad__ne=None
+    ).only('unidad').all()
+    
+    # Obtener lista única de unidades
+    unidades_unicas = list(set([a.unidad for a in asignados if a.unidad and a.unidad.strip()]))
+    unidades_unicas.sort()
+    
+    return {"unidades": unidades_unicas}
 
 @router.get("/{asignado_id}", response_model=AsignadoResponse)
 def obtener_asignado(asignado_id: str):
@@ -98,6 +149,7 @@ def obtener_asignado(asignado_id: str):
             "macrozona": asignado.macrozona,
             "jurisdiccion": asignado.jurisdiccion,
             "sector": asignado.sector,
+            "unidad": asignado.unidad,
             "estado": asignado.estado
         }
     except Exception as e:
@@ -334,6 +386,7 @@ def procesar_csv_asignados(contenido_csv: str) -> dict:
                 macrozona = fila.get('macrozona', '').strip() or None
                 jurisdiccion = fila.get('jurisdiccion', '').strip() or None
                 sector = fila.get('sector', '').strip() or None
+                unidad = fila.get('unidad', '').strip() or None
                 
                 # Usar upsert para combinar INSERT y UPDATE en una operación
                 operaciones.append(
@@ -351,6 +404,7 @@ def procesar_csv_asignados(contenido_csv: str) -> dict:
                                 'macrozona': macrozona,
                                 'jurisdiccion': jurisdiccion,
                                 'sector': sector,
+                                'unidad': unidad,
                                 'estado': 'activo'
                             }
                         },

@@ -12,6 +12,7 @@ class AtencionCultura(Document):
     dni = StringField(required=True, index=True)
     nombre_trabajador = StringField(null=True, index=True)
     derivacion = StringField(required=True, choices=[
+        "atencion_propia",
         "central_atenciones",
         "bienestar_social",
         "logistica",
