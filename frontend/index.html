@@ -187,6 +187,10 @@
                         <i class="fas fa-route w-5"></i>
                         <span>Visitas</span>
                     </button>
+                    <button id="btn-reportes-visitas" class="nav-btn w-full text-left px-4 py-3 rounded-lg flex items-center gap-3 text-sm" style="display: none;">
+                        <i class="fas fa-chart-line w-5"></i>
+                        <span>Reporte de Visitas</span>
+                    </button>
                     <button id="btn-asignados" class="nav-btn w-full text-left px-4 py-3 rounded-lg flex items-center gap-3 text-sm">
                         <i class="fas fa-chart-bar w-5"></i>
                         <span>Dashboard</span>
@@ -618,6 +622,126 @@ Pública,María García,23456789,2021-03-20,Cliente B,Zona B,Lider 2,Jefe 2,Macr
                     <div id="reportContainer" class="space-y-4"></div>
                 </section>
 
+                <!-- Sección de Reportes de Visitas y Atenciones -->
+                <section id="reportes-visitas-section" class="section">
+                    <div class="bg-white rounded-xl shadow-lg mb-6 overflow-hidden">
+                        <div class="flex border-b border-gray-200">
+                            <button id="tab-reporte-visitas" class="tab-button tab-active flex-1 px-6 py-4 font-semibold text-center transition hover:bg-purple-50">
+                                <i class="fas fa-route mr-2"></i>Visitas
+                            </button>
+                            <button id="tab-reporte-atenciones" class="tab-button flex-1 px-6 py-4 font-semibold text-center transition hover:bg-green-50">
+                                <i class="fas fa-clipboard-list mr-2"></i>Atenciones
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- MÓDULO: Visitas -->
+                    <div id="modulo-reporte-visitas" class="modulo-reporte">
+                        <div class="bg-white rounded-xl shadow-lg p-8 mb-8 border border-gray-200">
+                            <h3 class="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2">
+                                <i class="fas fa-route text-purple-600"></i>
+                                Visitas Registradas
+                            </h3>
+                            
+                            <!-- Filtros -->
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 p-4 bg-gray-50 rounded-lg">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Fecha Desde</label>
+                                    <input type="date" id="reporte-visitas-fecha-desde" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Fecha Hasta</label>
+                                    <input type="date" id="reporte-visitas-fecha-hasta" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                </div>
+                                <div class="flex items-end">
+                                    <button id="btn-filtrar-visitas" class="w-full px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition font-semibold">
+                                        <i class="fas fa-filter mr-2"></i>Filtrar
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <!-- Estadística de Visitas -->
+                            <div class="bg-purple-50 p-4 rounded-lg border border-purple-200 mb-6">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <p class="text-sm text-gray-600">Total Visitas</p>
+                                        <p id="stat-total-visitas-reporte" class="text-3xl font-bold text-purple-600">0</p>
+                                    </div>
+                                    <i class="fas fa-route text-5xl text-purple-300"></i>
+                                </div>
+                            </div>
+                            
+                            <!-- Lista de Visitas -->
+                            <div id="visitas-list-reporte" class="space-y-4 mb-4"></div>
+                            <!-- Paginación Visitas -->
+                            <div id="paginacion-visitas-reporte" class="flex justify-center items-center gap-2 mt-4"></div>
+                        </div>
+                    </div>
+                    
+                    <!-- MÓDULO: Atenciones -->
+                    <div id="modulo-reporte-atenciones" class="modulo-reporte hidden">
+                        <div class="bg-white rounded-xl shadow-lg p-8 mb-8 border border-gray-200">
+                            <h3 class="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2">
+                                <i class="fas fa-clipboard-list text-green-600"></i>
+                                Atenciones Registradas
+                            </h3>
+                            
+                            <!-- Filtros -->
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 p-4 bg-gray-50 rounded-lg">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Fecha Desde</label>
+                                    <input type="date" id="reporte-atenciones-fecha-desde" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Fecha Hasta</label>
+                                    <input type="date" id="reporte-atenciones-fecha-hasta" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                </div>
+                                <div class="flex items-end">
+                                    <button id="btn-filtrar-atenciones" class="w-full px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition font-semibold">
+                                        <i class="fas fa-filter mr-2"></i>Filtrar
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <!-- Estadísticas de Atenciones -->
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                                <div class="bg-green-50 p-4 rounded-lg border border-green-200">
+                                    <div class="flex items-center justify-between">
+                                        <div>
+                                            <p class="text-sm text-gray-600">Total Atenciones</p>
+                                            <p id="stat-total-atenciones-reporte" class="text-2xl font-bold text-green-600">0</p>
+                                        </div>
+                                        <i class="fas fa-users text-3xl text-green-300"></i>
+                                    </div>
+                                </div>
+                                <div class="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                                    <div class="flex items-center justify-between">
+                                        <div>
+                                            <p class="text-sm text-gray-600">Atenciones Directas</p>
+                                            <p id="stat-atenciones-directas-reporte" class="text-2xl font-bold text-blue-600">0</p>
+                                        </div>
+                                        <i class="fas fa-phone-alt text-3xl text-blue-300"></i>
+                                    </div>
+                                </div>
+                                <div class="bg-orange-50 p-4 rounded-lg border border-orange-200">
+                                    <div class="flex items-center justify-between">
+                                        <div>
+                                            <p class="text-sm text-gray-600">Atenciones en Visitas</p>
+                                            <p id="stat-atenciones-visitas-reporte" class="text-2xl font-bold text-orange-600">0</p>
+                                        </div>
+                                        <i class="fas fa-clipboard-list text-3xl text-orange-300"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Lista de Atenciones -->
+                            <div id="atenciones-list-reporte" class="space-y-4 mb-4"></div>
+                            <!-- Paginación Atenciones -->
+                            <div id="paginacion-atenciones-reporte" class="flex justify-center items-center gap-2 mt-4"></div>
+                        </div>
+                    </div>
+                </section>
+
                 <!-- Sección de Visitas (Cultura) -->
                 <section id="visitas-section" class="section">
                     <h2 class="text-2xl font-bold text-gray-800 mb-6 pb-3 border-b-4 border-purple-600">Gestión de Atención a la Cultura</h2>
@@ -630,9 +754,6 @@ Pública,María García,23456789,2021-03-20,Cliente B,Zona B,Lider 2,Jefe 2,Macr
                             </button>
                             <button id="tab-atenciones-directas" class="tab-button flex-1 px-6 py-4 font-semibold text-center transition hover:bg-green-50">
                                 <i class="fas fa-phone-alt mr-2"></i>Atenciones Directas
-                            </button>
-                            <button id="tab-reportes" class="tab-button flex-1 px-6 py-4 font-semibold text-center transition hover:bg-blue-50">
-                                <i class="fas fa-chart-bar mr-2"></i>Reportes
                             </button>
                         </div>
                     </div>
@@ -675,15 +796,6 @@ Pública,María García,23456789,2021-03-20,Cliente B,Zona B,Lider 2,Jefe 2,Macr
                                 <div id="unidades-resultados" class="absolute bg-white border border-purple-300 rounded-lg shadow-xl z-50 max-h-48 overflow-y-auto hidden mt-1 w-full"></div>
                             </div>
                             
-                            <div class="relative">
-                                <label class="block text-gray-700 font-medium mb-2">
-                                    <i class="fas fa-user-tie text-purple-600 mr-2"></i>Líder Zonal
-                                </label>
-                                <input type="text" id="visita-lider" placeholder="Buscar líder zonal..." required 
-                                    class="w-full px-4 py-3 border-2 border-purple-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
-                                <div id="lideres-resultados" class="absolute bg-white border border-purple-300 rounded-lg shadow-xl z-50 max-h-48 overflow-y-auto hidden mt-1 w-full"></div>
-                            </div>
-                            
                             <div class="md:col-span-2">
                                 <label class="block text-gray-700 font-medium mb-2">
                                     <i class="fas fa-comment text-purple-600 mr-2"></i>Comentario (opcional)
@@ -693,7 +805,7 @@ Pública,María García,23456789,2021-03-20,Cliente B,Zona B,Lider 2,Jefe 2,Macr
                             </div>
                             
                             <div class="md:col-span-2">
-                                <button type="submit" class="w-full px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition font-semibold shadow-lg">
+                                <button type="submit" id="btn-registrar-visita" class="w-full px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition font-semibold shadow-lg">
                                     <i class="fas fa-save mr-2"></i>Registrar Visita
                                 </button>
                             </div>
@@ -852,95 +964,6 @@ Pública,María García,23456789,2021-03-20,Cliente B,Zona B,Lider 2,Jefe 2,Macr
                                 <button id="btn-no-agregar-atenciones" class="flex-1 px-6 py-3 bg-gray-400 hover:bg-gray-500 text-white rounded-lg transition font-semibold">
                                     <i class="fas fa-times mr-2"></i>No, Gracias
                                 </button>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- MÓDULO 3: Reportes -->
-                    <div id="modulo-reportes" class="modulo-cultura hidden">
-                        <div class="bg-white rounded-xl shadow-lg p-8 mb-8 border border-gray-200">
-                            <h3 class="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2">
-                                <i class="fas fa-chart-line text-blue-600"></i>
-                                Reportes de Visitas y Atenciones
-                            </h3>
-                            
-                            <!-- Filtros -->
-                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 p-4 bg-gray-50 rounded-lg">
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">Fecha Desde</label>
-                                    <input type="date" id="reporte-fecha-desde" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">Fecha Hasta</label>
-                                    <input type="date" id="reporte-fecha-hasta" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                </div>
-                                <div class="flex items-end">
-                                    <button id="btn-filtrar-reportes" class="w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition font-semibold">
-                                        <i class="fas fa-filter mr-2"></i>Filtrar
-                                    </button>
-                                </div>
-                            </div>
-                            
-                            <!-- Estadísticas -->
-                            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-                                <div class="bg-purple-50 p-4 rounded-lg border border-purple-200">
-                                    <div class="flex items-center justify-between">
-                                        <div>
-                                            <p class="text-sm text-gray-600">Total Visitas</p>
-                                            <p id="stat-total-visitas" class="text-2xl font-bold text-purple-600">0</p>
-                                        </div>
-                                        <i class="fas fa-route text-3xl text-purple-300"></i>
-                                    </div>
-                                </div>
-                                <div class="bg-green-50 p-4 rounded-lg border border-green-200">
-                                    <div class="flex items-center justify-between">
-                                        <div>
-                                            <p class="text-sm text-gray-600">Total Atenciones</p>
-                                            <p id="stat-total-atenciones" class="text-2xl font-bold text-green-600">0</p>
-                                        </div>
-                                        <i class="fas fa-users text-3xl text-green-300"></i>
-                                    </div>
-                                </div>
-                                <div class="bg-blue-50 p-4 rounded-lg border border-blue-200">
-                                    <div class="flex items-center justify-between">
-                                        <div>
-                                            <p class="text-sm text-gray-600">Atenciones Directas</p>
-                                            <p id="stat-atenciones-directas" class="text-2xl font-bold text-blue-600">0</p>
-                                        </div>
-                                        <i class="fas fa-phone-alt text-3xl text-blue-300"></i>
-                                    </div>
-                                </div>
-                                <div class="bg-orange-50 p-4 rounded-lg border border-orange-200">
-                                    <div class="flex items-center justify-between">
-                                        <div>
-                                            <p class="text-sm text-gray-600">Atenciones en Visitas</p>
-                                            <p id="stat-atenciones-visitas" class="text-2xl font-bold text-orange-600">0</p>
-                                        </div>
-                                        <i class="fas fa-clipboard-list text-3xl text-orange-300"></i>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <!-- Lista de Visitas -->
-                            <div class="mb-8">
-                                <h4 class="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                                    <i class="fas fa-list text-purple-600"></i>
-                                    Visitas Registradas
-                                </h4>
-                                <div id="visitas-list" class="space-y-4 mb-4"></div>
-                                <!-- Paginación Visitas -->
-                                <div id="paginacion-visitas" class="flex justify-center items-center gap-2 mt-4"></div>
-                            </div>
-                            
-                            <!-- Lista de Atenciones -->
-                            <div>
-                                <h4 class="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                                    <i class="fas fa-clipboard-check text-green-600"></i>
-                                    Atenciones Registradas
-                                </h4>
-                                <div id="atenciones-list" class="space-y-4 mb-4"></div>
-                                <!-- Paginación Atenciones -->
-                                <div id="paginacion-atenciones" class="flex justify-center items-center gap-2 mt-4"></div>
                             </div>
                         </div>
                     </div>

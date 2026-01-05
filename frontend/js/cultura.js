@@ -91,7 +91,6 @@ const trabajadoresDirectaResultados = document.getElementById('trabajadores-dire
 const visitaClienteInput = document.getElementById('visita-cliente');
 const visitaFechaInput = document.getElementById('visita-fecha');
 const visitaUnidadInput = document.getElementById('visita-unidad');
-const visitaLiderInput = document.getElementById('visita-lider');
 const visitaComentarioInput = document.getElementById('visita-comentario');
 const visitaUsuarioIdInput = document.getElementById('visita-usuario_id');
 
@@ -105,7 +104,7 @@ async function inicializarCultura() {
     }
     
     await cargarCatalogos();
-    await cargarVisitas();
+    // cargarVisitas ya no es necesario - se eliminó la sección de reportes
     
     configurarEventos();
     console.log('🚀 Configurando pestañas...');
@@ -117,25 +116,23 @@ async function inicializarCultura() {
 function configurarPestanas() {
     const tabVisitas = document.getElementById('tab-visitas');
     const tabAtenciones = document.getElementById('tab-atenciones-directas');
-    const tabReportes = document.getElementById('tab-reportes');
     
     const moduloVisitas = document.getElementById('modulo-visitas');
     const moduloAtenciones = document.getElementById('modulo-atenciones-directas');
-    const moduloReportes = document.getElementById('modulo-reportes');
     
-    if (!tabVisitas || !tabAtenciones || !tabReportes) {
+    if (!tabVisitas || !tabAtenciones) {
         console.error('No se encontraron las pestañas');
         return;
     }
     
     function cambiarModulo(moduloActivo, tabActiva) {
         // Ocultar todos los módulos
-        [moduloVisitas, moduloAtenciones, moduloReportes].forEach(m => {
+        [moduloVisitas, moduloAtenciones].forEach(m => {
             if (m) m.classList.add('hidden');
         });
         
         // Desactivar todas las pestañas
-        [tabVisitas, tabAtenciones, tabReportes].forEach(t => {
+        [tabVisitas, tabAtenciones].forEach(t => {
             if (t) t.classList.remove('tab-active');
         });
         
@@ -145,19 +142,13 @@ function configurarPestanas() {
     }
     
     tabVisitas.addEventListener('click', () => {
+        console.log('🔵 Click en pestaña Visitas');
         cambiarModulo(moduloVisitas, tabVisitas);
     });
     
     tabAtenciones.addEventListener('click', () => {
+        console.log('🟢 Click en pestaña Atenciones Directas');
         cambiarModulo(moduloAtenciones, tabAtenciones);
-    });
-    
-    tabReportes.addEventListener('click', async () => {
-        console.log('🔍 Click en pestaña Reportes');
-        cambiarModulo(moduloReportes, tabReportes);
-        console.log('🔍 Llamando a cargarReportes...');
-        await cargarReportes(); // Cargar reportes al abrir la pestaña
-        console.log('🔍 cargarReportes completado');
     });
 }
 
@@ -232,65 +223,6 @@ function configurarEventos() {
     document.addEventListener('click', (e) => {
         if (!visitaClienteInput.contains(e.target) && !clientesResultados.contains(e.target)) {
             clientesResultados.classList.add('hidden');
-        }
-    });
-    
-    // Búsqueda de líder zonal con autocompletado desde asignados
-    let debounceTimerLider = null;
-    const lideresResultados = document.getElementById('lideres-resultados');
-    const visitaLiderInput = document.getElementById('visita-lider');
-    
-    visitaLiderInput.addEventListener('input', (e) => {
-        clearTimeout(debounceTimerLider);
-        const texto = e.target.value.trim();
-        
-        // Buscar solo si hay al menos 4 caracteres
-        if (texto.length < 4) {
-            lideresResultados.classList.add('hidden');
-            return;
-        }
-        
-        debounceTimerLider = setTimeout(async () => {
-            try {
-                const response = await fetchConAutoRefresh(`${API_URL}/asignados/buscar/lideres/${encodeURIComponent(texto)}`, {
-                    headers: await obtenerHeaders()
-                });
-                
-                if (!response.ok) throw new Error('Error al buscar líderes zonales');
-                
-                const data = await response.json();
-                
-                if (data.lideres && data.lideres.length > 0) {
-                    lideresResultados.innerHTML = data.lideres.map(lider => `
-                        <div class="p-3 border-b border-purple-200 hover:bg-purple-50 cursor-pointer transition" 
-                             data-lider="${lider}">
-                            <span class="text-gray-700">${lider}</span>
-                        </div>
-                    `).join('');
-                    
-                    lideresResultados.classList.remove('hidden');
-                    
-                    // Evento para seleccionar un resultado
-                    lideresResultados.querySelectorAll('div[data-lider]').forEach(item => {
-                        item.addEventListener('click', () => {
-                            visitaLiderInput.value = item.getAttribute('data-lider');
-                            lideresResultados.classList.add('hidden');
-                        });
-                    });
-                } else {
-                    lideresResultados.classList.add('hidden');
-                }
-            } catch (error) {
-                console.error('Error buscando líderes zonales:', error);
-                lideresResultados.classList.add('hidden');
-            }
-        }, 300);
-    });
-    
-    // Ocultar resultados al hacer clic fuera
-    document.addEventListener('click', (e) => {
-        if (!visitaLiderInput.contains(e.target) && !lideresResultados.contains(e.target)) {
-            lideresResultados.classList.add('hidden');
         }
     });
     
@@ -513,12 +445,19 @@ function configurarEventos() {
 
 // ========== CREAR VISITA ==========
 async function crearVisita() {
+    const btnRegistrar = document.getElementById('btn-registrar-visita');
+    
     try {
+        // Deshabilitar botón para prevenir doble clic
+        if (btnRegistrar) {
+            btnRegistrar.disabled = true;
+            btnRegistrar.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Guardando...';
+        }
+        
         const visitaData = {
             cliente: visitaClienteInput.value,
             fecha_visita: new Date(visitaFechaInput.value).toISOString(),
             unidad: visitaUnidadInput.value,
-            lider_zonal: visitaLiderInput.value,
             comentario: visitaComentarioInput.value || null,
             usuario_id: visitaUsuarioIdInput.value
         };
@@ -548,13 +487,19 @@ async function crearVisita() {
         visitaForm.reset();
         visitaUsuarioIdInput.value = localStorage.getItem('user_id');
         
-        await cargarVisitas();
+        // cargarVisitas ya no es necesario - se eliminó la sección de reportes
         
         // Mostrar modal de confirmación para agregar atenciones
         mostrarModalConfirmarAtenciones(data.id, visitaData.cliente, visitaData.fecha_visita);
     } catch (error) {
         console.error('Error al crear visita:', error);
         mostrarMensaje('Error al registrar visita: ' + error.message, 'error');
+    } finally {
+        // Rehabilitar botón siempre (éxito o error)
+        if (btnRegistrar) {
+            btnRegistrar.disabled = false;
+            btnRegistrar.innerHTML = '<i class="fas fa-save mr-2"></i>Registrar Visita';
+        }
     }
 }
 
@@ -775,8 +720,22 @@ async function registrarAtencionesVisita(visitaId, dnis, derivacion, comentario)
 }
 
 // ========== CREAR ATENCIÓN DIRECTA (SIN VISITA) ==========
+let procesandoAtencionDirecta = false;
+
 async function crearAtencionDirecta() {
+    if (procesandoAtencionDirecta) {
+        console.log('⏳ Ya se está procesando una atención directa...');
+        return;
+    }
+    
     try {
+        procesandoAtencionDirecta = true;
+        const boton = atencionDirectaForm.querySelector('button[type="submit"]');
+        if (boton) {
+            boton.disabled = true;
+            boton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Registrando...';
+        }
+        
         const atencionData = {
             visita_id: null, // Sin visita
             dni: atencionDirectaDniInput.value,
@@ -797,9 +756,24 @@ async function crearAtencionDirecta() {
         // Limpiar formulario
         atencionDirectaForm.reset();
         atencionDirectaUsuarioIdInput.value = localStorage.getItem('user_id');
+        
+        if (boton) {
+            boton.innerHTML = '<i class="fas fa-save mr-2"></i>Registrar Atención';
+        }
     } catch (error) {
         console.error('Error al crear atención directa:', error);
         mostrarMensaje('Error al registrar atención directa', 'error');
+        
+        const boton = atencionDirectaForm.querySelector('button[type="submit"]');
+        if (boton) {
+            boton.innerHTML = '<i class="fas fa-save mr-2"></i>Registrar Atención';
+        }
+    } finally {
+        procesandoAtencionDirecta = false;
+        const boton = atencionDirectaForm.querySelector('button[type="submit"]');
+        if (boton) {
+            boton.disabled = false;
+        }
     }
 }
 
@@ -1448,9 +1422,6 @@ function renderizarListaVisitasReporte() {
                         ${visita.comentario ? `<p class="text-blue-600"><i class="fas fa-comment mr-2"></i>${visita.comentario}</p>` : ''}
                     </div>
                 </div>
-                <button class="px-3 py-1 bg-red-600 text-white text-sm rounded hover:bg-red-700 transition" onclick="eliminarVisitaReporte('${visita.id}')">
-                    <i class="fas fa-trash"></i>
-                </button>
             </div>
         `;
         container.appendChild(card);
@@ -1575,13 +1546,203 @@ function renderizarPaginacion(container, paginaActual, totalPaginas, callback) {
     });
 }
 
+// ========== REPORTES DE VISITAS Y ATENCIONES ==========
+let paginaActualVisitasReporte = 1;
+let paginaActualAtencionesReporte = 1;
+const itemsPorPaginaReporte = 10;
+
+async function cargarReportesVisitas() {
+    console.log('📊 Cargando reportes de visitas y atenciones');
+    try {
+        // Cargar visitas
+        const respuestaVisitas = await fetchConAutoRefresh(`${API_URL}/cultura/visitas`, {
+            headers: obtenerHeaders()
+        });
+        const visitas = await respuestaVisitas.json();
+        
+        // Cargar atenciones
+        const respuestaAtenciones = await fetchConAutoRefresh(`${API_URL}/cultura/atenciones`, {
+            headers: obtenerHeaders()
+        });
+        const atenciones = await respuestaAtenciones.json();
+        
+        // Calcular estadísticas
+        const atencionesDirectas = atenciones.filter(a => !a.visita_id);
+        const atencionesEnVisitas = atenciones.filter(a => a.visita_id);
+        
+        // Actualizar estadísticas
+        document.getElementById('stat-total-visitas-reporte').textContent = visitas.length;
+        document.getElementById('stat-total-atenciones-reporte').textContent = atenciones.length;
+        document.getElementById('stat-atenciones-directas-reporte').textContent = atencionesDirectas.length;
+        document.getElementById('stat-atenciones-visitas-reporte').textContent = atencionesEnVisitas.length;
+        
+        // Renderizar listas
+        renderizarListaVisitasReporte(visitas);
+        renderizarListaAtencionesReporte(atenciones);
+        
+    } catch (error) {
+        console.error('Error al cargar reportes:', error);
+        mostrarMensaje('Error al cargar reportes', 'error');
+    }
+}
+
+function renderizarListaVisitasReporte(visitas) {
+    const container = document.getElementById('visitas-list-reporte');
+    const paginacionContainer = document.getElementById('paginacion-visitas-reporte');
+    
+    if (!container) return;
+    
+    if (visitas.length === 0) {
+        container.innerHTML = '<p class="text-gray-500 text-center py-8">No hay visitas registradas</p>';
+        paginacionContainer.innerHTML = '';
+        return;
+    }
+    
+    // Paginación
+    const inicio = (paginaActualVisitasReporte - 1) * itemsPorPaginaReporte;
+    const fin = inicio + itemsPorPaginaReporte;
+    const visitasPagina = visitas.slice(inicio, fin);
+    const totalPaginas = Math.ceil(visitas.length / itemsPorPaginaReporte);
+    
+    // Renderizar visitas
+    container.innerHTML = '';
+    visitasPagina.forEach(visita => {
+        const fecha = new Date(visita.fecha_visita).toLocaleDateString('es-ES', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+        
+        const card = document.createElement('div');
+        card.className = 'bg-white border border-purple-200 rounded-lg p-4 hover:shadow-md transition';
+        card.innerHTML = `
+            <div class="flex justify-between items-start">
+                <div class="flex-1">
+                    <p class="font-semibold text-gray-800">
+                        <i class="fas fa-building text-purple-600 mr-2"></i>${visita.cliente}
+                    </p>
+                    <div class="text-sm text-gray-600 mt-2 space-y-1">
+                        <p><i class="fas fa-calendar mr-2"></i>${fecha}</p>
+                        <p><i class="fas fa-map-marker-alt mr-2"></i>${visita.unidad}</p>
+                        ${visita.lider_zonal ? `<p><i class="fas fa-user-tie mr-2"></i>${visita.lider_zonal}</p>` : ''}
+                        ${visita.comentario ? `<p class="text-blue-600"><i class="fas fa-comment mr-2"></i>${visita.comentario}</p>` : ''}
+                    </div>
+                </div>
+            </div>
+        `;
+        container.appendChild(card);
+    });
+    
+    // Renderizar controles de paginación
+    renderizarPaginacion(paginacionContainer, paginaActualVisitasReporte, totalPaginas, (nuevaPagina) => {
+        paginaActualVisitasReporte = nuevaPagina;
+        renderizarListaVisitasReporte(visitas);
+    });
+}
+
+function renderizarListaAtencionesReporte(atenciones) {
+    const container = document.getElementById('atenciones-list-reporte');
+    const paginacionContainer = document.getElementById('paginacion-atenciones-reporte');
+    
+    if (!container) return;
+    
+    if (atenciones.length === 0) {
+        container.innerHTML = '<p class="text-gray-500 text-center py-8">No hay atenciones registradas</p>';
+        paginacionContainer.innerHTML = '';
+        return;
+    }
+    
+    // Paginación
+    const inicio = (paginaActualAtencionesReporte - 1) * itemsPorPaginaReporte;
+    const fin = inicio + itemsPorPaginaReporte;
+    const atencionesPagina = atenciones.slice(inicio, fin);
+    const totalPaginas = Math.ceil(atenciones.length / itemsPorPaginaReporte);
+    
+    // Renderizar atenciones
+    container.innerHTML = '';
+    atencionesPagina.forEach(atencion => {
+        const fecha = new Date(atencion.fecha_atencion).toLocaleDateString('es-ES', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+        
+        const tipo = atencion.visita_id ? 'En Visita' : 'Directa';
+        const tipoColor = atencion.visita_id ? 'orange' : 'blue';
+        
+        const card = document.createElement('div');
+        card.className = 'bg-white border border-green-200 rounded-lg p-4 hover:shadow-md transition';
+        card.innerHTML = `
+            <div class="flex justify-between items-start">
+                <div class="flex-1">
+                    <div class="flex items-center gap-2 mb-2">
+                        <span class="px-2 py-1 bg-${tipoColor}-100 text-${tipoColor}-700 text-xs font-semibold rounded">
+                            ${tipo}
+                        </span>
+                    </div>
+                    <p class="font-semibold text-gray-800">
+                        <i class="fas fa-user text-green-600 mr-2"></i>DNI: ${atencion.dni || 'N/A'}
+                    </p>
+                    <div class="text-sm text-gray-600 mt-2 space-y-1">
+                        <p><i class="fas fa-calendar mr-2"></i>${fecha}</p>
+                        <p><i class="fas fa-share-square mr-2"></i>Derivación: <span class="font-medium">${atencion.derivacion || 'N/A'}</span></p>
+                        ${atencion.comentario ? `<p class="text-blue-600"><i class="fas fa-comment mr-2"></i>${atencion.comentario}</p>` : ''}
+                    </div>
+                </div>
+            </div>
+        `;
+        container.appendChild(card);
+    });
+    
+    // Renderizar controles de paginación
+    renderizarPaginacion(paginacionContainer, paginaActualAtencionesReporte, totalPaginas, (nuevaPagina) => {
+        paginaActualAtencionesReporte = nuevaPagina;
+        renderizarListaAtencionesReporte(atenciones);
+    });
+}
+
+// Configurar pestañas de reportes
+function configurarPestanasReportes() {
+    const tabReporteVisitas = document.getElementById('tab-reporte-visitas');
+    const tabReporteAtenciones = document.getElementById('tab-reporte-atenciones');
+    const moduloReporteVisitas = document.getElementById('modulo-reporte-visitas');
+    const moduloReporteAtenciones = document.getElementById('modulo-reporte-atenciones');
+
+    if (!tabReporteVisitas || !tabReporteAtenciones) return;
+
+    tabReporteVisitas.addEventListener('click', () => {
+        tabReporteVisitas.classList.add('tab-active');
+        tabReporteAtenciones.classList.remove('tab-active');
+        moduloReporteVisitas.classList.remove('hidden');
+        moduloReporteAtenciones.classList.add('hidden');
+    });
+
+    tabReporteAtenciones.addEventListener('click', () => {
+        tabReporteAtenciones.classList.add('tab-active');
+        tabReporteVisitas.classList.remove('tab-active');
+        moduloReporteAtenciones.classList.remove('hidden');
+        moduloReporteVisitas.classList.add('hidden');
+    });
+}
+
 // Configurar filtros de reportes
 document.addEventListener('DOMContentLoaded', () => {
-    const btnFiltrar = document.getElementById('btn-filtrar-reportes');
-    if (btnFiltrar) {
-        btnFiltrar.addEventListener('click', () => {
-            // TODO: Implementar filtrado por fechas
-            mostrarMensaje('Filtrado por fechas próximamente', 'info');
+    const btnFiltrarVisitas = document.getElementById('btn-filtrar-visitas');
+    const btnFiltrarAtenciones = document.getElementById('btn-filtrar-atenciones');
+    
+    if (btnFiltrarVisitas) {
+        btnFiltrarVisitas.addEventListener('click', () => {
+            cargarReportesVisitas();
+        });
+    }
+    
+    if (btnFiltrarAtenciones) {
+        btnFiltrarAtenciones.addEventListener('click', () => {
+            cargarReportesVisitas();
         });
     }
 });
@@ -1591,3 +1752,5 @@ window.mostrarModalAtenciones = mostrarModalAtenciones;
 window.cerrarModalAtenciones = cerrarModalAtenciones;
 window.eliminarVisita = eliminarVisita;
 window.eliminarVisitaReporte = eliminarVisitaReporte;
+window.cargarReportesVisitas = cargarReportesVisitas;
+window.configurarPestanasReportes = configurarPestanasReportes;

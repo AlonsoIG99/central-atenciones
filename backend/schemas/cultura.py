@@ -46,7 +46,7 @@ class VisitaBase(BaseModel):
     cliente: str
     fecha_visita: datetime
     unidad: str
-    lider_zonal: str
+    lider_zonal: Optional[str] = None
     comentario: Optional[str] = None
     usuario_id: str
 

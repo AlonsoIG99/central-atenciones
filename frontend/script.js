@@ -49,11 +49,11 @@ document.addEventListener('DOMContentLoaded', () => {
   console.log('🔍 DEBUG - Rol actual:', rolActual);
   console.log('🔍 DEBUG - ¿Son iguales?:', emailUsuario === EMAIL_USUARIO_VISITAS);
   
-  // Si es el usuario de visitas (y no es administrador), solo mostrar Visitas
+  // Si es el usuario de visitas (y no es administrador), solo mostrar Visitas y Reporte de Visitas
   if (emailUsuario === EMAIL_USUARIO_VISITAS && rolActual !== 'administrador') {
     console.log('🔒 Usuario de Visitas detectado:', emailUsuario);
     
-    // Ocultar todos los módulos excepto Visitas
+    // Ocultar todos los módulos excepto Visitas y Reporte de Visitas
     if (btnAtenciones) {
       btnAtenciones.style.display = 'none';
       console.log('❌ Ocultando Atenciones');
@@ -72,10 +72,14 @@ document.addEventListener('DOMContentLoaded', () => {
       console.log('❌ Ocultando Usuarios');
     }
     
-    // Mostrar solo Visitas
+    // Mostrar solo Visitas y Reporte de Visitas
     if (btnVisitas) {
       btnVisitas.style.display = 'flex';
       console.log('✅ Mostrando Visitas');
+    }
+    if (btnReportesVisitas) {
+      btnReportesVisitas.style.display = 'flex';
+      console.log('✅ Mostrando Reporte de Visitas');
     }
     
     // Mostrar sección de Visitas por defecto
@@ -87,6 +91,13 @@ document.addEventListener('DOMContentLoaded', () => {
         btnVisitas.style.display = 'flex';
       } else {
         btnVisitas.style.display = 'none';
+      }
+    }
+    if (btnReportesVisitas) {
+      if (rolActual === 'administrador' || emailUsuario === EMAIL_USUARIO_VISITAS) {
+        btnReportesVisitas.style.display = 'flex';
+      } else {
+        btnReportesVisitas.style.display = 'none';
       }
     }
   }
@@ -113,12 +124,14 @@ const btnAsignados = document.getElementById('btn-asignados');
 const btnIncidencias = document.getElementById('btn-atenciones');
 const btnReportes = document.getElementById('btn-reportes');
 const btnVisitas = document.getElementById('btn-visitas');
+const btnReportesVisitas = document.getElementById('btn-reportes-visitas');
 const btnLogout = document.getElementById('btn-logout');
 const usuariosSection = document.getElementById('usuarios-section');
 const asignadosSection = document.getElementById('asignados-section');
 const incidenciasSection = document.getElementById('atenciones-section');
 const reportesSection = document.getElementById('reportes-section');
 const visitasSection = document.getElementById('visitas-section');
+const reportesVisitasSection = document.getElementById('reportes-visitas-section');
 
 // Navegación entre secciones
 btnUsuarios.addEventListener('click', () => {
@@ -140,6 +153,16 @@ btnReportes.addEventListener('click', () => {
 if (btnVisitas) {
   btnVisitas.addEventListener('click', () => {
     mostrarSeccion('visitas');
+  });
+}
+
+if (btnReportesVisitas) {
+  btnReportesVisitas.addEventListener('click', async () => {
+    mostrarSeccion('reportes-visitas');
+    // Cargar reportes al abrir la sección
+    if (typeof cargarReportesVisitas === 'function') {
+      await cargarReportesVisitas();
+    }
   });
 }
 
@@ -187,7 +210,8 @@ function mostrarSeccion(seccion) {
     atenciones: { title: 'Registro de Atenciones', subtitle: 'Gestiona las solicitudes y atenciones' },
     reportes: { title: 'Reportes y Consultas', subtitle: 'Visualiza el historial de atenciones' },
     asignados: { title: 'Dashboard Ejecutivo', subtitle: 'Análisis y métricas en tiempo real' },
-    visitas: { title: 'Gestión de Visitas', subtitle: 'Registra visitas y atenciones de campo' }
+    visitas: { title: 'Gestión de Visitas', subtitle: 'Registra visitas y atenciones de campo' },
+    'reportes-visitas': { title: 'Reporte de Visitas y Atenciones', subtitle: 'Visualiza el historial de visitas y atenciones' }
   };
   
   if (pageTitle && titles[seccion]) {
@@ -200,12 +224,14 @@ function mostrarSeccion(seccion) {
   incidenciasSection.classList.remove('active');
   reportesSection.classList.remove('active');
   if (visitasSection) visitasSection.classList.remove('active');
+  if (reportesVisitasSection) reportesVisitasSection.classList.remove('active');
   
   btnUsuarios.classList.remove('active');
   btnAsignados.classList.remove('active');
   btnIncidencias.classList.remove('active');
   btnReportes.classList.remove('active');
   if (btnVisitas) btnVisitas.classList.remove('active');
+  if (btnReportesVisitas) btnReportesVisitas.classList.remove('active');
   
   if (seccion === 'usuarios') {
     usuariosSection.classList.add('active');
@@ -225,6 +251,15 @@ function mostrarSeccion(seccion) {
     visitasSection.classList.add('active');
     btnVisitas.classList.add('active');
     inicializarCultura();
+  } else if (seccion === 'reportes-visitas' && reportesVisitasSection) {
+    reportesVisitasSection.classList.add('active');
+    if (btnReportesVisitas) btnReportesVisitas.classList.add('active');
+    if (typeof cargarReportesVisitas === 'function') {
+      cargarReportesVisitas();
+    }
+    if (typeof configurarPestanasReportes === 'function') {
+      configurarPestanasReportes();
+    }
   }
 }
 

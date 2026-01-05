@@ -11,7 +11,7 @@ class Visita(Document):
     cliente = StringField(required=True, index=True)
     fecha_visita = DateTimeField(required=True, index=True)
     unidad = StringField(required=True)
-    lider_zonal = StringField(required=True)
+    lider_zonal = StringField(null=True)
     comentario = StringField(null=True)
     usuario_id = StringField(required=True, index=True)
     fecha_creacion = DateTimeField(default=hora_peru)
