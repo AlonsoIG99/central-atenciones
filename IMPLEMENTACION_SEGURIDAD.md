@@ -3,14 +3,12 @@
 ## ✅ CORRECCIONES IMPLEMENTADAS
 
 ### 1. ✅ Migración a bcrypt para contraseñas
-
 - **Archivo:** `backend/auth.py`
 - **Cambio:** SHA256 → bcrypt (factor de trabajo 12)
 - **Estado:** Implementado
 
 ### 2. ✅ Eliminación de credenciales hardcodeadas
-
-- **Archivos:**
+- **Archivos:** 
   - `backend/auth.py` (JWT_SECRET_KEY)
   - `backend/database.py` (MongoDB)
   - `backend/minio_config.py` (MinIO)
@@ -18,7 +16,6 @@
 - **Estado:** Implementado
 
 ### 3. ✅ Eliminación de exposición de hashes en API
-
 - **Archivos:**
   - `backend/schemas/usuario.py`
   - `backend/routes/usuarios.py`
@@ -26,22 +23,19 @@
 - **Estado:** Implementado
 
 ### 4. ✅ Rate Limiting implementado
-
 - **Archivo:** `backend/routes/auth.py`
 - **Cambio:** Máximo 5 intentos de login por minuto por IP
 - **Librería:** slowapi
 - **Estado:** Implementado
 
 ### 5. ✅ CORS específicos configurados
-
 - **Archivo:** `backend/app.py`
-- **Cambio:**
+- **Cambio:** 
   - Desarrollo: lista específica de orígenes permitidos
   - Producción: solo dominios oficiales
 - **Estado:** Implementado
 
 ### 6. ✅ Headers de seguridad agregados
-
 - **Archivo:** `backend/app.py`
 - **Headers agregados:**
   - X-Content-Type-Options: nosniff
@@ -51,7 +45,6 @@
 - **Estado:** Implementado
 
 ### 7. ✅ Timeouts de seguridad en MongoDB
-
 - **Archivo:** `backend/database.py`
 - **Timeouts configurados:**
   - serverSelectionTimeoutMS: 5000
@@ -77,7 +70,6 @@ pip install -r requirements.txt
 ### Paso 2: Configurar variables de entorno
 
 1. Copia el archivo de ejemplo:
-
 ```bash
 cp .env.example .env
 ```
@@ -92,8 +84,7 @@ python -c "import secrets; print(secrets.token_urlsafe(32))"
 JWT_SECRET_KEY=<tu-clave-generada>
 ```
 
-**IMPORTANTE:**
-
+**IMPORTANTE:** 
 - ⚠️ NUNCA subir `.env` a Git
 - ✅ Verificar que `.env` esté en `.gitignore`
 - 🔄 Rotar las credenciales de MongoDB y MinIO si fueron expuestas
@@ -120,7 +111,6 @@ python migrar_bcrypt.py admin
 ```
 
 Credenciales:
-
 - Email: `admin@liderman.net.pe`
 - Contraseña: `Admin2026!`
 
@@ -138,14 +128,12 @@ cat .gitignore | grep .env
 ```
 
 Debe mostrar:
-
 ```
 .env
 .env.local
 ```
 
 Si no está, agregar:
-
 ```bash
 echo ".env" >> .gitignore
 ```
@@ -181,14 +169,12 @@ git push origin --force --all
 ### Paso 6: Probar la aplicación
 
 1. Iniciar el servidor:
-
 ```bash
 cd backend
 uvicorn app:app --reload
 ```
 
 2. Probar login con rate limiting:
-
 ```bash
 # Debería funcionar las primeras 5 veces
 for i in {1..6}; do
@@ -202,13 +188,11 @@ done
 ```
 
 3. Verificar headers de seguridad:
-
 ```bash
 curl -I http://localhost:8000/
 ```
 
 Debe incluir:
-
 - `X-Content-Type-Options: nosniff`
 - `X-Frame-Options: DENY`
 - `X-XSS-Protection: 1; mode=block`
@@ -284,7 +268,6 @@ grep -r "Jdg27aCQqOzR" backend/*.py
 ### Error: "JWT_SECRET_KEY no configurada"
 
 **Solución:** Agregar a `.env`:
-
 ```bash
 JWT_SECRET_KEY=$(python -c "import secrets; print(secrets.token_urlsafe(32))")
 ```
@@ -292,7 +275,6 @@ JWT_SECRET_KEY=$(python -c "import secrets; print(secrets.token_urlsafe(32))")
 ### Error: "ModuleNotFoundError: No module named 'slowapi'"
 
 **Solución:**
-
 ```bash
 pip install slowapi==0.1.9
 ```
@@ -300,7 +282,6 @@ pip install slowapi==0.1.9
 ### Error: Login no funciona después de migración
 
 **Solución:** Usar contraseña temporal `CambiarMe2026!` o crear nuevo usuario:
-
 ```bash
 python migrar_bcrypt.py admin
 ```
@@ -308,13 +289,11 @@ python migrar_bcrypt.py admin
 ### Error: MongoDB no conecta
 
 **Solución:** Verificar credenciales en `.env`:
-
 ```bash
 cat .env | grep MONGODB
 ```
 
 Verificar conectividad:
-
 ```bash
 python -c "from backend.database import conectar_db"
 ```
@@ -324,19 +303,16 @@ python -c "from backend.database import conectar_db"
 ## 📈 PRÓXIMOS PASOS (Mejoras Adicionales)
 
 ### Prioridad Alta
-
 1. Implementar token blacklist para logout seguro
 2. Agregar logging de eventos de seguridad
 3. Implementar HTTPS redirect en producción
 
 ### Prioridad Media
-
 4. Migrar tokens a cookies HttpOnly
 5. Agregar validación robusta de inputs
 6. Implementar 2FA (autenticación de dos factores)
 
 ### Prioridad Baja
-
 7. Auditorías de seguridad periódicas
 8. Penetration testing
 9. Monitoreo de intentos de intrusión

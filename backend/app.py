@@ -15,7 +15,7 @@ from collections import defaultdict
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from backend.database import conectar_db
-from backend.routes import usuarios, incidencias, auth, trabajadores, asignados, reporte_dashboards, documentos, cultura, visitas_dashboard
+from backend.routes import usuarios, incidencias, auth, trabajadores, asignados, reporte_dashboards, documentos, cultura
 from backend.models.usuario import Usuario
 from backend.models.incidencia import Incidencia
 from backend.models.trabajador import Trabajador
@@ -133,7 +133,6 @@ app.include_router(asignados.router)
 app.include_router(reporte_dashboards.router)
 app.include_router(documentos.router)
 app.include_router(cultura.router)
-app.include_router(visitas_dashboard.router)
 
 # Swagger protegido - solo accesible con token válido
 @app.get("/docs", include_in_schema=False)
@@ -225,10 +224,6 @@ if ENV == "development":
     @app.get("/dashboard-slides.html")
     async def dashboard_slides():
         return FileResponse(str(frontend_path / "dashboard-slides.html"))
-    
-    @app.get("/dashboard-visitas.html")
-    async def dashboard_visitas():
-        return FileResponse(str(frontend_path / "dashboard-visitas.html"))
 
 if __name__ == "__main__":
     import uvicorn
