@@ -383,6 +383,35 @@ function collectAtencionData(schema) {
   return { data: result, archivos: archivos };
 }
 
+// Extraer hojas finales (consultas específicas) del esquema
+function extractLeafNodes(data, path = []) {
+  const leaves = [];
+  
+  for (const [key, value] of Object.entries(data)) {
+    const currentPath = [...path, key];
+    
+    // Si el objeto está vacío o solo tiene propiedades especiales (valor, motivo)
+    // y NO tiene otros keys que podrían ser children, es una hoja
+    const keys = Object.keys(value);
+    const hasChildren = keys.some(k => !['valor', 'motivo'].includes(k));
+    
+    if (!hasChildren) {
+      // Es una hoja final
+      leaves.push(currentPath.join(' > '));
+    } else {
+      // Tiene children, continuar recursivamente
+      for (const [childKey, childValue] of Object.entries(value)) {
+        if (!['valor', 'motivo'].includes(childKey)) {
+          const childLeaves = extractLeafNodes({ [childKey]: childValue }, currentPath);
+          leaves.push(...childLeaves);
+        }
+      }
+    }
+  }
+  
+  return leaves;
+}
+
 // Crear atencion
 if (formAtencion) {
   formAtencion.addEventListener('submit', async (e) => {
@@ -398,6 +427,10 @@ if (formAtencion) {
     return;
   }
   
+  // Extraer hojas finales (consultas específicas)
+  const consultas = extractLeafNodes(schemaData);
+  console.log('Consultas específicas (hojas finales):', consultas);
+  
   // Obtener el usuario_id del localStorage (del usuario autenticado)
   const usuarioId = localStorage.getItem('user_id');
   
@@ -408,7 +441,8 @@ if (formAtencion) {
     descripcion: JSON.stringify(schemaData),
     comentario: document.getElementById('atencion-comentario').value || null,
     usuario_id: usuarioId,
-    estado: document.getElementById('atencion-estado').value
+    estado: document.getElementById('atencion-estado').value,
+    consultas: consultas  // Agregar las consultas específicas
   };
   
   console.log('Enviando atención:', atencion);

@@ -20,8 +20,14 @@ class UsuarioUpdate(BaseModel):
     rol: Optional[str] = None
     area: Optional[str] = None
 
-class UsuarioResponse(UsuarioBase):
+class UsuarioResponse(BaseModel):
     id: str  # MongoDB ObjectId como string
+    dni: Optional[str] = None
+    nombre: str
+    email: str
+    # ELIMINADO: contraseña (no debe exponerse en API por seguridad)
+    rol: str
+    area: str
     fecha_creacion: datetime
     
     class Config:

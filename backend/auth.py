@@ -2,13 +2,19 @@ from datetime import datetime, timedelta
 from typing import Optional
 from jose import JWTError, jwt
 from pydantic import BaseModel
-import hashlib
+import bcrypt
 import os
-import binascii
 import secrets
+from dotenv import load_dotenv
 
-# Configuración
-SECRET_KEY = "tu-clave-secreta-muy-segura-cambiar-en-produccion"
+# Cargar variables de entorno desde .env
+load_dotenv()
+
+# Configuración desde variables de entorno
+SECRET_KEY = os.getenv("JWT_SECRET_KEY")
+if not SECRET_KEY:
+    raise ValueError("❌ JWT_SECRET_KEY no configurada en variables de entorno. Genera una con: python -c 'import secrets; print(secrets.token_urlsafe(32))'")
+
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 REFRESH_TOKEN_EXPIRE_DAYS = 7
@@ -28,28 +34,19 @@ class Token(BaseModel):
     area: str
 
 def verificar_contraseña(contraseña_plana: str, contraseña_almacenada: str) -> bool:
-    """Verifica que la contraseña coincida usando SHA256 con salt"""
+    """Verifica que la contraseña coincida usando bcrypt (seguro contra fuerza bruta)"""
     try:
-        # Separar salt y hash
-        salt_hex, hash_hex = contraseña_almacenada.split('$')
-        salt = bytes.fromhex(salt_hex)
-        
-        # Calcular hash de la contraseña proporcionada
-        hash_obj = hashlib.sha256(salt + contraseña_plana.encode('utf-8'))
-        return hash_obj.hexdigest() == hash_hex
+        return bcrypt.checkpw(
+            contraseña_plana.encode('utf-8'),
+            contraseña_almacenada.encode('utf-8')
+        )
     except Exception:
         return False
 
 def obtener_hash_contraseña(contraseña: str) -> str:
-    """Genera un hash SHA256 con salt para una contraseña"""
-    # Generar salt aleatorio
-    salt = os.urandom(32)
-    
-    # Generar hash SHA256
-    hash_obj = hashlib.sha256(salt + contraseña.encode('utf-8'))
-    
-    # Retornar salt y hash en formato hex separados por $
-    return f"{salt.hex()}${hash_obj.hexdigest()}"
+    """Genera un hash bcrypt seguro para una contraseña (factor de trabajo 12)"""
+    salt = bcrypt.gensalt(rounds=12)
+    return bcrypt.hashpw(contraseña.encode('utf-8'), salt).decode('utf-8')
 
 def crear_token_acceso(data: dict, expires_delta: Optional[timedelta] = None) -> str:
     """Crea un JWT token"""

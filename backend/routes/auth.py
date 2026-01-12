@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, HTTPException, status, Request
 import sys
 from pathlib import Path
 
@@ -28,9 +28,10 @@ class LoginRequest(BaseModel):
     password: str
 
 @router.post("/login")
-def login(credenciales: LoginRequest):
+async def login(request: Request, credenciales: LoginRequest):
     """
     Login de usuario - retorna JWT token
+    Rate limited: Máximo 5 intentos por minuto por IP (implementado en middleware)
     """
     try:
         # Buscar usuario por email en MongoDB

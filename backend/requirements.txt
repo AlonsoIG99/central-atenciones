@@ -10,3 +10,4 @@ pymongo==4.15.4
 python-multipart==0.0.20
 minio==7.2.20
 dnspython==2.8.0
+slowapi==0.1.9

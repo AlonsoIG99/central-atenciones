@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import Optional
+from typing import Optional, List
 from datetime import datetime
 
 class IncidenciaBase(BaseModel):
@@ -11,6 +11,7 @@ class IncidenciaBase(BaseModel):
     canal: str = "llamada_telefonica"
     estado: str = "abierta"
     usuario_id: Optional[str] = None
+    consultas: Optional[List[str]] = []  # Lista de consultas específicas (hojas finales)
 
 class IncidenciaCreate(IncidenciaBase):
     pass

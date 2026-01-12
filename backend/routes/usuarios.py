@@ -16,7 +16,6 @@ def obtener_usuarios():
             "dni": u.dni,
             "nombre": u.nombre,
             "email": u.email,
-            "contraseña": u.contraseña,
             "rol": u.rol,
             "area": u.area,
             "fecha_creacion": u.fecha_creacion
@@ -36,7 +35,6 @@ def obtener_usuario(usuario_id: str):
             "dni": usuario.dni,
             "nombre": usuario.nombre,
             "email": usuario.email,
-            "contraseña": usuario.contraseña,
             "rol": usuario.rol,
             "area": usuario.area,
             "fecha_creacion": usuario.fecha_creacion
@@ -78,7 +76,6 @@ def crear_usuario(usuario: UsuarioCreate, request: Request = None):
             "dni": db_usuario.dni,
             "nombre": db_usuario.nombre,
             "email": db_usuario.email,
-            "contraseña": db_usuario.contraseña,
             "rol": db_usuario.rol,
             "area": db_usuario.area,
             "fecha_creacion": db_usuario.fecha_creacion

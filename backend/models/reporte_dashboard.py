@@ -1,4 +1,4 @@
-from mongoengine import Document, StringField, DateTimeField, DictField
+from mongoengine import Document, StringField, DateTimeField, DictField, ListField
 from datetime import datetime
 
 class ReporteDashboard(Document):
@@ -11,6 +11,7 @@ class ReporteDashboard(Document):
     titulo_atencion = StringField()
     descripcion_atencion = StringField()
     estado_atencion = StringField()
+    consultas = ListField(StringField(), default=list)  # Lista de consultas específicas
     fecha_creacion_atencion = DateTimeField()
     fecha_cierre_atencion = DateTimeField(null=True)
     dias_abierta = StringField(null=True)
@@ -52,6 +53,7 @@ class ReporteDashboard(Document):
             'titulo_atencion': self.titulo_atencion,
             'descripcion_atencion': self.descripcion_atencion,
             'estado_atencion': self.estado_atencion,
+            'consultas': self.consultas if self.consultas else [],
             'fecha_creacion_atencion': self.fecha_creacion_atencion.isoformat() if self.fecha_creacion_atencion else None,
             'fecha_cierre_atencion': self.fecha_cierre_atencion.isoformat() if self.fecha_cierre_atencion else None,
             'dias_abierta': self.dias_abierta,

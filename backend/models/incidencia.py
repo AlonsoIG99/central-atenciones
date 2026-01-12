@@ -1,4 +1,4 @@
-from mongoengine import Document, StringField, DateTimeField
+from mongoengine import Document, StringField, DateTimeField, ListField
 from datetime import datetime, timedelta
 
 def hora_peru():
@@ -16,6 +16,7 @@ class Incidencia(Document):
     canal = StringField(default="llamada_telefonica", choices=["llamada_telefonica", "whatsapp", "presencial", "correo"])
     estado = StringField(default="abierta", choices=["abierta", "en_proceso", "cerrada"])
     usuario_id = StringField(null=True)
+    consultas = ListField(StringField(), default=list)  # Lista de consultas específicas (hojas finales)
     fecha_creacion = DateTimeField(default=hora_peru)
     fecha_actualizacion = DateTimeField(default=hora_peru)
     fecha_cierre = DateTimeField(null=True)
@@ -38,6 +39,7 @@ class Incidencia(Document):
             'canal': self.canal,
             'estado': self.estado,
             'usuario_id': self.usuario_id,
+            'consultas': self.consultas if self.consultas else [],
             'fecha_creacion': self.fecha_creacion.isoformat() if self.fecha_creacion else None,
             'fecha_actualizacion': self.fecha_actualizacion.isoformat() if self.fecha_actualizacion else None,
             'fecha_cierre': self.fecha_cierre.isoformat() if self.fecha_cierre else None,

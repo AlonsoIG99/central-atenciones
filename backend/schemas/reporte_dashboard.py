@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import Optional
+from typing import Optional, List
 from datetime import datetime
 
 class ReporteDashboardBase(BaseModel):
@@ -8,6 +8,7 @@ class ReporteDashboardBase(BaseModel):
     titulo_atencion: Optional[str] = None
     descripcion_atencion: Optional[str] = None
     estado_atencion: Optional[str] = None
+    consultas: Optional[List[str]] = []
     usuario_nombre: Optional[str] = None
     usuario_area: Optional[str] = None
     nombre_completo_trabajador: Optional[str] = None

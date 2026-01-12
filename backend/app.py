@@ -1,11 +1,15 @@
 from fastapi import FastAPI, Request, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse, HTMLResponse
 from fastapi.openapi.docs import get_swagger_ui_html
+from starlette.middleware.base import BaseHTTPMiddleware
 from pathlib import Path
 import os
 import sys
+from datetime import datetime, timedelta
+from collections import defaultdict
 
 # Agregar backend al path para importes correctos
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -39,15 +43,55 @@ app = FastAPI(
     redoc_url=None  # Deshabilitar /redoc público
 )
 
-# Configurar CORS
-# En producción, especificar dominios explícitos
+# Rate Limiter simple personalizado
+class RateLimitMiddleware(BaseHTTPMiddleware):
+    def __init__(self, app, max_requests: int = 5, window_seconds: int = 60):
+        super().__init__(app)
+        self.max_requests = max_requests
+        self.window_seconds = window_seconds
+        self.requests = defaultdict(list)
+    
+    async def dispatch(self, request: Request, call_next):
+        # Solo aplicar rate limit a /auth/login y solo POST
+        if request.url.path == "/auth/login" and request.method == "POST":
+            client_ip = request.client.host
+            now = datetime.now()
+            
+            # Limpiar requests antiguos
+            self.requests[client_ip] = [
+                req_time for req_time in self.requests[client_ip]
+                if now - req_time < timedelta(seconds=self.window_seconds)
+            ]
+            
+            # Verificar límite
+            if len(self.requests[client_ip]) >= self.max_requests:
+                raise HTTPException(
+                    status_code=429,
+                    detail="Demasiados intentos de login. Intenta nuevamente en un minuto."
+                )
+            
+            # Registrar request
+            self.requests[client_ip].append(now)
+        
+        response = await call_next(request)
+        return response
+
+# Configurar CORS (específicos por seguridad) - PRIMERO
 if ENV == "production":
     origins = [
         "https://atencion.liderman.net.pe",
         "https://attention.liderman.net.pe",
     ]
 else:
-    origins = ["*"]
+    # Desarrollo: especificar orígenes explícitos (NO usar "*")
+    origins = [
+        "http://localhost:3000",
+        "http://localhost:5500",
+        "http://localhost:8000",
+        "http://127.0.0.1:3000",
+        "http://127.0.0.1:5500",
+        "http://127.0.0.1:8000"
+    ]
 
 app.add_middleware(
     CORSMiddleware,
@@ -56,6 +100,29 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Agregar rate limiting - DESPUÉS de CORS
+app.add_middleware(RateLimitMiddleware, max_requests=5, window_seconds=60)
+
+# Middleware de headers de seguridad
+class SecurityHeadersMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request, call_next):
+        response = await call_next(request)
+        response.headers['X-Content-Type-Options'] = 'nosniff'
+        response.headers['X-Frame-Options'] = 'DENY'
+        response.headers['X-XSS-Protection'] = '1; mode=block'
+        if ENV == "production":
+            response.headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains'
+        return response
+
+app.add_middleware(SecurityHeadersMiddleware)
+
+# Trusted Host Middleware en producción
+if ENV == "production":
+    app.add_middleware(
+        TrustedHostMiddleware,
+        allowed_hosts=["atencion.liderman.net.pe", "attention.liderman.net.pe"]
+    )
 
 # Incluir rutas de API
 app.include_router(auth.router)

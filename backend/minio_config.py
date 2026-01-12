@@ -2,14 +2,22 @@ from minio import Minio
 from minio.error import S3Error
 import os
 from datetime import timedelta
+from dotenv import load_dotenv
 
-# Configuración de MinIO
-MINIO_ENDPOINT = os.getenv("MINIO_ENDPOINT", "s3.liderman.net.pe")
+# Cargar variables de entorno desde .env
+load_dotenv()
+
+# Configuración de MinIO (sin defaults por seguridad)
+MINIO_ENDPOINT = os.getenv("MINIO_ENDPOINT")
 MINIO_PORT = os.getenv("MINIO_PORT", "443")
-MINIO_ACCESS_KEY = os.getenv("MINIO_ACCESS_KEY", "minioadmin")
-MINIO_SECRET_KEY = os.getenv("MINIO_SECRET_KEY", "wZ8pDqV2sX9m")
+MINIO_ACCESS_KEY = os.getenv("MINIO_ACCESS_KEY")
+MINIO_SECRET_KEY = os.getenv("MINIO_SECRET_KEY")
 MINIO_BUCKET = os.getenv("MINIO_BUCKET_NAME", "central-atenciones")
 MINIO_USE_SSL = os.getenv("MINIO_USE_SSL", "true").lower() == "true"
+
+# Validar credenciales requeridas
+if not all([MINIO_ENDPOINT, MINIO_ACCESS_KEY, MINIO_SECRET_KEY]):
+    raise ValueError("❌ Credenciales de MinIO no configuradas. Configura MINIO_ENDPOINT, MINIO_ACCESS_KEY y MINIO_SECRET_KEY en .env")
 
 # Construir endpoint con puerto si es necesario
 if MINIO_PORT and MINIO_PORT != "443" and MINIO_PORT != "80":

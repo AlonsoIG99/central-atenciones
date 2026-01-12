@@ -5,6 +5,60 @@ let charts = {};
 // Registrar el plugin de datalabels
 Chart.register(ChartDataLabels);
 
+// Función auxiliar para extraer hojas finales del JSON de descripción
+function extraerConsultasDeDescripcion(descripcionJson) {
+  const leaves = [];
+  
+  function extractLeaves(data, path = []) {
+    for (const [key, value] of Object.entries(data)) {
+      const currentPath = [...path, key];
+      
+      if (!value || typeof value !== 'object') {
+        continue;
+      }
+      
+      const keys = Object.keys(value);
+      const hasChildren = keys.some(k => !['valor', 'motivo'].includes(k));
+      
+      if (!hasChildren) {
+        // Es una hoja final
+        leaves.push(currentPath.join(' > '));
+      } else {
+        // Tiene children, continuar recursivamente
+        for (const [childKey, childValue] of Object.entries(value)) {
+          if (!['valor', 'motivo'].includes(childKey) && childValue && typeof childValue === 'object') {
+            extractLeaves({ [childKey]: childValue }, currentPath);
+          }
+        }
+      }
+    }
+  }
+  
+  try {
+    const data = typeof descripcionJson === 'string' ? JSON.parse(descripcionJson) : descripcionJson;
+    extractLeaves(data);
+  } catch (e) {
+    console.error('Error al parsear descripción:', e);
+  }
+  
+  return leaves;
+}
+
+// Función para obtener consultas de una atención (compatible con atenciones antiguas)
+function obtenerConsultas(atencion) {
+  // Si ya tiene el campo consultas, usarlo
+  if (atencion.consultas && Array.isArray(atencion.consultas) && atencion.consultas.length > 0) {
+    return atencion.consultas;
+  }
+  
+  // Si no, extraer del campo descripcion
+  if (atencion.descripcion_atencion) {
+    return extraerConsultasDeDescripcion(atencion.descripcion_atencion);
+  }
+  
+  return [];
+}
+
 // Obtener todos los datos del dashboard
 async function obtenerDatosDashboard() {
   try {
@@ -166,8 +220,11 @@ async function crearGraficoMacrozona(datos) {
   
   datos.forEach(d => {
     const macrozona = d.macrozona || 'Sin especificar';
-    macrozonasMap[macrozona] = (macrozonasMap[macrozona] || 0) + 1;
+    const consultas = obtenerConsultas(d);
+    macrozonasMap[macrozona] = (macrozonasMap[macrozona] || 0) + consultas.length;
   });
+
+  console.log('Macrozonas encontradas:', macrozonasMap);
 
   const labels = Object.keys(macrozonasMap);
   const values = Object.values(macrozonasMap);
@@ -199,27 +256,32 @@ async function crearGraficoMacrozona(datos) {
       maintainAspectRatio: false,
       plugins: {
         legend: {
-          position: 'right',
+          position: 'left',
           labels: {
             color: '#e5e7eb',
-            font: { size: 11 },
-            padding: 25,
-            boxWidth: 14
-          }
+            font: { size: 10 },
+            padding: 8,
+            boxWidth: 12,
+            boxHeight: 12
+          },
+          maxHeight: 400,
+          maxWidth: 200
         },
         datalabels: {
           color: '#ffffff',
           font: {
-            size: 11,
+            size: 10,
             weight: 'bold'
           },
           formatter: (value, ctx) => {
             const total = ctx.dataset.data.reduce((a, b) => a + b, 0);
-            const percentage = ((value / total) * 100).toFixed(1);
-            return `${value} (${percentage}%)`;
+            const percentage = ((value / total) * 100).toFixed(2);
+            if (percentage < 3) return '';
+            return `${value}\n(${percentage}%)`;
           },
-          anchor: 'center',
-          align: 'center'
+          anchor: 'end',
+          align: 'start',
+          offset: -10
         }
       },
       layout: {
@@ -247,7 +309,8 @@ async function crearGraficoCompania(datos) {
   
   datos.forEach(d => {
     const compania = d.tipo_compania || 'Sin especificar';
-    companiasMap[compania] = (companiasMap[compania] || 0) + 1;
+    const consultas = obtenerConsultas(d);
+    companiasMap[compania] = (companiasMap[compania] || 0) + consultas.length;
   });
 
   const labels = Object.keys(companiasMap);
@@ -290,15 +353,16 @@ async function crearGraficoCompania(datos) {
           color: '#ffffff',
           anchor: 'end',
           align: 'top',
+          offset: 2,
           font: {
-            size: 11,
+            size: 12,
             weight: 'bold'
           }
         }
       },
       layout: {
         padding: {
-          top: 10,
+          top: 20,
           bottom: 10,
           left: 10,
           right: 10
@@ -326,28 +390,26 @@ async function crearGraficoCompania(datos) {
   });
 }
 
-// Crear gráfico de Barras Horizontal: Tipos de Atenciones
+// Crear gráfico de Barras Horizontal: Tipos de Consultas
 async function crearGraficoTipos(datos) {
   const tiposMap = {
     'Pago correcto': 0,
     'Pago incorrecto': 0,
     'Apoyo económico/Préstamo': 0,
-    'Otros/Soporte': 0
+    'Otros/Soporte': 0,
+    'Canasta navideña': 0
   };
 
   datos.forEach(d => {
-    try {
-      const desc = JSON.parse(d.descripcion_atencion || '{}');
-      
-      // Contar cada tipo que esté en true
-      for (const key in tiposMap) {
-        if (desc[key]) {
-          tiposMap[key]++;
-        }
+    const consultas = obtenerConsultas(d);
+    // Cada consulta es un string con formato "Tipo > Subtipo > ..."
+    consultas.forEach(consulta => {
+      // Extraer el primer nivel (tipo principal)
+      const tipoPrincipal = consulta.split(' > ')[0];
+      if (tiposMap.hasOwnProperty(tipoPrincipal)) {
+        tiposMap[tipoPrincipal]++;
       }
-    } catch (e) {
-      // Si hay error al parsear, no contar nada
-    }
+    });
   });
 
   // Ordenar por cantidad de mayor a menor
@@ -399,9 +461,10 @@ async function crearGraficoTipos(datos) {
         datalabels: {
           color: '#ffffff',
           anchor: 'end',
-          align: 'right',
+          align: 'end',
+          offset: 4,
           font: {
-            size: 11,
+            size: 12,
             weight: 'bold'
           }
         }
@@ -807,9 +870,14 @@ function actualizarTablaJurisdicciones(datos) {
   });
 }
 
-// Actualizar el total de atenciones
+// Actualizar el total de consultas
 function actualizarTotal(datos) {
-  document.getElementById('total-atenciones').textContent = datos.length.toLocaleString('es-ES');
+  let totalConsultas = 0;
+  datos.forEach(d => {
+    const consultas = obtenerConsultas(d);
+    totalConsultas += consultas.length;
+  });
+  document.getElementById('total-atenciones').textContent = totalConsultas.toLocaleString('es-ES');
 }
 
 // Crear gráfico de macrozonas con tipos de atención (slide 3)
@@ -817,7 +885,7 @@ async function crearGraficoMacrozonasTipos(datos) {
   const ctx = document.getElementById('chart-macrozonas-tipos');
   if (!ctx) return;
 
-  // Agrupar por macrozona y tipo de atención (nivel 2)
+  // Agrupar por macrozona y tipo de consulta
   const macrozonaMap = {};
   
   datos.forEach(d => {
@@ -826,19 +894,12 @@ async function crearGraficoMacrozonasTipos(datos) {
       macrozonaMap[d.macrozona] = {};
     }
     
-    try {
-      const desc = JSON.parse(d.descripcion_atencion || '{}');
-      // Obtener todos los detalles (nivel 2) de todos los tipos
-      for (const tipo in desc) {
-        if (desc[tipo] && typeof desc[tipo] === 'object') {
-          for (const detalle in desc[tipo]) {
-            macrozonaMap[d.macrozona][detalle] = (macrozonaMap[d.macrozona][detalle] || 0) + 1;
-          }
-        }
-      }
-    } catch (e) {
-      // Ignorar errores de parseo
-    }
+    const consultas = obtenerConsultas(d);
+    consultas.forEach(consulta => {
+      // Extraer el tipo principal (primer nivel)
+      const tipoPrincipal = consulta.split(' > ')[0];
+      macrozonaMap[d.macrozona][tipoPrincipal] = (macrozonaMap[d.macrozona][tipoPrincipal] || 0) + 1;
+    });
   });
 
   // Obtener todos los detalles únicos
@@ -944,8 +1005,9 @@ async function crearGraficoCanales(datos) {
   
   datos.forEach(d => {
     const canal = d.canal || 'llamada_telefonica';
+    const consultas = obtenerConsultas(d);
     if (canalesMap.hasOwnProperty(canal)) {
-      canalesMap[canal]++;
+      canalesMap[canal] += consultas.length;
     }
   });
 
@@ -1016,7 +1078,8 @@ async function crearGraficoUsuarios(datos) {
   
   datos.forEach(d => {
     const usuario = d.usuario_nombre || 'Sin especificar';
-    usuariosMap[usuario] = (usuariosMap[usuario] || 0) + 1;
+    const consultas = obtenerConsultas(d);
+    usuariosMap[usuario] = (usuariosMap[usuario] || 0) + consultas.length;
   });
 
   // Ordenar por cantidad descendente
@@ -1114,11 +1177,15 @@ async function cargarDatosSlide4(datos) {
   }
 }
 
-// Actualizar total de atenciones en slide 4
+// Actualizar total de consultas en slide 4
 function actualizarTotalSlide4(datos) {
   const totalEl = document.getElementById('total-atenciones-slide4');
   if (totalEl) {
-    totalEl.textContent = datos.length.toLocaleString('es-ES');
+    let totalConsultas = 0;
+    datos.forEach(d => {
+      totalConsultas += obtenerConsultas(d).length;
+    });
+    totalEl.textContent = totalConsultas.toLocaleString('es-ES');
   }
 }
 
@@ -1180,7 +1247,8 @@ async function crearGraficoAtencionesPorDia(datos) {
       // Convertir a fecha solo (sin hora)
       const fecha = new Date(d.fecha_creacion_atencion);
       const fechaStr = fecha.toISOString().split('T')[0]; // YYYY-MM-DD
-      fechasMap[fechaStr] = (fechasMap[fechaStr] || 0) + 1;
+      const consultas = obtenerConsultas(d);
+      fechasMap[fechaStr] = (fechasMap[fechaStr] || 0) + consultas.length;
     }
   });
 
@@ -1208,7 +1276,7 @@ async function crearGraficoAtencionesPorDia(datos) {
     data: {
       labels: labels,
       datasets: [{
-        label: 'Atenciones',
+        label: 'Consultas',
         data: valores,
         borderColor: '#6366f1',
         backgroundColor: 'rgba(99, 102, 241, 0.1)',
@@ -1299,7 +1367,11 @@ async function crearGraficoAtencionesPorDia(datos) {
 function actualizarTotalSlide5(datos) {
   const totalEl = document.getElementById('total-atenciones-slide5');
   if (totalEl) {
-    totalEl.textContent = datos.length.toLocaleString('es-ES');
+    let totalConsultas = 0;
+    datos.forEach(d => {
+      totalConsultas += obtenerConsultas(d).length;
+    });
+    totalEl.textContent = totalConsultas.toLocaleString('es-ES');
   }
 }
 
@@ -1346,7 +1418,8 @@ async function crearGraficoTopTrabajadores(datos, topN = 20) {
   
   datos.forEach(d => {
     const trabajador = d.nombre_completo_trabajador || 'Sin especificar';
-    trabajadoresMap[trabajador] = (trabajadoresMap[trabajador] || 0) + 1;
+    const consultas = obtenerConsultas(d);
+    trabajadoresMap[trabajador] = (trabajadoresMap[trabajador] || 0) + consultas.length;
   });
 
   // Ordenar por cantidad descendente y tomar el top N
@@ -1462,7 +1535,11 @@ async function cargarDatosSlide6(datos) {
 function actualizarTotalSlide6(datos) {
   const totalEl = document.getElementById('total-atenciones-slide6');
   if (totalEl) {
-    totalEl.textContent = datos.length.toLocaleString('es-ES');
+    let totalConsultas = 0;
+    datos.forEach(d => {
+      totalConsultas += obtenerConsultas(d).length;
+    });
+    totalEl.textContent = totalConsultas.toLocaleString('es-ES');
   }
 }
 
@@ -1540,12 +1617,13 @@ async function crearGraficoAtencionesPorMes(datos) {
     6: 0, 7: 0, 8: 0, 9: 0, 10: 0, 11: 0
   };
   
-  // Contar atenciones por mes
+  // Contar consultas por mes
   datosAnioActual.forEach(d => {
     if (d.fecha_creacion_atencion) {
       const fecha = new Date(d.fecha_creacion_atencion);
       const mes = fecha.getMonth(); // 0-11
-      mesesMap[mes]++;
+      const consultas = obtenerConsultas(d);
+      mesesMap[mes] += consultas.length;
     }
   });
 
@@ -2313,7 +2391,11 @@ async function limpiarFiltroSlide8() {
 function actualizarTotalSlide3(datos) {
   const totalEl = document.getElementById('total-atenciones-slide3');
   if (totalEl) {
-    totalEl.textContent = datos.length.toLocaleString('es-ES');
+    let totalConsultas = 0;
+    datos.forEach(d => {
+      totalConsultas += obtenerConsultas(d).length;
+    });
+    totalEl.textContent = totalConsultas.toLocaleString('es-ES');
   }
 }
 
