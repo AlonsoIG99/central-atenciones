@@ -3,25 +3,29 @@
 **Fecha:** 9 de Enero de 2026  
 **Estado:** Completado  
 **Vulnerabilidades Críticas Resueltas:** 5/5  
-**Vulnerabilidades Altas Resueltas:** 4/4  
+**Vulnerabilidades Altas Resueltas:** 4/4
 
 ---
 
 ## 🎯 CORRECCIONES CRÍTICAS IMPLEMENTADAS
 
 ### 1. ✅ Credenciales Hardcodeadas → Variables de Entorno
+
 **Archivos modificados:**
+
 - `backend/auth.py` - JWT_SECRET_KEY ahora desde .env
-- `backend/database.py` - Credenciales MongoDB desde .env  
+- `backend/database.py` - Credenciales MongoDB desde .env
 - `backend/minio_config.py` - Credenciales MinIO desde .env
 
 **Antes:**
+
 ```python
 SECRET_KEY = "tu-clave-secreta-muy-segura-cambiar-en-produccion"
 MONGODB_PASSWORD = os.getenv("MONGODB_PASSWORD", "Jdg27aCQqOzR")
 ```
 
 **Después:**
+
 ```python
 SECRET_KEY = os.getenv("JWT_SECRET_KEY")
 if not SECRET_KEY:
@@ -31,12 +35,14 @@ if not SECRET_KEY:
 ---
 
 ### 2. ✅ SHA256 → bcrypt para Contraseñas
+
 **Archivo modificado:** `backend/auth.py`
 
 **Antes:** SHA256 con salt (vulnerable a fuerza bruta con GPUs)  
 **Después:** bcrypt con factor de trabajo 12 (resistente a fuerza bruta)
 
 **Código nuevo:**
+
 ```python
 import bcrypt
 
@@ -50,7 +56,9 @@ def obtener_hash_contraseña(contraseña: str) -> str:
 ---
 
 ### 3. ✅ Exposición de Hashes Eliminada
+
 **Archivos modificados:**
+
 - `backend/schemas/usuario.py` - Campo contraseña eliminado de UsuarioResponse
 - `backend/routes/usuarios.py` - Respuestas NO incluyen contraseña
 
@@ -60,12 +68,15 @@ def obtener_hash_contraseña(contraseña: str) -> str:
 ---
 
 ### 4. ✅ Rate Limiting Implementado
+
 **Archivos modificados:**
+
 - `backend/app.py` - Configuración global del limiter
 - `backend/routes/auth.py` - Rate limit en endpoint de login
 - `backend/requirements.txt` - Dependencia slowapi agregada
 
 **Protección:**
+
 ```python
 @router.post("/login")
 @limiter.limit("5/minute")  # Máximo 5 intentos por minuto
@@ -75,14 +86,17 @@ async def login(request: Request, credenciales: LoginRequest):
 ---
 
 ### 5. ✅ CORS Específicos Configurados
+
 **Archivo modificado:** `backend/app.py`
 
 **Antes:**
+
 ```python
 origins = ["*"]  # ⚠️ Permite CUALQUIER origen
 ```
 
 **Después:**
+
 ```python
 # Desarrollo
 origins = [
@@ -102,9 +116,11 @@ origins = [
 ---
 
 ### 6. ✅ Headers de Seguridad Agregados
+
 **Archivo modificado:** `backend/app.py`
 
 **Headers implementados:**
+
 ```python
 X-Content-Type-Options: nosniff
 X-Frame-Options: DENY
@@ -113,6 +129,7 @@ Strict-Transport-Security: max-age=31536000 (producción)
 ```
 
 **Middleware:**
+
 ```python
 class SecurityHeadersMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request, call_next):
@@ -126,9 +143,11 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
 ---
 
 ### 7. ✅ Timeouts de Seguridad en MongoDB
+
 **Archivo modificado:** `backend/database.py`
 
 **Timeouts configurados:**
+
 ```python
 serverSelectionTimeoutMS=5000,
 connectTimeoutMS=10000,
@@ -155,6 +174,7 @@ slowapi==0.1.9  # Rate limiting
 ```
 
 **Instalación:**
+
 ```bash
 cd backend
 pip install -r requirements.txt
@@ -191,18 +211,21 @@ MINIO_USE_SSL=true
 ## 🚀 PASOS SIGUIENTES INMEDIATOS
 
 ### 1. Instalar dependencias
+
 ```bash
 cd backend
 pip install -r requirements.txt
 ```
 
 ### 2. Configurar .env
+
 ```bash
 cp .env.example .env
 # Editar .env con credenciales reales
 ```
 
 ### 3. Migrar contraseñas
+
 ```bash
 python migrar_bcrypt.py migrar
 # O crear admin nuevo
@@ -210,11 +233,13 @@ python migrar_bcrypt.py admin
 ```
 
 ### 4. Probar aplicación
+
 ```bash
 uvicorn app:app --reload
 ```
 
 ### 5. ⚠️ IMPORTANTE: Rotar credenciales expuestas
+
 - Cambiar contraseña de MongoDB
 - Regenerar keys de MinIO
 - Generar nueva JWT_SECRET_KEY
@@ -223,15 +248,15 @@ uvicorn app:app --reload
 
 ## 📊 MÉTRICAS DE MEJORA
 
-| Aspecto | Antes | Después |
-|---------|-------|---------|
-| Hash de contraseñas | SHA256 (inseguro) | bcrypt (seguro) |
-| Credenciales hardcodeadas | 5 | 0 |
-| Exposición de hashes | Sí | No |
-| Rate limiting | No | Sí (5/min) |
-| CORS permisivo | Sí (*) | No (específico) |
-| Headers de seguridad | 0 | 4 |
-| Timeouts DB | No | Sí |
+| Aspecto                   | Antes             | Después         |
+| ------------------------- | ----------------- | --------------- |
+| Hash de contraseñas       | SHA256 (inseguro) | bcrypt (seguro) |
+| Credenciales hardcodeadas | 5                 | 0               |
+| Exposición de hashes      | Sí                | No              |
+| Rate limiting             | No                | Sí (5/min)      |
+| CORS permisivo            | Sí (\*)           | No (específico) |
+| Headers de seguridad      | 0                 | 4               |
+| Timeouts DB               | No                | Sí              |
 
 ---
 
@@ -253,9 +278,10 @@ uvicorn app:app --reload
 ## 🔒 NIVEL DE SEGURIDAD
 
 **Antes:** 🔴 CRÍTICO (Múltiples vulnerabilidades graves)  
-**Después:** 🟡 MEJORADO (Vulnerabilidades críticas resueltas)  
+**Después:** 🟡 MEJORADO (Vulnerabilidades críticas resueltas)
 
 **Para llegar a 🟢 SEGURO:**
+
 - Implementar token blacklist
 - Agregar logging de seguridad
 - Migrar tokens a cookies HttpOnly
@@ -275,6 +301,7 @@ uvicorn app:app --reload
 ## 🆘 SOPORTE
 
 **En caso de problemas:**
+
 1. Revisar logs: `uvicorn app:app --reload`
 2. Consultar: `IMPLEMENTACION_SEGURIDAD.md`
 3. Verificar errores: Ver sección "Problemas Comunes"

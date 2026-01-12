@@ -125,6 +125,7 @@ const btnIncidencias = document.getElementById('btn-atenciones');
 const btnReportes = document.getElementById('btn-reportes');
 const btnVisitas = document.getElementById('btn-visitas');
 const btnReportesVisitas = document.getElementById('btn-reportes-visitas');
+const btnDashboardVisitas = document.getElementById('btn-dashboard-visitas');
 const btnLogout = document.getElementById('btn-logout');
 const usuariosSection = document.getElementById('usuarios-section');
 const asignadosSection = document.getElementById('asignados-section');
@@ -163,6 +164,12 @@ if (btnReportesVisitas) {
     if (typeof cargarReportesVisitas === 'function') {
       await cargarReportesVisitas();
     }
+  });
+}
+
+if (btnDashboardVisitas) {
+  btnDashboardVisitas.addEventListener('click', () => {
+    window.location.href = 'dashboard-visitas.html';
   });
 }
 
