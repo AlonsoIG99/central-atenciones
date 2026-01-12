@@ -6,7 +6,7 @@ const API_URL = (window.location.hostname === 'localhost' ||
                  window.location.hostname === '127.0.0.1' ||
                  window.location.port === '8000')
     ? 'http://127.0.0.1:8000'  // Desarrollo local
-    : 'https://attention.liderman.net.pe';  // Producción
+    : 'https://atencion.liderman.net.pe';  // Producción (mismo dominio)
 
 console.log('🌐 Dashboard Visitas - Usando backend:', API_URL);
 
