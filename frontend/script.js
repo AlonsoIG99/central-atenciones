@@ -41,45 +41,38 @@ document.addEventListener('DOMContentLoaded', () => {
   const btnAtenciones = document.getElementById('btn-atenciones');
   const btnReportes = document.getElementById('btn-reportes');
   const btnAsignados = document.getElementById('btn-asignados');
+  const btnReportesVisitas = document.getElementById('btn-reportes-visitas');
+  const btnDashboardVisitas = document.getElementById('btn-dashboard-visitas');
   const EMAIL_USUARIO_VISITAS = 'frivas@liderman.com.pe';
   const emailUsuario = localStorage.getItem('email');
   
-  console.log('🔍 DEBUG - Email en localStorage:', emailUsuario);
-  console.log('🔍 DEBUG - Email esperado:', EMAIL_USUARIO_VISITAS);
-  console.log('🔍 DEBUG - Rol actual:', rolActual);
-  console.log('🔍 DEBUG - ¿Son iguales?:', emailUsuario === EMAIL_USUARIO_VISITAS);
-  
   // Si es el usuario de visitas (y no es administrador), solo mostrar Visitas y Reporte de Visitas
   if (emailUsuario === EMAIL_USUARIO_VISITAS && rolActual !== 'administrador') {
-    console.log('🔒 Usuario de Visitas detectado:', emailUsuario);
     
     // Ocultar todos los módulos excepto Visitas y Reporte de Visitas
     if (btnAtenciones) {
       btnAtenciones.style.display = 'none';
-      console.log('❌ Ocultando Atenciones');
     }
     if (btnReportes) {
       btnReportes.style.display = 'none';
-      console.log('❌ Ocultando Reportes');
     }
     if (btnAsignados) {
       btnAsignados.style.display = 'none';
-      console.log('❌ Ocultando Dashboard');
     }
     const btnUsuarios = document.getElementById('btn-usuarios');
     if (btnUsuarios) {
       btnUsuarios.style.display = 'none';
-      console.log('❌ Ocultando Usuarios');
     }
     
-    // Mostrar solo Visitas y Reporte de Visitas
+    // Mostrar solo Visitas, Reporte de Visitas y Dashboard Visitas
     if (btnVisitas) {
       btnVisitas.style.display = 'flex';
-      console.log('✅ Mostrando Visitas');
     }
     if (btnReportesVisitas) {
       btnReportesVisitas.style.display = 'flex';
-      console.log('✅ Mostrando Reporte de Visitas');
+    }
+    if (btnDashboardVisitas) {
+      btnDashboardVisitas.style.display = 'flex';
     }
     
     // Mostrar sección de Visitas por defecto
@@ -98,6 +91,13 @@ document.addEventListener('DOMContentLoaded', () => {
         btnReportesVisitas.style.display = 'flex';
       } else {
         btnReportesVisitas.style.display = 'none';
+      }
+    }
+    if (btnDashboardVisitas) {
+      if (rolActual === 'administrador' || emailUsuario === EMAIL_USUARIO_VISITAS) {
+        btnDashboardVisitas.style.display = 'flex';
+      } else {
+        btnDashboardVisitas.style.display = 'none';
       }
     }
   }
@@ -125,6 +125,7 @@ const btnIncidencias = document.getElementById('btn-atenciones');
 const btnReportes = document.getElementById('btn-reportes');
 const btnVisitas = document.getElementById('btn-visitas');
 const btnReportesVisitas = document.getElementById('btn-reportes-visitas');
+const btnDashboardVisitas = document.getElementById('btn-dashboard-visitas');
 const btnLogout = document.getElementById('btn-logout');
 const usuariosSection = document.getElementById('usuarios-section');
 const asignadosSection = document.getElementById('asignados-section');
@@ -163,6 +164,12 @@ if (btnReportesVisitas) {
     if (typeof cargarReportesVisitas === 'function') {
       await cargarReportesVisitas();
     }
+  });
+}
+
+if (btnDashboardVisitas) {
+  btnDashboardVisitas.addEventListener('click', () => {
+    window.open('dashboard-visitas.html', '_blank');
   });
 }
 
