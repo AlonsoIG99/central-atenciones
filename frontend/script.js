@@ -72,7 +72,7 @@ document.addEventListener('DOMContentLoaded', () => {
       console.log('❌ Ocultando Usuarios');
     }
     
-    // Mostrar solo Visitas y Reporte de Visitas
+    // Mostrar solo Visitas, Reporte de Visitas y Dashboard Visitas
     if (btnVisitas) {
       btnVisitas.style.display = 'flex';
       console.log('✅ Mostrando Visitas');
@@ -80,6 +80,10 @@ document.addEventListener('DOMContentLoaded', () => {
     if (btnReportesVisitas) {
       btnReportesVisitas.style.display = 'flex';
       console.log('✅ Mostrando Reporte de Visitas');
+    }
+    if (btnDashboardVisitas) {
+      btnDashboardVisitas.style.display = 'flex';
+      console.log('✅ Mostrando Dashboard Visitas');
     }
     
     // Mostrar sección de Visitas por defecto
@@ -98,6 +102,13 @@ document.addEventListener('DOMContentLoaded', () => {
         btnReportesVisitas.style.display = 'flex';
       } else {
         btnReportesVisitas.style.display = 'none';
+      }
+    }
+    if (btnDashboardVisitas) {
+      if (rolActual === 'administrador' || emailUsuario === EMAIL_USUARIO_VISITAS) {
+        btnDashboardVisitas.style.display = 'flex';
+      } else {
+        btnDashboardVisitas.style.display = 'none';
       }
     }
   }
@@ -125,6 +136,7 @@ const btnIncidencias = document.getElementById('btn-atenciones');
 const btnReportes = document.getElementById('btn-reportes');
 const btnVisitas = document.getElementById('btn-visitas');
 const btnReportesVisitas = document.getElementById('btn-reportes-visitas');
+const btnDashboardVisitas = document.getElementById('btn-dashboard-visitas');
 const btnLogout = document.getElementById('btn-logout');
 const usuariosSection = document.getElementById('usuarios-section');
 const asignadosSection = document.getElementById('asignados-section');
@@ -163,6 +175,12 @@ if (btnReportesVisitas) {
     if (typeof cargarReportesVisitas === 'function') {
       await cargarReportesVisitas();
     }
+  });
+}
+
+if (btnDashboardVisitas) {
+  btnDashboardVisitas.addEventListener('click', () => {
+    window.open('dashboard-visitas.html', '_blank');
   });
 }
 
