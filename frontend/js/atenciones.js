@@ -140,6 +140,7 @@ const atencionSchema = {
   },
   "Apoyo económico/Préstamo": {
     children: {
+      "Evaluación": {},
       "Aprobado": { 
         input: "Monto aprobado",
         select: {
